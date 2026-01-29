@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { HeartHandshake, X, ChevronDown, ArrowRight, ShieldCheck, Lock } from "lucide-react";
+import { HeartHandshake, ArrowRight, ShieldCheck, Lock } from "lucide-react";
 
 interface GivingModalProps {
   isOpen: boolean;
@@ -33,12 +33,6 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Make Your Contribution</h1>
           <p className="mt-1 text-sm font-medium text-accent">Give to VOSEM INT'L</p>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 dark:hover:text-white transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         <div className="px-6 sm:px-10 pb-10">
@@ -83,7 +77,7 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
             <div className="space-y-2">
               <Label htmlFor="purpose" className="block text-sm font-medium text-foreground">Giving Purpose</Label>
               <Select defaultValue="Offering">
-                <SelectTrigger className="block w-full appearance-none rounded-xl border-gray-200 bg-white/60 py-3.5 pl-4 pr-10 text-gray-900 focus:border-accent focus:ring-1 focus:ring-accent dark:border-white/10 dark:bg-white/5 dark:text-white h-auto">
+                <SelectTrigger className="w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 focus:border-accent focus:ring-1 focus:ring-accent text-sm">
                   <SelectValue placeholder="Select purpose" />
                 </SelectTrigger>
                 <SelectContent>
