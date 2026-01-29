@@ -58,7 +58,7 @@ export default function About() {
                 </div>
               </div>
             </div>
-            <Button size="lg" className="px-12 py-7 rounded-xl bg-foreground text-background dark:bg-white dark:text-foreground font-black hover:bg-accent dark:hover:bg-accent dark:hover:text-white transition-all shadow-xl text-lg uppercase tracking-widest">
+            <Button size="lg" className="px-12 py-7 rounded-xl bg-accent text-accent-foreground font-black hover:bg-accent/90 transition-all shadow-xl text-lg uppercase tracking-widest">
               Plan Your Visit
             </Button>
           </div>
