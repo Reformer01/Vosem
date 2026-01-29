@@ -2,7 +2,6 @@ import Image from "next/image";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { SermonSummarizer } from "./sermon-summarizer";
 
 const sermonImage = PlaceHolderImages.find(img => img.id === 'sermon-main');
 
@@ -46,9 +45,6 @@ export default function Sermons() {
             </div>
           </div>
         </div>
-
-        <SermonSummarizer />
-
       </div>
     </section>
   );
