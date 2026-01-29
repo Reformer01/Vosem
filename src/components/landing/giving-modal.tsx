@@ -103,7 +103,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Tithes">Tithes</SelectItem>
-                  <SelectItem value="Offering">Offering</SelectItem>
+                  <SelectItem value="Offerings">Offerings</SelectItem>
                   <SelectItem value="Building Fund">Building Fund</SelectItem>
                   <SelectItem value="Thanksgiving">Thanksgiving</SelectItem>
                   <SelectItem value="Mission Support">Mission Support</SelectItem>
