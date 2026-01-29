@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,13 @@ interface GivingModalProps {
 }
 
 export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
+  const router = useRouter();
+
+  const handleProceed = () => {
+    onOpenChange(false);
+    router.push('/payment-success');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-[520px] rounded-2xl overflow-hidden glass-panel border-white/10 dark:bg-[#141414]/80">
@@ -94,7 +102,10 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
             </div>
 
             <div className="pt-4">
-              <Button type="button" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-accent px-6 py-4 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:bg-accent/90 hover:shadow-accent/50 h-auto">
+              <Button
+                type="button"
+                onClick={handleProceed}
+                className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-accent px-6 py-4 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:bg-accent/90 hover:shadow-accent/50 h-auto">
                 <span className="relative z-10 flex items-center gap-2">
                   Proceed to Secure Payment
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
