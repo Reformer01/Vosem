@@ -6,12 +6,12 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { useState } from 'react';
 
 const navLinks = [
-  { href: '#home', label: 'Home' },
-  { href: '#events', label: 'Events' },
-  { href: '#sermons', label: 'Sermons' },
-  { href: '#testimonies', label: 'Testimonies' },
-  { href: '#giving', label: 'Giving' },
-  { href: '#about', label: 'About' },
+  { href: '/#home', label: 'Home' },
+  { href: '/#events', label: 'Events' },
+  { href: '/#sermons', label: 'Sermons' },
+  { href: '/#testimonies', label: 'Testimonies' },
+  { href: '/#giving', label: 'Giving' },
+  { href: '/#about', label: 'About' },
 ];
 
 export default function Header() {
@@ -20,7 +20,7 @@ export default function Header() {
   return (
     <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
       <nav className="w-full max-w-5xl bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl transition-all duration-300">
-        <Link href="#home" className="flex items-center gap-3 pl-2">
+        <Link href="/" className="flex items-center gap-3 pl-2">
           <div className="size-8 bg-white/20 rounded-full"></div>
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-body">
             VOSEM <span className="text-accent">INT'L</span>
@@ -33,7 +33,7 @@ export default function Header() {
             </Link>
           ))}
           <Button asChild className="ml-2 px-6 py-2 rounded-full bg-accent text-white text-sm font-bold hover:bg-white hover:text-accent shadow-[0_0_20px_rgba(181,4,82,0.4)] transition-all duration-300 transform hover:-translate-y-0.5">
-            <Link href="#">Join Us</Link>
+            <Link href="/#giving">Join Us</Link>
           </Button>
         </div>
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -65,7 +65,7 @@ export default function Header() {
                 ))}
               </div>
               <Button asChild className="mt-auto w-full px-6 py-3 rounded-full bg-accent text-white text-md font-bold hover:bg-white hover:text-accent shadow-[0_0_20px_rgba(181,4,82,0.4)] transition-all duration-300">
-                <Link href="#" onClick={() => setIsSheetOpen(false)}>Join Us</Link>
+                <Link href="/#giving" onClick={() => setIsSheetOpen(false)}>Join Us</Link>
               </Button>
             </div>
           </SheetContent>

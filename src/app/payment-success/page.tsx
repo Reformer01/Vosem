@@ -1,36 +1,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { VosemLogoIcon, WhatsAppIcon } from '@/components/icons';
-import { CheckCircle, Download, Menu } from 'lucide-react';
-
-const SuccessHeader = () => {
-    return (
-        <header className="w-full border-b border-white/5 bg-[#0f0510]/60 backdrop-blur-xl px-6 py-4 lg:px-10 sticky top-0 z-50">
-            <div className="mx-auto max-w-7xl flex items-center justify-between whitespace-nowrap">
-                <Link href="/" className="flex items-center gap-4 text-white">
-                    <div className="size-8 text-accent">
-                        <VosemLogoIcon className="w-full h-full" />
-                    </div>
-                    <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] font-headline">VOSEM INT'L</h2>
-                </Link>
-                <div className="hidden lg:flex flex-1 justify-end gap-8">
-                    <div className="flex items-center gap-9">
-                        <Link className="text-white/80 text-sm font-medium hover:text-accent transition-colors font-body" href="/#home">Home</Link>
-                        <Link className="text-white/80 text-sm font-medium hover:text-accent transition-colors font-body" href="/#about">About</Link>
-                        <Link className="text-white/80 text-sm font-medium hover:text-accent transition-colors font-body" href="/#sermons">Sermons</Link>
-                        <Link className="text-white/80 text-sm font-medium hover:text-accent transition-colors font-body" href="/#giving">Give</Link>
-                    </div>
-                    <Button asChild className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-6 bg-white/5 border border-white/10 hover:bg-accent/20 hover:border-accent/50 transition-all text-white text-sm font-bold leading-normal tracking-wide font-body">
-                        <Link href="/#giving">Donate</Link>
-                    </Button>
-                </div>
-                <button className="lg:hidden text-white">
-                    <Menu />
-                </button>
-            </div>
-        </header>
-    );
-};
+import { WhatsAppIcon } from '@/components/icons';
+import { CheckCircle, Download } from 'lucide-react';
+import Header from '@/components/landing/header';
 
 export default function PaymentSuccessPage() {
     return (
@@ -41,7 +13,7 @@ export default function PaymentSuccessPage() {
             </div>
 
             <div className="relative z-10 flex flex-col min-h-screen">
-                <SuccessHeader />
+                <Header />
                 <main className="flex-grow flex flex-col items-center justify-center p-6 py-12 lg:py-20">
                     <div className="w-full max-w-4xl flex flex-col items-center text-center">
                         <div className="mb-8 text-accent animate-pulse">
