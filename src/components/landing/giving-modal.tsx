@@ -4,6 +4,9 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -27,13 +30,13 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-[520px] rounded-2xl overflow-hidden glass-panel border-white/10 dark:bg-[#141414]/80">
-        <div className="relative flex flex-col items-center justify-center pt-8 pb-4 px-8 text-center">
+        <DialogHeader className="relative items-center justify-center pt-8 pb-4 px-8 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/10 text-accent ring-4 ring-white/10">
             <HeartHandshake className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Make Your Contribution</h1>
-          <p className="mt-1 text-sm font-medium text-accent">Give to VOSEM INT'L</p>
-        </div>
+          <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Make Your Contribution</DialogTitle>
+          <DialogDescription className="text-sm font-medium text-accent">Give to VOSEM INT'L</DialogDescription>
+        </DialogHeader>
 
         <div className="px-6 sm:px-10 pb-10">
           <div className="mb-8 flex justify-center">
