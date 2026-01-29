@@ -1,3 +1,76 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-bg",
+      "description": "Joyful congregation worshiping with raised hands",
+      "imageUrl": "https://images.unsplash.com/photo-1742632660990-a1d5b1253053?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjb25ncmVnYXRpb24lMjB3b3JzaGlwfGVufDB8fHx8MTc2OTY4ODE1OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "congregation worship"
+    },
+    {
+      "id": "event-youth-rally",
+      "description": "Youth Rally event poster",
+      "imageUrl": "https://images.unsplash.com/photo-1761144833483-758bba1ae861?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx5b3V0aCUyMGNvbmNlcnR8ZW58MHx8fHwxNzY5Njg4MTU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "youth concert"
+    },
+    {
+      "id": "event-mid-week",
+      "description": "Mid-week service poster",
+      "imageUrl": "https://images.unsplash.com/photo-1659309475092-9f454ccef71d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaHVyY2glMjBzZXJ2aWNlfGVufDB8fHx8MTc2OTY4ODE1N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "church service"
+    },
+    {
+      "id": "event-community-outreach",
+      "description": "Community outreach event poster",
+      "imageUrl": "https://images.unsplash.com/photo-1764738130382-cc7a8eaf26c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjb21tdW5pdHklMjB2b2x1bnRlZXJ8ZW58MHx8fHwxNzY5NjI4NDM1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "community volunteer"
+    },
+    {
+      "id": "sermon-main",
+      "description": "Thumbnail for the latest sermon video",
+      "imageUrl": "https://images.unsplash.com/photo-1605518589548-27b44b941b4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwYXN0b3IlMjBwcmVhY2hpbmd8ZW58MHx8fHwxNzY5NjQ5NDUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "pastor preaching"
+    },
+    {
+      "id": "about-main",
+      "description": "A picture of the church family",
+      "imageUrl": "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkaXZlcnNlJTIwZ3JvdXB8ZW58MHx8fHwxNzY5NTk4Mjc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "diverse group"
+    },
+    {
+      "id": "testimony-chidinma",
+      "description": "Portrait of Chidinma O.",
+      "imageUrl": "https://images.unsplash.com/photo-1592621385612-4d7129426394?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2OTYzMjI1MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "testimony-emmanuel",
+      "description": "Portrait of Emmanuel K.",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njk2MjcxNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "testimony-sarah",
+      "description": "Portrait of Sarah J.",
+      "imageUrl": "https://images.unsplash.com/photo-1563178406-4cdc2923acbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3b21hbiUyMHNtaWxpbmd8ZW58MHx8fHwxNzY5Njg3MDA5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "testimony-tunde",
+      "description": "Portrait of Tunde B.",
+      "imageUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYW4lMjBwcm9mZXNzaW9uYWx8ZW58MHx8fHwxNzY5Njg2MDM5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man professional"
+    },
+    {
+      "id": "giving-bg",
+      "description": "Abstract image representing giving and stewardship",
+      "imageUrl": "https://images.unsplash.com/photo-1563097013-a1df1d1fd1c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxoYW5kcyUyMGdpdmluZ3xlbnwwfHx8fDE3Njk2ODgxNTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hands giving"
+    },
+    {
+      "id": "footer-map",
+      "description": "Map showing the location of the church campus in Lagos",
+      "imageUrl": "https://images.unsplash.com/photo-1522678073884-26b1b87526e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjaXR5JTIwbWFwfGVufDB8fHx8MTc2OTY1MjE5Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city map"
+    }
+  ]
 }

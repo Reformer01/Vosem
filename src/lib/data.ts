@@ -1,0 +1,68 @@
+export const events = [
+  {
+    title: "Youth Impact Rally",
+    badge: "Upcoming Event",
+    badgeType: "upcoming",
+    icon: "Clock",
+    details: "Friday, 7:00 PM",
+    imageId: "event-youth-rally",
+  },
+  {
+    title: "Word & Wonders",
+    badge: "Weekly Service",
+    badgeType: "weekly",
+    icon: "MapPin",
+    details: "Main Sanctuary & Online",
+    imageId: "event-mid-week",
+  },
+  {
+    title: "Love In Action",
+    badge: "Community",
+    badgeType: "community",
+    icon: "HeartHandshake",
+    details: "Medical Outreach 2026",
+    imageId: "event-community-outreach",
+  },
+];
+
+export const testimonies = [
+  {
+    text: "I found a family here when I felt most alone. The love I've experienced at VOSEM has completely restored my faith.",
+    name: "Chidinma O.",
+    context: "Lagos Campus",
+    imageId: "testimony-chidinma",
+    style: "justify-end",
+    author_style: "border-t border-white/20 pt-6",
+    text_size: "text-xl font-medium leading-relaxed mb-6",
+    quote_mark: true,
+  },
+  {
+    text: "The youth ministry at VOSEM gave me direction. I'm now a purposeful leader.",
+    name: "Emmanuel K.",
+    context: null,
+    imageId: "testimony-emmanuel",
+    style: "justify-end",
+    author_style: "",
+    text_size: "text-lg font-medium leading-tight mb-4",
+  },
+  {
+    text: "Walking into VOSEM felt like coming home. The teaching is practical and life-changing.",
+    name: "Sarah J.",
+    context: null,
+    imageId: "testimony-sarah",
+    style: "justify-center items-center text-center",
+    author_style: "",
+    text_size: "text-lg font-medium mb-4",
+    blend_overlay: true,
+    imageClass: "opacity-60",
+  },
+  {
+    text: "I was struggling for years. The business network at VOSEM helped me land my dream job. God is faithful!",
+    name: "Tunde B.",
+    context: "Entrepreneurs Forum",
+    imageId: "testimony-tunde",
+    style: "justify-end",
+    author_style: "border-t border-white/20 pt-6",
+    text_size: "text-xl font-medium leading-relaxed mb-6",
+  },
+];
