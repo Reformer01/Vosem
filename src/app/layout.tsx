@@ -19,7 +19,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body bg-background-dark text-white overflow-x-hidden selection:bg-accent selection:text-white">
+      <body 
+        className="font-body bg-background-dark text-white overflow-x-hidden selection:bg-accent selection:text-white"
+        suppressHydrationWarning
+      >
         {children}
         <Toaster />
       </body>
