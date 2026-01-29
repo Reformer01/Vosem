@@ -21,6 +21,7 @@ export default function Header() {
     <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
       <nav className="w-full max-w-5xl bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl transition-all duration-300">
         <Link href="#home" className="flex items-center gap-3 pl-2">
+          <div className="size-8 bg-white/20 rounded-full"></div>
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-body">
             VOSEM <span className="text-accent">INT'L</span>
           </h1>
@@ -44,9 +45,12 @@ export default function Header() {
           </SheetTrigger>
           <SheetContent side="left" className="bg-background-dark border-r-0">
             <div className="flex flex-col h-full p-6">
-              <h2 className="text-2xl font-extrabold tracking-tighter text-white font-body mb-8">
-                VOSEM <span className="text-accent">INT'L</span>
-              </h2>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="size-8 bg-white/20 rounded-full"></div>
+                <h2 className="text-2xl font-extrabold tracking-tighter text-white font-body">
+                  VOSEM <span className="text-accent">INT'L</span>
+                </h2>
+              </div>
               <div className="flex flex-col gap-6">
                 {navLinks.map((link) => (
                   <SheetClose key={link.href} asChild>
