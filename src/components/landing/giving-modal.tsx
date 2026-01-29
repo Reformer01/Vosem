@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -32,7 +32,7 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
 
   const handleProceed = () => {
     onOpenChange(false);
-    router.push('/payment-success');
+    router.push('/payment-processing');
   };
 
   return (
@@ -88,7 +88,7 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
             <div className="space-y-2">
               <Label htmlFor="purpose" className="block text-sm font-medium text-foreground">Giving Purpose</Label>
               <Select defaultValue="Offering">
-                <SelectTrigger className="w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 focus:border-accent focus:ring-1 focus:ring-accent text-sm">
+                <SelectTrigger className="w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 text-sm text-left justify-start">
                   <SelectValue placeholder="Select purpose" />
                 </SelectTrigger>
                 <SelectContent>
