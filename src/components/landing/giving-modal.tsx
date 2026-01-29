@@ -21,14 +21,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { HeartHandshake, ArrowRight, ShieldCheck, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface GivingModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  defaultPurpose: string;
 }
 
-export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
+export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModalProps) {
   const router = useRouter();
+  const [purpose, setPurpose] = useState(defaultPurpose);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPurpose(defaultPurpose);
+    }
+  }, [isOpen, defaultPurpose]);
+
 
   const handleProceed = () => {
     onOpenChange(false);
@@ -87,7 +97,7 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
 
             <div className="space-y-2">
               <Label htmlFor="purpose" className="block text-sm font-medium text-foreground">Giving Purpose</Label>
-              <Select defaultValue="Offering">
+              <Select value={purpose} onValueChange={setPurpose}>
                 <SelectTrigger className="w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 text-sm text-left justify-start">
                   <SelectValue placeholder="Select purpose" />
                 </SelectTrigger>
@@ -97,6 +107,7 @@ export function GivingModal({ isOpen, onOpenChange }: GivingModalProps) {
                   <SelectItem value="Building Fund">Building Fund</SelectItem>
                   <SelectItem value="Thanksgiving">Thanksgiving</SelectItem>
                   <SelectItem value="Mission Support">Mission Support</SelectItem>
+                  <SelectItem value="Kingdom Projects">Kingdom Projects</SelectItem>
                 </SelectContent>
               </Select>
             </div>

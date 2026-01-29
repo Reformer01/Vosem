@@ -32,6 +32,12 @@ const givingOptions = [
 
 export default function Giving() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPurpose, setSelectedPurpose] = useState("Offering");
+
+  const handleGiveNowClick = (purpose: string) => {
+    setSelectedPurpose(purpose);
+    setIsModalOpen(true);
+  };
 
   return (
     <>
@@ -73,7 +79,7 @@ export default function Giving() {
                 </p>
                 <Button 
                   className="w-full py-6 rounded-xl bg-accent text-white font-bold hover:bg-primary transition-colors shadow-lg hover:shadow-accent/40 text-base"
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => handleGiveNowClick(option.title)}
                 >
                   Give Now
                 </Button>
@@ -102,7 +108,7 @@ export default function Giving() {
           </div>
         </div>
       </section>
-      <GivingModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
+      <GivingModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} defaultPurpose={selectedPurpose} />
     </>
   );
 }
