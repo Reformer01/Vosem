@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { PiggyBank, HeartHandshake, Building, Lock } from "lucide-react";
-import { PaystackIcon, FlutterwaveIcon } from "@/components/icons";
+import { PiggyBank, HeartHandshake, Building } from "lucide-react";
 import { GivingModal } from "./giving-modal";
 
 const givingBgImage = PlaceHolderImages.find(img => img.id === 'giving-bg');
@@ -32,7 +31,7 @@ const givingOptions = [
 
 export default function Giving() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPurpose, setSelectedPurpose] = useState("Offering");
+  const [selectedPurpose, setSelectedPurpose] = useState("Offerings");
 
   const handleGiveNowClick = (purpose: string) => {
     setSelectedPurpose(purpose);
@@ -85,26 +84,6 @@ export default function Giving() {
                 </Button>
               </div>
             ))}
-          </div>
-          <div className="mt-16 flex justify-center">
-            <div className="bg-primary rounded-[2rem] p-8 md:px-12 md:py-8 shadow-2xl border border-white/10 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 flex flex-col items-center">
-                <p className="text-white/80 text-[10px] font-black uppercase tracking-[0.25em] mb-4 flex items-center gap-2">
-                  <Lock className="h-3 w-3" />
-                  Fast and secure payments powered by
-                </p>
-                <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12 opacity-90">
-                  <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all duration-300">
-                    <PaystackIcon className="h-6 text-white" />
-                  </div>
-                  <div className="hidden sm:block w-px h-8 bg-white/30"></div>
-                  <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all duration-300">
-                    <FlutterwaveIcon className="h-7 text-white" />
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
