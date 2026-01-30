@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
-import { TwitterIcon, InstagramIcon } from "@/components/icons";
+import { YoutubeIcon, InstagramIcon } from "@/components/icons";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const mapImage = PlaceHolderImages.find(img => img.id === 'footer-map');
@@ -18,7 +18,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-5">
               <Link href="#" className="size-10 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-accent transition-all">
-                <TwitterIcon className="h-5 w-5" />
+                <YoutubeIcon className="h-5 w-5" />
               </Link>
               <Link href="#" className="size-10 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-accent transition-all">
                 <InstagramIcon className="h-5 w-5" />
