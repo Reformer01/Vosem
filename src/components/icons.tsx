@@ -13,8 +13,8 @@ export const TwitterIcon = (props: SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 1.4 1.6 3.6 0 5.1-1.6 1.5-4.5 2.5-8 2.5h-2.5c-2.5 0-5-1-7-3l-2-2c0 0 1 .5 2.5 0 2.5-1 3.5-3.5 4-6" />
-    <path d="M18 8c-1.5-1-4-1-6 0" />
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
   </svg>
 );
 
