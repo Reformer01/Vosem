@@ -1,5 +1,31 @@
 {
   "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's profile in the system.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Authentication."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The timestamp when the user profile was created.",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "name", "email", "createdAt"]
+    },
     "Event": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Event",
@@ -102,6 +128,10 @@
           "type": "string",
           "description": "The name of the testimony author."
         },
+        "authorId": {
+          "type": "string",
+          "description": "The UID of the author."
+        },
         "date": {
           "type": "string",
           "description": "The date the testimony was submitted.",
@@ -115,6 +145,7 @@
       "required": [
         "id",
         "author",
+        "authorId",
         "date",
         "content"
       ]
@@ -164,6 +195,22 @@
   },
   "firestore": {
     "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores public user profile information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The UID of the user."
+            }
+          ]
+        }
+      },
       {
         "path": "/events/{eventId}",
         "definition": {
@@ -229,6 +276,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the VOSEM International website's features, focusing on secure and scalable data access. The structure prioritizes Authorization Independence by avoiding hierarchical authorization dependencies (`get()` calls in security rules). It also facilitates QAPs (Rules are not Filters) by segregating data with different access needs into separate collections.\n\n*   **Events:** Stores church events. No specific ownership or membership is defined, assuming a general read access for all users and write access restricted to authorized personnel (e.g., admins). Segregation enables a simple rule where only authenticated users can read events, and only those with specific roles (not implemented here but could be easily added via a `/roles_event_admin/{uid}` collection check) can create/modify them.\n*   **Sermons:** Stores recorded sermons. Similar to events, assumes general read access and restricted write access.\n*   **Testimonies:** Stores user-submitted testimonies. All authenticated users can create, read, update and delete their own.\n*   **Prayer Requests:** Stores user-submitted prayer requests.  This is a public write, private read scenario."
+    "reasoning": "The Firestore data structure is designed to support the VOSEM International website's features, focusing on secure and scalable data access. The structure prioritizes Authorization Independence by avoiding hierarchical authorization dependencies (`get()` calls in security rules). It also facilitates QAPs (Rules are not Filters) by segregating data with different access needs into separate collections.\n\n*   **Users:** Stores user profiles. Each user can read and write their own profile.\n*   **Events:** Stores church events. No specific ownership or membership is defined, assuming a general read access for all users and write access restricted to authorized personnel (e.g., admins). Segregation enables a simple rule where only authenticated users can read events, and only those with specific roles (not implemented here but could be easily added via a `/roles_event_admin/{uid}` collection check) can create/modify them.\n*   **Sermons:** Stores recorded sermons. Similar to events, assumes general read access and restricted write access.\n*   **Testimonies:** Stores user-submitted testimonies. All authenticated users can create, read, update and delete their own.\n*   **Prayer Requests:** Stores user-submitted prayer requests.  This is a public write, private read scenario."
   }
 }

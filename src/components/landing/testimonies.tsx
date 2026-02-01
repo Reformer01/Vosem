@@ -1,7 +1,26 @@
+
+'use client'
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { testimonies } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useUser } from "@/firebase";
+import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from 'zod';
+import { addDocumentNonBlocking, useFirestore } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
+
+const testimonySchema = z.object({
+  content: z.string().min(20, { message: 'Testimony must be at least 20 characters long.'}).max(1000, { message: 'Testimony must be less than 1000 characters.' }),
+});
+
 
 const TestimonyCard = ({ testimony, className = "" }: { testimony: (typeof testimonies)[0], className?: string }) => {
   const testimonyImage = PlaceHolderImages.find(img => img.id === testimony.imageId);
@@ -33,8 +52,77 @@ const TestimonyCard = ({ testimony, className = "" }: { testimony: (typeof testi
 };
 
 export default function Testimonies() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const form = useForm({
+    resolver: zodResolver(testimonySchema),
+    defaultValues: {
+      content: ''
+    }
+  });
+
+  const onSubmit = (values: z.infer<typeof testimonySchema>) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You must be logged in to share a testimony.",
+      });
+      return;
+    }
+    
+    const testimonyData = {
+      author: user.displayName || 'Anonymous',
+      authorId: user.uid,
+      content: values.content,
+      date: serverTimestamp(),
+      approved: false,
+    };
+    
+    const testimoniesColRef = collection(firestore, 'testimonies');
+    addDocumentNonBlocking(testimoniesColRef, testimonyData);
+
+    toast({
+      title: "Testimony Submitted!",
+      description: "Thank you for sharing your story. It will be reviewed by our team.",
+    });
+
+    form.reset();
+    setIsModalOpen(false);
+  }
+
   return (
     <section className="py-32 relative bg-primary overflow-hidden" id="testimonies">
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="glass-panel border-white/10 dark:bg-[#141414]/80 text-white">
+          <DialogHeader>
+            <DialogTitle>Share Your Testimony</DialogTitle>
+            <DialogDescription>
+              Let your story of faith inspire others.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <Textarea
+                  {...form.register('content')}
+                  placeholder="Tell us what God has done for you..."
+                  className="min-h-[150px] bg-white/5 border-white/20"
+              />
+              {form.formState.errors.content && (
+                  <p className="text-sm text-red-400">{form.formState.errors.content.message}</p>
+              )}
+              <div className="flex justify-end gap-4">
+                  <DialogClose asChild>
+                      <Button type="button" variant="ghost">Cancel</Button>
+                  </DialogClose>
+                  <Button type="submit" className="bg-accent">Submit</Button>
+              </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-primary/80 dark:bg-primary-dark/50 rounded-full mix-blend-screen filter blur-[150px]"></div>
         <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-accent/40 rounded-full mix-blend-screen filter blur-[120px]"></div>
@@ -58,9 +146,15 @@ export default function Testimonies() {
           <TestimonyCard testimony={testimonies[3]} className="h-[500px]" />
         </div>
         <div className="mt-20 text-center">
-          <Button className="glass-btn px-12 py-5 rounded-full text-white font-black text-lg border-2 border-white/40 hover:bg-white hover:text-accent hover:border-white shadow-2xl uppercase tracking-widest">
-            Share Your Story
-          </Button>
+            {user ? (
+                <Button onClick={() => setIsModalOpen(true)} className="glass-btn px-12 py-5 rounded-full text-white font-black text-lg border-2 border-white/40 hover:bg-white hover:text-accent hover:border-white shadow-2xl uppercase tracking-widest">
+                    Share Your Story
+                </Button>
+            ) : (
+                <Button asChild className="glass-btn px-12 py-5 rounded-full text-white font-black text-lg border-2 border-white/40 hover:bg-white hover:text-accent hover:border-white shadow-2xl uppercase tracking-widest">
+                    <Link href="/login">Login to Share Your Story</Link>
+                </Button>
+            )}
         </div>
       </div>
     </section>

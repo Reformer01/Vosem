@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import Script from 'next/script';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: "VOSEM INT'L 2026 Official Site",
@@ -26,7 +27,9 @@ export default function RootLayout({
         className="font-body bg-background-dark text-white overflow-x-hidden selection:bg-accent selection:text-white"
         suppressHydrationWarning
       >
-        {children}
+        <FirebaseClientProvider>
+          {children}
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

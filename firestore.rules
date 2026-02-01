@@ -18,16 +18,14 @@
  *   schema, all write operations on these collections are disabled by default as a
  *   security measure.
  * - Testimony Ownership: The rules anticipate that testimonies should be editable only
- *   by their original authors. However, the current 'Testimony' data model lacks a
- *   secure 'authorId' (UID) field. Consequently, all write operations are disabled
- *   until the schema is updated to support secure ownership checks.
+ *   by their original authors. The data model now includes a secure 'authorId' (UID) field.
  * - Private Prayer Requests: The /prayer_requests collection is configured as a
  *   "write-only" drop box. Any signed-in user can submit a request, but no user
  *   (including the author) can read, update, or delete requests through the client,
  *   ensuring privacy.
  *
  * Denormalization for Authorization: This ruleset is designed with denormalization in
- * mind. For user-owned content (like Testimonies), it is critical that an `authorId`
+ * mind. For user-owned content (like Testimonies and User Profiles), it is critical that an `authorId` or `uid`
  * field containing the user's UID is stored directly on the document. This avoids
  * slow and costly `get()` calls and is the only secure way to enforce ownership.
  */
@@ -45,6 +43,23 @@ service cloud.firestore {
     }
 
     /**
+     * isOwner
+     * @description Checks if the requesting user is the owner of the document.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description User profile data.
+     * @path /users/{userId}
+     * @allow A user can read and write to their own profile.
+     */
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    /**
      * @description Publicly readable church events.
      * @path /events/{eventId}
      * @allow A signed-in user (auth!=null) can read a specific event. (get)
@@ -56,9 +71,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
 
       // Writes are disabled until an admin/personnel role system is implemented.
-      allow create: if false; // TODO: Implement admin-only creation rule.
-      allow update: if false; // TODO: Implement admin-only update rule.
-      allow delete: if false; // TODO: Implement admin-only deletion rule.
+      allow create, update, delete: if false;
     }
 
     /**
@@ -73,26 +86,22 @@ service cloud.firestore {
       allow list: if isSignedIn();
 
       // Writes are disabled until an admin/personnel role system is implemented.
-      allow create: if false; // TODO: Implement admin-only creation rule.
-      allow update: if false; // TODO: Implement admin-only update rule.
-      allow delete: if false; // TODO: Implement admin-only deletion rule.
+      allow create, update, delete: if false;
     }
 
     /**
      * @description User-submitted testimonies.
      * @path /testimonies/{testimonyId}
-     * @allow A signed-in user (auth!=null) reads a testimony. (get)
-     * @deny Any user attempts to create a testimony, as ownership cannot be verified. (create)
-     * @principle Public read for authenticated users is allowed. All writes are denied because the data model lacks a UID field to securely verify authorship.
+     * @allow Authenticated users can read testimonies.
+     * @allow A user can create, update, or delete their own testimony.
+     * @principle Public read for authenticated users, with owner-only writes.
      */
     match /testimonies/{testimonyId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
 
-      // CRITICAL: Cannot implement owner-only writes. The 'Testimony' entity is missing an 'authorId' field linking it to a user's auth UID. The current 'author' field is an insecure string.
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an 'authorId' (UID) field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an 'authorId' (UID) field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an 'authorId' (UID) field.
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     /**
@@ -105,10 +114,7 @@ service cloud.firestore {
     match /prayer_requests/{prayerRequestId} {
       allow create: if isSignedIn();
       
-      allow get: if false;
-      allow list: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list, update, delete: if false;
     }
   }
 }
