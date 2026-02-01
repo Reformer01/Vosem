@@ -29,24 +29,64 @@ interface GivingModalProps {
   defaultPurpose: string;
 }
 
+declare global {
+  interface Window {
+    FlutterwaveCheckout: (options: any) => void;
+  }
+}
+
 export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModalProps) {
   const router = useRouter();
   const [purpose, setPurpose] = useState(defaultPurpose);
   const [amount, setAmount] = useState("10000");
   const [customAmount, setCustomAmount] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setPurpose(defaultPurpose);
       setAmount("10000");
       setCustomAmount("");
+      setName("");
+      setEmail("");
     }
   }, [isOpen, defaultPurpose]);
 
   const handleProceed = () => {
     const finalAmount = Number(customAmount) || Number(amount);
-    router.push(`/payment-processing?amount=${finalAmount}`);
-    onOpenChange(false);
+    
+    if (typeof window.FlutterwaveCheckout === 'function') {
+      window.FlutterwaveCheckout({
+        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
+        tx_ref: "VOSEM-" + Date.now(),
+        amount: finalAmount,
+        currency: "NGN",
+        payment_options: "card, ussd, banktransfer",
+        customer: {
+          email: email,
+          name: name,
+        },
+        customizations: {
+          title: "VOSEM INT'L Giving",
+          description: `Contribution for ${purpose}`,
+        },
+        callback: function (data: any) {
+          onOpenChange(false);
+          router.push(`/payment-success?amount=${data.amount}&transaction_id=${data.transaction_id}`);
+        },
+        onclose: function () {
+          // Redirect to failed page if user closes modal without completing payment
+          // router.push('/payment-failed');
+        },
+      });
+    } else {
+      console.error("Flutterwave Checkout script not loaded.");
+      // Fallback or error message
+      const finalAmount = Number(customAmount) || Number(amount);
+      router.push(`/payment-processing?amount=${finalAmount}`);
+      onOpenChange(false);
+    }
   };
 
   return (
@@ -76,7 +116,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
           <div className="space-y-6">
             <div className="space-y-3">
-              <Label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Select Amount</Label>
+              <Label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Select Amount (NGN)</Label>
               <RadioGroup
                 value={customAmount ? '' : amount}
                 onValueChange={(value) => {
@@ -107,6 +147,17 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
               </div>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="block text-sm font-medium text-foreground">Full Name</Label>
+                <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} className="block w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 text-sm px-4" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="block text-sm font-medium text-foreground">Email Address</Label>
+                <Input id="email" placeholder="you@example.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="block w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 text-sm px-4" />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="purpose" className="block text-sm font-medium text-foreground">Giving Purpose</Label>
               <Select value={purpose} onValueChange={setPurpose}>
@@ -128,7 +179,8 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
               <Button
                 type="button"
                 onClick={handleProceed}
-                className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-accent px-6 py-4 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:bg-accent/90 hover:shadow-accent/50 h-auto">
+                disabled={!name || !email || (!amount && !customAmount)}
+                className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-accent px-6 py-4 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:bg-accent/90 hover:shadow-accent/50 h-auto disabled:bg-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
                 <span className="relative z-10 flex items-center gap-2">
                   Proceed to Payment
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
