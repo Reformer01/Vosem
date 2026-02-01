@@ -1,0 +1,114 @@
+/**
+ * Core Philosophy: This ruleset establishes a security model for a church application,
+ * balancing public access to information with secure, context-aware write permissions.
+ * Most top-level collections like events and sermons are publicly readable to signed-in
+ * users, with writes reserved for future administrative roles. User-generated content
+ * like prayer requests follows a "drop-box" model (write-only), ensuring privacy.
+ *
+ * Data Structure: The data is organized into a flat structure with four main
+ * top-level collections: /events, /sermons, /testimonies, and /prayer_requests.
+ * This segregation simplifies security rules by avoiding complex hierarchical lookups
+ * and ensures performant queries.
+ *
+ * Key Security Decisions:
+ * - Default Read Access: Most data is readable by any authenticated user. Anonymous
+ *   users have no access.
+ * - Admin-Only Writes: Collections like /events and /sermons are intended to be
+ *   managed by administrators. As no admin role system is defined in the current
+ *   schema, all write operations on these collections are disabled by default as a
+ *   security measure.
+ * - Testimony Ownership: The rules anticipate that testimonies should be editable only
+ *   by their original authors. However, the current 'Testimony' data model lacks a
+ *   secure 'authorId' (UID) field. Consequently, all write operations are disabled
+ *   until the schema is updated to support secure ownership checks.
+ * - Private Prayer Requests: The /prayer_requests collection is configured as a
+ *   "write-only" drop box. Any signed-in user can submit a request, but no user
+ *   (including the author) can read, update, or delete requests through the client,
+ *   ensuring privacy.
+ *
+ * Denormalization for Authorization: This ruleset is designed with denormalization in
+ * mind. For user-owned content (like Testimonies), it is critical that an `authorId`
+ * field containing the user's UID is stored directly on the document. This avoids
+ * slow and costly `get()` calls and is the only secure way to enforce ownership.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions
+    /**
+     * isSignedIn
+     * @description Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Publicly readable church events.
+     * @path /events/{eventId}
+     * @allow A signed-in user (auth!=null) can read a specific event. (get)
+     * @deny An anonymous user (auth==null) tries to read an event. (get)
+     * @principle Enforces public read access for authenticated users, while securing all write operations for future admin roles.
+     */
+    match /events/{eventId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+
+      // Writes are disabled until an admin/personnel role system is implemented.
+      allow create: if false; // TODO: Implement admin-only creation rule.
+      allow update: if false; // TODO: Implement admin-only update rule.
+      allow delete: if false; // TODO: Implement admin-only deletion rule.
+    }
+
+    /**
+     * @description Publicly readable sermon records.
+     * @path /sermons/{sermonId}
+     * @allow A signed-in user (auth!=null) can list all sermons. (list)
+     * @deny Any user, signed-in or not, tries to create a new sermon. (create)
+     * @principle Enforces public read access for authenticated users, while securing all write operations for future admin roles.
+     */
+    match /sermons/{sermonId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+
+      // Writes are disabled until an admin/personnel role system is implemented.
+      allow create: if false; // TODO: Implement admin-only creation rule.
+      allow update: if false; // TODO: Implement admin-only update rule.
+      allow delete: if false; // TODO: Implement admin-only deletion rule.
+    }
+
+    /**
+     * @description User-submitted testimonies.
+     * @path /testimonies/{testimonyId}
+     * @allow A signed-in user (auth!=null) reads a testimony. (get)
+     * @deny Any user attempts to create a testimony, as ownership cannot be verified. (create)
+     * @principle Public read for authenticated users is allowed. All writes are denied because the data model lacks a UID field to securely verify authorship.
+     */
+    match /testimonies/{testimonyId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+
+      // CRITICAL: Cannot implement owner-only writes. The 'Testimony' entity is missing an 'authorId' field linking it to a user's auth UID. The current 'author' field is an insecure string.
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an 'authorId' (UID) field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an 'authorId' (UID) field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an 'authorId' (UID) field.
+    }
+
+    /**
+     * @description A private "drop-box" for user-submitted prayer requests.
+     * @path /prayer_requests/{prayerRequestId}
+     * @allow A signed-in user (auth!=null) submits a new prayer request. (create)
+     * @deny Any user, including the original author, attempts to read, update, or delete a prayer request. (get, update, delete)
+     * @principle Implements a "write-only" pattern. Data can be submitted by any authenticated user but cannot be read back, ensuring privacy.
+     */
+    match /prayer_requests/{prayerRequestId} {
+      allow create: if isSignedIn();
+      
+      allow get: if false;
+      allow list: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
