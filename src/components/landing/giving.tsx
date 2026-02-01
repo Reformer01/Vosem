@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { PiggyBank, HeartHandshake, Building } from "lucide-react";
 import { GivingModal } from "./giving-modal";
+import { useUser } from "@/firebase";
+import { useRouter } from "next/navigation";
 
 const givingBgImage = PlaceHolderImages.find(img => img.id === 'giving-bg');
 
@@ -30,10 +32,16 @@ const givingOptions = [
 ];
 
 export default function Giving() {
+  const { user } = useUser();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPurpose, setSelectedPurpose] = useState("Offerings");
 
   const handleGiveNowClick = (purpose: string) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     setSelectedPurpose(purpose);
     setIsModalOpen(true);
   };
