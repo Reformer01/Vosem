@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getAuth, User, onAuthStateChanged } from 'firebase/auth';
-import { doc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { useUser, setDocumentNonBlocking, useFirestore, initiateEmailSignUp, initiateGoogleSignIn, initiateFacebookSignIn } from '@/firebase';
+import { getAuth, User, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
+import { useUser, useFirestore, initiateGoogleSignIn, initiateFacebookSignIn } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -36,7 +36,6 @@ export default function SignupPage() {
   const { user, isUserLoading } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isEmailSignupInProgress, setIsEmailSignupInProgress] = useState(false);
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -48,51 +47,62 @@ export default function SignupPage() {
     },
   });
 
+  // This useEffect handles SOCIAL logins and redirecting already logged-in users.
   useEffect(() => {
-    const handleAuthChange = async (user: User | null) => {
-        if (!user) return;
-        
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // This is for social logins, where displayName is pre-populated
         const userDocRef = doc(firestore, 'users', user.uid);
-
-        // For email signup, create doc from form
-        if (isEmailSignupInProgress) {
-            const { name, email, whatsapp } = form.getValues();
-            const userProfile = { uid: user.uid, name, email, whatsappNumber: whatsapp || '', createdAt: serverTimestamp() };
-            setDocumentNonBlocking(userDocRef, userProfile, { merge: false });
-            setIsEmailSignupInProgress(false);
-        } else {
-            // For social login, create doc if it doesn't exist
-            const docSnap = await getDoc(userDocRef);
-            if (!docSnap.exists()) {
-                const userProfile = {
-                    uid: user.uid,
-                    name: user.displayName,
-                    email: user.email,
-                    createdAt: serverTimestamp(),
-                };
-                setDocumentNonBlocking(userDocRef, userProfile, { merge: false });
-            }
-        }
+        const docSnap = await getDoc(userDocRef);
         
-        if (user) {
-            router.push('/dashboard');
+        // If the document doesn't exist, it's a first-time social login.
+        if (!docSnap.exists()) {
+          const userProfile = {
+            uid: user.uid,
+            name: user.displayName || user.email, // Fallback to email
+            email: user.email,
+            createdAt: serverTimestamp(),
+            whatsappNumber: user.phoneNumber || ''
+          };
+          // Use blocking setDoc to ensure profile is created before redirect
+          await setDoc(userDocRef, userProfile);
         }
-    };
-    
-    const unsubscribe = onAuthStateChanged(auth, handleAuthChange);
+
+        // Redirect any logged-in user to the dashboard.
+        router.push('/dashboard');
+      }
+    });
 
     return () => unsubscribe();
-  }, [auth, firestore, router, form, isEmailSignupInProgress]);
+  }, [auth, firestore, router]);
 
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     setAuthError(null);
-    setIsEmailSignupInProgress(true);
     try {
-      initiateEmailSignUp(auth, values.email, values.password);
+      // 1. Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      // 2. Create profile object with form data
+      const userProfile = {
+        uid: user.uid,
+        name: values.name, // Use the name from the form!
+        email: values.email,
+        whatsappNumber: values.whatsapp || '',
+        createdAt: serverTimestamp(),
+      };
+      
+      // 3. Save profile to Firestore
+      const userDocRef = doc(firestore, 'users', user.uid);
+      await setDoc(userDocRef, userProfile);
+
+      // 4. Redirect to dashboard (onAuthStateChanged will also fire, but that's okay)
+      router.push('/dashboard');
+
     } catch (error: any) {
+      // Handle Firebase auth errors (e.g., email-already-in-use)
       setAuthError(error.message);
-      setIsEmailSignupInProgress(false);
     }
   };
 
@@ -263,5 +273,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
