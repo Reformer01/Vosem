@@ -10,7 +10,7 @@ export default function Hero() {
     <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden" id="home">
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-primary/60 mix-blend-multiply z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-background-dark z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-background z-10"></div>
         {heroImage && (
           <Image
             alt="Joyful congregation worshiping with raised hands"
@@ -26,7 +26,7 @@ export default function Hero() {
         <span className="inline-block py-1.5 px-4 rounded-full bg-accent/20 backdrop-blur-sm border border-accent/40 text-xs font-bold tracking-[0.2em] uppercase mb-8 text-white">
           Experience God's Presence
         </span>
-        <h2 className="text-6xl md:text-8xl font-headline italic mb-8 leading-tight max-w-5xl mx-auto drop-shadow-2xl">
+        <h2 className="text-6xl md:text-8xl font-display italic mb-8 leading-tight max-w-5xl mx-auto drop-shadow-2xl">
           Welcome to VOSEM INT'L
         </h2>
         <p className="text-lg md:text-2xl text-white/90 max-w-3xl mx-auto mb-12 font-light leading-relaxed">

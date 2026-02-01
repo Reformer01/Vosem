@@ -36,7 +36,7 @@ export default function Header() {
       <nav className="w-full max-w-5xl bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl transition-all duration-300">
         <Link href="/" className="flex items-center gap-3 pl-2">
           <VosemLogoIcon className="size-8 text-accent" />
-          <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-body">
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-sans">
             VOSEM <span className="text-accent">INT'L</span>
           </h1>
         </Link>
@@ -77,11 +77,11 @@ export default function Header() {
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="bg-background-dark border-r-0">
+              <SheetContent side="left" className="bg-background border-r-0">
                 <div className="flex flex-col h-full p-6">
                   <div className="flex items-center gap-3 mb-8">
                     <VosemLogoIcon className="size-8 text-accent" />
-                    <h2 className="text-2xl font-extrabold tracking-tighter text-white font-body">
+                    <h2 className="text-2xl font-extrabold tracking-tighter text-white font-sans">
                       VOSEM <span className="text-accent">INT'L</span>
                     </h2>
                   </div>

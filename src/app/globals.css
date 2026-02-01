@@ -10,7 +10,7 @@
     --card-foreground: 240 6% 10%;
     --popover: 240 8% 97%;
     --popover-foreground: 240 6% 10%;
-    --primary: 275 65% 50%;
+    --primary: 300 84% 55%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -22,18 +22,18 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 275 65% 50%;
+    --ring: 300 84% 55%;
     --radius: 0.5rem;
   }
  
   .dark {
-    --background: 240 42% 8%;
+    --background: 0 0% 2%;
     --foreground: 0 0% 98%;
-    --card: 240 42% 8%;
+    --card: 0 0% 2%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 42% 8%;
+    --popover: 0 0% 2%;
     --popover-foreground: 0 0% 98%;
-    --primary: 275 65% 50%;
+    --primary: 300 84% 55%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -45,7 +45,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 275 65% 50%;
+    --ring: 300 84% 55%;
   }
 }
  
@@ -74,6 +74,12 @@
 }
 
 @layer components {
+  .glass-card {
+    background: rgba(30, 30, 30, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    @apply border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
+  }
   .glass-panel {
     @apply bg-white/10 backdrop-blur-md border border-white/20;
   }

@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   if (isUserLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background-dark">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-accent"></div>
       </div>
     );
@@ -33,12 +33,12 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background-dark text-white">
+    <div className="flex min-h-screen flex-col bg-background text-white">
        <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
             <nav className="w-full max-w-5xl bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl">
                 <Link href="/" className="flex items-center gap-3 pl-2">
                     <VosemLogoIcon className="h-8 w-8 text-accent" />
-                    <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-body">
+                    <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-sans">
                         VOSEM <span className="text-accent">INT'L</span>
                     </h1>
                 </Link>

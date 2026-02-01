@@ -7,7 +7,7 @@ const aboutImage = PlaceHolderImages.find(img => img.id === 'about-main');
 
 export default function About() {
   return (
-    <section className="py-32 bg-background-light dark:bg-background-dark relative overflow-hidden" id="about">
+    <section className="py-32 bg-background-light dark:bg-background relative overflow-hidden" id="about">
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div className="relative h-[600px] w-full hidden lg:block">
@@ -24,7 +24,7 @@ export default function About() {
               )}
             </div>
             <div className="absolute -bottom-10 -left-10 w-96 glass-panel p-10 rounded-[2.5rem] shadow-2xl z-20 border-white/40 bg-white/5 backdrop-blur-xl">
-              <h3 className="text-2xl font-headline italic font-bold mb-4 text-accent dark:text-accent">Our Vision</h3>
+              <h3 className="text-2xl font-display italic font-bold mb-4 text-accent dark:text-accent">Our Vision</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6">
                 Raising a kingdom-conscious generation that impacts nations and cultures through the power of the gospel.
               </p>
@@ -38,7 +38,7 @@ export default function About() {
           </div>
           <div className="lg:pl-12">
             <h3 className="text-accent font-black text-sm tracking-widest uppercase mb-4 italic">Belong to VOSEM</h3>
-            <h2 className="text-5xl md:text-6xl font-headline font-bold text-foreground mb-10 leading-[1.1]">More Than a Church, <br /><span className="italic text-primary">A Royal Family.</span></h2>
+            <h2 className="text-5xl md:text-6xl font-display font-bold text-foreground mb-10 leading-[1.1]">More Than a Church, <br /><span className="italic text-primary">A Royal Family.</span></h2>
             <p className="text-xl text-gray-500 dark:text-gray-300 mb-10 leading-relaxed font-light">
               At VOSEM INT'L, we believe every individual carries a divine mandate. Our mission is to nurture that potential in an atmosphere of radical love and excellence.
             </p>

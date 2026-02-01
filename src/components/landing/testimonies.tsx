@@ -38,7 +38,7 @@ const TestimonyCard = ({ testimony, className = "" }: { testimony: (typeof testi
       <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/40 to-transparent"></div>
       {testimony.blend_overlay && <div className="absolute inset-0 bg-primary/40 mix-blend-overlay"></div>}
       <div className={`relative z-10 p-8 flex flex-col h-full ${testimony.style}`}>
-        {testimony.quote_mark && <span className="text-7xl text-accent/50 font-headline absolute top-8 right-8">"</span>}
+        {testimony.quote_mark && <span className="text-7xl text-accent/50 font-display absolute top-8 right-8">"</span>}
         <p className={`text-white italic ${testimony.text_size}`}>
           {testimony.text}
         </p>
@@ -132,7 +132,7 @@ export default function Testimonies() {
           <span className="inline-block py-2 px-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold text-xs uppercase tracking-[0.3em] mb-6">
             Voices of VOSEM
           </span>
-          <h2 className="text-5xl md:text-7xl font-headline italic text-white mb-8">Testimonies of Grace</h2>
+          <h2 className="text-5xl md:text-7xl font-display italic text-white mb-8">Testimonies of Grace</h2>
           <p className="text-purple-100 max-w-2xl mx-auto text-xl leading-relaxed font-light">
             Discover how God is writing new chapters of victory in the lives of the VOSEM INT'L family.
           </p>

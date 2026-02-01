@@ -13,12 +13,12 @@ const iconMap = {
 
 export default function Events() {
   return (
-    <section className="py-24 px-6 bg-background-light dark:bg-background-dark relative" id="events">
+    <section className="py-24 px-6 bg-background-light dark:bg-background relative" id="events">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
           <div>
             <h3 className="text-accent font-extrabold text-sm tracking-widest uppercase mb-3">Our Calendar</h3>
-            <h2 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight italic">At VOSEM This Month</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground tracking-tight italic">At VOSEM This Month</h2>
           </div>
           <Link href="#" className="text-accent font-bold flex items-center gap-2 hover:gap-3 transition-all">
             View Full Calendar <ArrowRight className="h-5 w-5" />

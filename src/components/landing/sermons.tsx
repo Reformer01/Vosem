@@ -17,7 +17,7 @@ export default function Sermons() {
           <span className="inline-block py-1.5 px-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-black uppercase tracking-widest mb-6">
             Teaching Series
           </span>
-          <h2 className="text-5xl md:text-7xl font-headline italic text-white mb-6">Walking in Power</h2>
+          <h2 className="text-5xl md:text-7xl font-display italic text-white mb-6">Walking in Power</h2>
           <p className="text-purple-100 max-w-2xl mx-auto text-xl font-light">Join the current spiritual journey at VOSEM INT'L as we explore the dimensions of the Spirit.</p>
         </div>
         <div className="max-w-5xl mx-auto">

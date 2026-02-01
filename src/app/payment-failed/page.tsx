@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function PaymentFailedPage() {
   return (
-    <div className="bg-background-dark font-body text-white antialiased min-h-screen flex flex-col overflow-x-hidden">
+    <div className="bg-background font-sans text-white antialiased min-h-screen flex flex-col overflow-x-hidden">
       <header className="w-full absolute top-0 left-0 z-50">
         <div className="px-6 py-5 flex items-center justify-between max-w-[1400px] mx-auto w-full">
           <Link href="/" className="flex items-center gap-3">

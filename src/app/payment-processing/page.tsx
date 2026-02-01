@@ -24,7 +24,7 @@ function PaymentProcessingContent() {
   }, [router, amount]);
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#0f0510] group/design-root overflow-x-hidden font-body text-white">
+    <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#0f0510] group/design-root overflow-x-hidden font-sans text-white">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/20 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
 
       <div className="w-full flex justify-center py-8 z-20">
