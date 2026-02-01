@@ -146,13 +146,9 @@ export default function Testimonies() {
           <TestimonyCard testimony={testimonies[3]} className="h-[500px]" />
         </div>
         <div className="mt-20 text-center">
-            {user ? (
+            {user && (
                 <Button onClick={() => setIsModalOpen(true)} className="glass-btn px-12 py-5 rounded-full text-white font-black text-lg border-2 border-white/40 hover:bg-white hover:text-accent hover:border-white shadow-2xl uppercase tracking-widest">
                     Share Your Story
-                </Button>
-            ) : (
-                <Button asChild className="glass-btn px-12 py-5 rounded-full text-white font-black text-lg border-2 border-white/40 hover:bg-white hover:text-accent hover:border-white shadow-2xl uppercase tracking-widest">
-                    <Link href="/login">Login to Share Your Story</Link>
                 </Button>
             )}
         </div>
