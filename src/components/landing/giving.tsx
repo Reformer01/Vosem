@@ -2,11 +2,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { PiggyBank, HeartHandshake, Building } from "lucide-react";
-import { GivingModal } from "./giving-modal";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 
@@ -34,16 +32,13 @@ const givingOptions = [
 export default function Giving() {
   const { user } = useUser();
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPurpose, setSelectedPurpose] = useState("Offerings");
 
-  const handleGiveNowClick = (purpose: string) => {
-    if (!user) {
+  const handleGiveNowClick = () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
       router.push('/login');
-      return;
     }
-    setSelectedPurpose(purpose);
-    setIsModalOpen(true);
   };
 
   return (
@@ -86,7 +81,7 @@ export default function Giving() {
                 </p>
                 <Button 
                   className="w-full py-6 rounded-xl bg-accent text-white font-bold hover:bg-primary transition-colors shadow-lg hover:shadow-accent/40 text-base"
-                  onClick={() => handleGiveNowClick(option.title)}
+                  onClick={handleGiveNowClick}
                 >
                   Give Now
                 </Button>
@@ -95,7 +90,6 @@ export default function Giving() {
           </div>
         </div>
       </section>
-      <GivingModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} defaultPurpose={selectedPurpose} />
     </>
   );
 }
