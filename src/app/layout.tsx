@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import Script from 'next/script';
 import { FirebaseClientProvider } from '@/firebase';
+import { plusJakartaSans, playfairDisplay } from './fonts';
 
 export const metadata: Metadata = {
   title: "VOSEM INT'L 2026 Official Site",
@@ -15,13 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className={`dark ${plusJakartaSans.variable} ${playfairDisplay.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
         <Script src="https://checkout.flutterwave.com/v3.js" strategy="beforeInteractive" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
       </head>
       <body 
         className="font-sans bg-background text-white overflow-x-hidden selection:bg-accent selection:text-white"

@@ -10,7 +10,7 @@
     --card-foreground: 240 6% 10%;
     --popover: 240 8% 97%;
     --popover-foreground: 240 6% 10%;
-    --primary: 300 84% 53%; /* #ee2bee */
+    --primary: 271 83% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -20,32 +20,32 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 11% 19%;
-    --input: 240 11% 25%;
-    --ring: 300 84% 53%;
+    --border: 300 29% 12%;
+    --input: 300 29% 15%;
+    --ring: 271 83% 53%;
     --radius: 0.75rem;
   }
  
   .dark {
-    --background: 0 0% 2%; /* #050505 */
+    --background: 300 13% 6%;
     --foreground: 0 0% 98%;
-    --card: 300 29% 8%; /* #120a12 */
+    --card: 300 29% 8%;
     --card-foreground: 0 0% 98%;
     --popover: 300 29% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 300 84% 53%; /* #ee2bee */
+    --primary: 271 83% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 300 32% 21%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 300 32% 21%;
-    --muted-foreground: 300 33% 68%;
+    --muted: 300 13% 15%;
+    --muted-foreground: 300 8% 60%;
     --accent: 330 96% 36%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 300 29% 12%;
-    --input: 300 29% 15%;
-    --ring: 300 84% 53%;
+    --input: 300 13% 15%;
+    --ring: 271 83% 53%;
   }
 }
  
@@ -60,6 +60,14 @@
   }
   html {
     scroll-behavior: smooth;
+  }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
   }
   ::-webkit-scrollbar {
     width: 8px;
