@@ -2,23 +2,39 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore, useDoc, doc, useMemoFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { GivingModal } from "@/components/landing/giving-modal";
 import Link from 'next/link';
 import Image from 'next/image';
 
+interface UserProfile {
+  name: string;
+  email: string;
+  whatsappNumber?: string;
+}
+
 export default function DashboardPage() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (!isAuthLoading && !user) {
       router.push('/login');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isAuthLoading, router]);
+
+  const isUserLoading = isAuthLoading || (user && isProfileLoading);
 
   if (isUserLoading || !user) {
     return (
@@ -32,6 +48,8 @@ export default function DashboardPage() {
     auth.signOut();
     router.push('/');
   };
+
+  const displayName = userProfile?.name || user.displayName || user.email;
 
   return (
     <>
@@ -83,7 +101,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-[#331133]">
                         <div className="flex flex-col gap-2">
                             <h1 className="text-white text-4xl md:text-5xl font-black tracking-tight">
-                                Welcome Back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">{user.displayName || user.email}</span>
+                                Welcome Back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">{displayName}</span>
                             </h1>
                             <p className="text-slate-400 text-lg font-medium max-w-2xl">
                                 Your generosity is making a global impact. Thank you for partnering with us.
