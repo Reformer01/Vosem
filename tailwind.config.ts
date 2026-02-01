@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-        display: ['"Playfair Display"', 'serif'],
+        sans: ['"Manrope"', 'sans-serif'],
+        display: ['"Manrope"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

@@ -1,17 +1,18 @@
-
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { VosemLogoIcon } from '@/components/icons';
+import { GivingModal } from "@/components/landing/giving-modal";
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -21,8 +22,8 @@ export default function DashboardPage() {
 
   if (isUserLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-accent"></div>
+      <div className="flex min-h-screen items-center justify-center bg-background-dark">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
       </div>
     );
   }
@@ -33,51 +34,155 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-white">
-       <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-            <nav className="w-full max-w-5xl bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl">
-                <Link href="/" className="flex items-center gap-3 pl-2">
-                    <VosemLogoIcon className="h-8 w-8 text-accent" />
-                    <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-sans">
-                        VOSEM <span className="text-accent">INT'L</span>
-                    </h1>
+    <>
+    <div className="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-white">
+        {/* Top Navigation */}
+        <header className="sticky top-0 z-50 w-full border-b border-[#331133] bg-[#0a050a]/90 backdrop-blur-md">
+            <div className="px-6 md:px-10 lg:px-40 flex h-16 items-center justify-between">
+                <Link href="/" className="flex items-center gap-4 text-white">
+                    <div className="flex items-center justify-center size-8 rounded bg-gradient-to-br from-primary to-purple-900 text-white">
+                        <span className="material-symbols-outlined text-[20px]">church</span>
+                    </div>
+                    <h2 className="text-white text-lg font-extrabold tracking-wide">VOSEM INT'L</h2>
                 </Link>
-                <div className="flex items-center gap-4">
-                    <Button onClick={handleSignOut} variant="ghost" className="text-white/80 hover:text-accent hover:bg-white/10 rounded-full">
-                        Logout
-                    </Button>
+
+                <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
+                    <nav className="flex items-center gap-8">
+                        <Link className="text-primary text-sm font-bold border-b-2 border-primary pb-0.5" href="/dashboard">Dashboard</Link>
+                        <button onClick={() => setIsModalOpen(true)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">Give</button>
+                        <Link className="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">Profile</Link>
+                        <Link className="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">Settings</Link>
+                    </nav>
+                    <div className="h-6 w-px bg-[#331133]"></div>
+                    <div className="flex items-center gap-4">
+                        <button onClick={handleSignOut} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                            <span className="text-sm font-medium">Log Out</span>
+                            <span className="material-symbols-outlined text-[18px]">logout</span>
+                        </button>
+                        {user.photoURL ? (
+                            <Image src={user.photoURL} alt="User profile avatar" width={40} height={40} className="rounded-full size-10 border-2 border-primary/30" />
+                        ) : (
+                            <div className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-primary/30 flex items-center justify-center bg-surface-dark text-slate-400">
+                                <span className="material-symbols-outlined">person</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </nav>
+
+                <button className="md:hidden text-white">
+                    <span className="material-symbols-outlined">menu</span>
+                </button>
+            </div>
         </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center pt-32 p-6">
-        <div className="w-full max-w-4xl text-center">
-          <h1 className="text-5xl font-bold tracking-tight text-white">
-            Welcome, {user.displayName || user.email}!
-          </h1>
-          <p className="mt-4 text-lg text-white/70">
-            This is your personal dashboard. More features coming soon!
-          </p>
+        {/* Main Content */}
+        <main className="flex-grow flex flex-col">
+            <div className="w-full flex justify-center py-8 md:py-12 px-6 md:px-10 lg:px-40">
+                <div className="w-full max-w-6xl flex flex-col gap-10">
+                    {/* Welcome / Hero Section */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-[#331133]">
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-white text-4xl md:text-5xl font-black tracking-tight">
+                                Welcome Back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">{user.displayName || user.email}</span>
+                            </h1>
+                            <p className="text-slate-400 text-lg font-medium max-w-2xl">
+                                Your generosity is making a global impact. Thank you for partnering with us.
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-start md:items-end gap-3">
+                            <div className="text-right hidden md:block">
+                                <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Total Sown Year-to-Date</span>
+                                <div className="text-3xl font-bold text-white font-mono">$0.00</div>
+                            </div>
+                            <Button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold tracking-wide shadow-[0_0_20px_rgba(238,43,238,0.3)] transition-all transform hover:scale-105">
+                                <span className="material-symbols-outlined text-[20px]">volunteer_activism</span>
+                                <span>New Donation</span>
+                            </Button>
+                        </div>
+                    </div>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="glass-panel p-8 rounded-2xl text-left">
-              <h2 className="text-2xl font-bold text-accent mb-4">Donation History</h2>
-              <p className="text-white/60">
-                You have no donation records yet. All your future contributions will appear here.
-              </p>
+                    {/* Recurring Giving Section */}
+                    <section>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-white text-2xl font-bold flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary">autorenew</span>
+                                Active Commitments
+                            </h2>
+                            <Link className="text-primary text-sm font-semibold hover:underline" href="#">View All Plans</Link>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="glass-panel p-5 rounded-xl flex items-center justify-center text-center text-slate-400">
+                             <p>You have no active commitments. <br/>Set one up today to automate your giving!</p>
+                           </div>
+                           <div className="glass-panel p-5 rounded-xl flex items-center justify-center text-center text-slate-400">
+                             <p>Your second commitment card could be here.</p>
+                           </div>
+                        </div>
+                    </section>
+
+                    {/* Seed History Section */}
+                    <section className="flex flex-col gap-4">
+                        <div className="flex items-end justify-between">
+                            <h2 className="text-white text-2xl font-bold flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary">history_edu</span>
+                                Seed History
+                            </h2>
+                            <div className="flex gap-2">
+                                <Button variant="outline" className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a101a] border border-[#331133] text-xs font-medium text-slate-300 hover:text-white hover:border-primary/50 transition-colors">
+                                    <span className="material-symbols-outlined text-[16px]">filter_list</span>
+                                    Filter
+                                </Button>
+                                <Button variant="outline" className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a101a] border border-[#331133] text-xs font-medium text-slate-300 hover:text-white hover:border-primary/50 transition-colors">
+                                    <span className="material-symbols-outlined text-[16px]">download</span>
+                                    Export
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="glass-panel rounded-xl overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-[#1a0a1a]/50 text-slate-400 text-xs uppercase tracking-wider border-b border-[#331133]">
+                                            <th className="px-6 py-4 font-semibold">Date</th>
+                                            <th className="px-6 py-4 font-semibold">Purpose</th>
+                                            <th className="px-6 py-4 font-semibold">Amount</th>
+                                            <th className="px-6 py-4 font-semibold text-center">Status</th>
+                                            <th className="px-6 py-4 font-semibold text-right">Receipt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-sm divide-y divide-[#331133]">
+                                        <tr>
+                                            <td colSpan={5} className="text-center p-8 text-slate-400">
+                                                You have no donation history yet. Your seeds will appear here.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                             <div className="px-6 py-4 border-t border-[#331133] bg-[#120a12]/50 flex justify-center">
+                                <button className="text-sm text-slate-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                    View Full History
+                                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </div>
-            <div className="glass-panel p-8 rounded-2xl text-left">
-              <h2 className="text-2xl font-bold text-accent mb-4">Recurring Giving</h2>
-               <p className="text-white/60 mb-6">
-                Automate your faithfulness. Set up a recurring gift today.
-              </p>
-              <Button disabled className="bg-accent/50 cursor-not-allowed w-full h-12 rounded-lg font-bold">
-                Setup Recurring Gift (Coming Soon)
-              </Button>
+        </main>
+        <footer className="mt-auto border-t border-[#331133] py-6 bg-[#0a050a]">
+            <div className="px-6 md:px-40 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-sm">
+                <p>© 2026 VOSEM INT'L. All rights reserved.</p>
+                <div className="flex gap-6">
+                    <Link className="hover:text-white transition-colors" href="#">Privacy Policy</Link>
+                    <Link className="hover:text-white transition-colors" href="#">Terms of Service</Link>
+                    <Link className="hover:text-white transition-colors" href="#">Support</Link>
+                </div>
             </div>
-          </div>
-        </div>
-      </main>
+        </footer>
     </div>
+    <GivingModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} defaultPurpose="Offerings" />
+    </>
   );
 }
