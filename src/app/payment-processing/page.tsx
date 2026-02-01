@@ -1,24 +1,27 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { VosemLogoIcon } from '@/components/icons';
 
-export default function PaymentProcessingPage() {
+function PaymentProcessingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const amount = searchParams.get('amount');
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      const transaction_id = `VOSEM-${Date.now()}`;
       // Simulate a random outcome for the payment
       if (Math.random() > 0.2) { // 80% success rate
-        router.push('/payment-success');
+        router.push(`/payment-success?amount=${amount}&transaction_id=${transaction_id}`);
       } else {
         router.push('/payment-failed');
       }
     }, 3000); // 3-second processing time
 
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [router, amount]);
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#0f0510] group/design-root overflow-x-hidden font-body text-white">
@@ -58,4 +61,12 @@ export default function PaymentProcessingPage() {
       </div>
     </div>
   );
+}
+
+export default function PaymentProcessingPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <PaymentProcessingContent />
+        </Suspense>
+    )
 }

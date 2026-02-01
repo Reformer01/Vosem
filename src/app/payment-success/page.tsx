@@ -1,10 +1,23 @@
+'use client';
+
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { WhatsAppIcon } from '@/components/icons';
 import { CheckCircle, Download } from 'lucide-react';
 import Header from '@/components/landing/header';
+import { Suspense } from 'react';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
+    const searchParams = useSearchParams();
+    const amount = searchParams.get('amount');
+    const transaction_id = searchParams.get('transaction_id');
+    const date = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+
     return (
         <div className="bg-[#0f0510] text-white font-body overflow-x-hidden relative selection:bg-accent/30">
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -28,19 +41,21 @@ export default function PaymentSuccessPage() {
                         <div className="w-full flex flex-col md:flex-row items-center justify-center border-t border-b border-accent/40 py-10 mb-16 gap-8 md:gap-0">
                             <div className="flex-1 px-4 flex flex-col gap-2">
                                 <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-body">Amount</span>
-                                <span className="text-white text-4xl md:text-5xl font-headline">₦10,000</span>
+                                <span className="text-white text-4xl md:text-5xl font-headline">
+                                    {amount ? `₦${Number(amount).toLocaleString()}` : '...'}
+                                </span>
                             </div>
                             <div className="hidden md:block w-px h-16 bg-accent/40"></div>
                             <div className="md:hidden w-16 h-px bg-accent/40"></div>
                             <div className="flex-1 px-4 flex flex-col gap-2">
                                 <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-body">Date</span>
-                                <span className="text-white/90 text-xl md:text-2xl font-headline">October 24, 2026</span>
+                                <span className="text-white/90 text-xl md:text-2xl font-headline">{date}</span>
                             </div>
                             <div className="hidden md:block w-px h-16 bg-accent/40"></div>
                             <div className="md:hidden w-16 h-px bg-accent/40"></div>
                             <div className="flex-1 px-4 flex flex-col gap-2">
                                 <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-body">Reference</span>
-                                <span className="text-white/80 text-lg md:text-xl font-mono">TRX-8859</span>
+                                <span className="text-white/80 text-lg md:text-xl font-mono">{transaction_id || '...'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-center w-full gap-5">
@@ -64,4 +79,12 @@ export default function PaymentSuccessPage() {
             </div>
         </div>
     );
+}
+
+export default function PaymentSuccessPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <PaymentSuccessContent />
+        </Suspense>
+    )
 }
