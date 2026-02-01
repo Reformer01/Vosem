@@ -1,9 +1,8 @@
-
 "use client";
 import Link from 'next/link';
 import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@/firebase';
 import { VosemLogoIcon } from '../icons';
@@ -77,8 +76,11 @@ export default function Header() {
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="bg-background border-r-0">
-                <div className="flex flex-col h-full p-6">
+              <SheetContent side="left" className="bg-background border-r-0 flex flex-col">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Menu</SheetTitle>
+                </SheetHeader>
+                <div>
                   <div className="flex items-center gap-3 mb-8">
                     <VosemLogoIcon className="size-8 text-accent" />
                     <h2 className="text-2xl font-extrabold tracking-tighter text-white font-sans">
@@ -98,7 +100,8 @@ export default function Header() {
                       </SheetClose>
                     ))}
                   </div>
-                  <div className="border-t border-white/10 mt-8 pt-6">
+                </div>
+                <div className="border-t border-white/10 mt-auto pt-6">
                     {isUserLoading ? (
                        <div className="h-12 w-full bg-white/10 rounded-full animate-pulse" />
                     ): user ? (
@@ -121,7 +124,6 @@ export default function Header() {
                       </div>
                     )}
                   </div>
-                </div>
               </SheetContent>
             </Sheet>
           ) : (
