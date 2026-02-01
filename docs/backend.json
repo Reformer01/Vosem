@@ -18,13 +18,22 @@
           "description": "The user's email address.",
           "format": "email"
         },
+        "whatsappNumber": {
+          "type": "string",
+          "description": "The user's WhatsApp number."
+        },
         "createdAt": {
           "type": "string",
           "description": "The timestamp when the user profile was created.",
           "format": "date-time"
         }
       },
-      "required": ["uid", "name", "email", "createdAt"]
+      "required": [
+        "uid",
+        "name",
+        "email",
+        "createdAt"
+      ]
     },
     "Event": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -190,7 +199,9 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com",
+      "facebook.com"
     ]
   },
   "firestore": {

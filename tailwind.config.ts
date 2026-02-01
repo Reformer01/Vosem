@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Noto Sans"', 'sans-serif'],
-        display: ['"Newsreader"', 'serif'],
+        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['"Playfair Display"', 'serif'],
         code: ['monospace'],
       },
       colors: {

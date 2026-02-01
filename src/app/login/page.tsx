@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, initiateEmailSignIn } from '@/firebase';
+import { useAuth, initiateEmailSignIn, initiateGoogleSignIn, initiateFacebookSignIn, setDocumentNonBlocking, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,9 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { VosemLogoIcon } from '@/components/icons';
+import { VosemLogoIcon, GoogleIcon, FacebookIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
+import { User, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -29,6 +31,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const [authError, setAuthError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -42,10 +45,27 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (user && !isUserLoading) {
-      router.push('/dashboard');
-    }
-  }, [user, isUserLoading, router]);
+    const handleAuthChange = async (user: User | null) => {
+      if (user) {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const docSnap = await getDoc(userDocRef);
+
+        if (!docSnap.exists()) {
+          const userProfile = {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            createdAt: serverTimestamp(),
+          };
+          setDocumentNonBlocking(userDocRef, userProfile, { merge: false });
+        }
+        router.push('/dashboard');
+      }
+    };
+    const unsubscribe = onAuthStateChanged(auth, handleAuthChange);
+    return () => unsubscribe();
+  }, [auth, firestore, router]);
+
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
     setAuthError(null);
@@ -60,43 +80,48 @@ export default function LoginPage() {
     );
   }
 
-  return (
-    <div className="bg-background text-white font-display min-h-screen flex flex-col relative overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/20 blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-900/20 blur-[120px] pointer-events-none"></div>
+  const handleGoogleSignIn = () => {
+    initiateGoogleSignIn(auth);
+  };
 
-        <div className="flex h-full grow flex-col items-center justify-center p-4 z-10">
-            <div className="glass-card w-full max-w-[480px] rounded-xl flex flex-col p-8 sm:p-10 transition-all duration-300">
-                <div className="flex flex-col items-center mb-8">
-                    <Link href="/" className="mb-4 text-primary bg-white/5 p-3 rounded-full ring-1 ring-white/10">
-                        <VosemLogoIcon className="size-8" />
+  const handleFacebookSignIn = () => {
+    initiateFacebookSignIn(auth);
+  };
+
+  return (
+    <div className="bg-background text-white font-sans min-h-screen flex flex-col relative overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-primary/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+        <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-[520px] glass-card rounded-2xl p-8 sm:p-10 shadow-2xl">
+                <div className="mb-8 text-center">
+                    <Link href="/" className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
+                         <VosemLogoIcon className="size-8" />
                     </Link>
-                    <h2 className="text-white text-xl font-bold tracking-[0.1em] uppercase mb-1">VOSEM INT'L</h2>
-                    <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight text-center">Welcome Back</h1>
-                    <p className="text-gray-400 text-base font-normal leading-normal pt-2 text-center max-w-xs font-sans">
-                        Please sign in to access your exclusive member portal.
-                    </p>
+                    <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">Welcome Back</h1>
+                    <p className="text-muted-foreground text-base">Please sign in to access your member portal.</p>
                 </div>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                         <FormField
                             control={form.control}
                             name="email"
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-white text-sm font-medium leading-normal pb-2 font-sans">Email Address</FormLabel>
-                                    <div className="relative flex items-center">
-                                        <span className="absolute left-4 text-gray-400 material-symbols-outlined text-[20px]">mail</span>
-                                        <FormControl>
-                                            <Input
-                                                type="email"
-                                                placeholder="name@vosem.com"
-                                                {...field}
-                                                className="form-input flex w-full min-w-0 resize-none rounded-lg text-white placeholder:text-gray-500 bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary h-12 pl-12 pr-4 text-base font-normal leading-normal font-sans transition-all duration-200"
-                                            />
-                                        </FormControl>
-                                    </div>
+                                <FormItem className="flex flex-col gap-2">
+                                    <FormLabel className="text-white text-sm font-medium flex items-center gap-2">
+                                      <span className="material-symbols-outlined text-primary text-[18px]">mail</span>
+                                      Email Address
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="email"
+                                            placeholder="name@vosem.com"
+                                            {...field}
+                                            className="form-input w-full rounded-lg bg-input border-transparent focus:border-primary focus:ring-0 text-white placeholder:text-muted-foreground/50 h-12 px-4 transition-all hover:bg-input/80"
+                                        />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -105,21 +130,21 @@ export default function LoginPage() {
                             control={form.control}
                             name="password"
                             render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex justify-between items-center pb-2">
-                                        <FormLabel className="text-white text-sm font-medium leading-normal font-sans">Password</FormLabel>
-                                    </div>
-                                    <div className="relative flex w-full items-center rounded-lg">
-                                         <span className="absolute left-4 text-gray-400 material-symbols-outlined text-[20px]">lock</span>
+                                <FormItem className="flex flex-col gap-2">
+                                     <FormLabel className="text-white text-sm font-medium flex items-center gap-2">
+                                      <span className="material-symbols-outlined text-primary text-[18px]">lock</span>
+                                      Password
+                                    </FormLabel>
+                                    <div className="relative">
                                         <FormControl>
                                             <Input
                                                 type={showPassword ? 'text' : 'password'}
                                                 placeholder="••••••••"
                                                 {...field}
-                                                className="form-input flex w-full min-w-0 flex-1 resize-none rounded-lg text-white placeholder:text-gray-500 bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary h-12 pl-12 pr-12 text-base font-normal leading-normal font-sans transition-all duration-200"
+                                                className="form-input w-full rounded-lg bg-input border-transparent focus:border-primary focus:ring-0 text-white placeholder:text-muted-foreground/50 h-12 px-4 pr-12 transition-all hover:bg-input/80"
                                             />
                                         </FormControl>
-                                        <button onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 bottom-0 px-4 flex items-center justify-center text-gray-400 hover:text-white transition-colors" type="button">
+                                        <button onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors" type="button">
                                             <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
                                         </button>
                                     </div>
@@ -128,30 +153,52 @@ export default function LoginPage() {
                             )}
                         />
 
-                        <div className="flex justify-end -mt-1">
-                            <a className="text-xs font-medium text-gray-400 hover:text-primary transition-colors font-sans" href="#">Forgot Password?</a>
+                        <div className="flex justify-end -mt-2">
+                            <a className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors" href="#">Forgot Password?</a>
                         </div>
                         
                         {authError && (
-                          <p className="text-sm text-red-500">{authError}</p>
+                          <p className="text-sm text-red-500 text-center">{authError}</p>
                         )}
                         
-                        <Button type="submit" className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-[#d926d9] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors shadow-[0_0_20px_rgba(238,43,238,0.3)] mt-2 font-sans">
-                            <span className="truncate">Sign In</span>
+                        <Button type="submit" className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary hover:bg-[#d620d6] text-white font-bold h-12 mt-4 transition-all transform active:scale-[0.98] shadow-[0_0_20px_rgba(238,43,238,0.3)] hover:shadow-[0_0_25px_rgba(238,43,238,0.5)]">
+                            Sign In
+                            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                         </Button>
+
+                         <div className="relative py-2">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-white/10"></div>
+                            </div>
+                            <div className="relative flex justify-center">
+                                <span className="bg-card px-2 text-xs text-muted-foreground uppercase">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Button type="button" onClick={handleGoogleSignIn} variant="outline" className="flex items-center justify-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 border-white/10 text-white text-sm font-medium h-10 transition-all">
+                                <GoogleIcon className="w-5 h-5" />
+                                Google
+                            </Button>
+                            <Button type="button" onClick={handleFacebookSignIn} variant="outline" className="flex items-center justify-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 border-white/10 text-white text-sm font-medium h-10 transition-all">
+                                <FacebookIcon className="w-5 h-5" />
+                                Facebook
+                            </Button>
+                        </div>
                     </form>
                 </Form>
 
-                <div className="flex items-center justify-center gap-2 pt-8 font-sans">
-                    <p className="text-gray-400 text-sm">Don't have an account?</p>
-                    <Link href="/signup" className="text-primary hover:text-[#ff4fff] text-sm font-bold leading-normal underline decoration-primary/30 underline-offset-4 hover:decoration-primary transition-all">Sign Up</Link>
+                <div className="mt-8 text-center">
+                    <p className="text-muted-foreground text-sm">
+                        Don't have an account? 
+                        <Link className="text-primary font-semibold hover:text-white hover:underline transition-colors ml-1" href="/signup">Sign up</Link>
+                    </p>
                 </div>
             </div>
-
-            <div className="mt-8 text-center">
-                <p className="text-white/20 text-xs font-sans">© 2026 VOSEM INT'L. All rights reserved.</p>
-            </div>
-        </div>
+        </main>
+        <footer className="relative z-10 w-full py-6 text-center text-white/30 text-xs">
+            <p>© 2026 VOSEM INT'L. All rights reserved.</p>
+        </footer>
     </div>
   );
 }
