@@ -3,12 +3,25 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase, deleteDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { GivingModal } from "@/components/landing/giving-modal";
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { deleteUser } from 'firebase/auth';
 
 interface UserProfile {
   name: string;
@@ -22,6 +35,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -49,6 +64,48 @@ export default function DashboardPage() {
   const handleSignOut = () => {
     auth.signOut();
     router.push('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not delete account. User or database not available.",
+      });
+      return;
+    }
+
+    try {
+      await deleteUser(user);
+
+      const userDocRef = doc(firestore, 'users', user.uid);
+      deleteDocumentNonBlocking(userDocRef);
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all associated data have been removed.",
+      });
+      
+      router.push('/');
+
+    } catch (error: any) {
+      if (error.code === 'auth/requires-recent-login') {
+        toast({
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "This is a sensitive action. Please sign out and sign back in before deleting your account.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete your account. " + error.message,
+        });
+      }
+    } finally {
+      setIsDeleteAlertOpen(false);
+    }
   };
 
   const displayName = userProfile?.name || user.displayName || user.email;
@@ -188,6 +245,39 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </section>
+
+                    <section className="border-t border-red-500/20 pt-8 mt-10">
+                        <h2 className="text-2xl font-bold text-red-400 flex items-center gap-3">
+                            <span className="material-symbols-outlined">warning</span>
+                            Danger Zone
+                        </h2>
+                        <p className="text-slate-400 mt-2 max-w-2xl">
+                            These actions are permanent and cannot be undone. Please proceed with caution.
+                        </p>
+                        <div className="mt-6">
+                            <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive">Delete My Account</Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete your
+                                            account, your profile, and remove all of your donation history from our servers.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDeleteAccount} className={buttonVariants({ variant: "destructive" })}>
+                                            Yes, Delete Account
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </section>
+
                 </div>
             </div>
         </main>
@@ -206,3 +296,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
