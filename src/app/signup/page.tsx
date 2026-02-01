@@ -36,6 +36,7 @@ export default function SignupPage() {
   const { user, isUserLoading } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isEmailSignupInProgress, setIsEmailSignupInProgress] = useState(false);
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -52,14 +53,13 @@ export default function SignupPage() {
         if (!user) return;
         
         const userDocRef = doc(firestore, 'users', user.uid);
-        let userCreated = false;
 
         // For email signup, create doc from form
-        if (form.formState.isSubmitting) {
+        if (isEmailSignupInProgress) {
             const { name, email, whatsapp } = form.getValues();
             const userProfile = { uid: user.uid, name, email, whatsappNumber: whatsapp || '', createdAt: serverTimestamp() };
             setDocumentNonBlocking(userDocRef, userProfile, { merge: false });
-            userCreated = true;
+            setIsEmailSignupInProgress(false);
         } else {
             // For social login, create doc if it doesn't exist
             const docSnap = await getDoc(userDocRef);
@@ -71,7 +71,6 @@ export default function SignupPage() {
                     createdAt: serverTimestamp(),
                 };
                 setDocumentNonBlocking(userDocRef, userProfile, { merge: false });
-                userCreated = true;
             }
         }
         
@@ -83,15 +82,17 @@ export default function SignupPage() {
     const unsubscribe = onAuthStateChanged(auth, handleAuthChange);
 
     return () => unsubscribe();
-  }, [auth, firestore, router, form]);
+  }, [auth, firestore, router, form, isEmailSignupInProgress]);
 
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     setAuthError(null);
+    setIsEmailSignupInProgress(true);
     try {
       initiateEmailSignUp(auth, values.email, values.password);
     } catch (error: any) {
       setAuthError(error.message);
+      setIsEmailSignupInProgress(false);
     }
   };
 
@@ -262,3 +263,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
