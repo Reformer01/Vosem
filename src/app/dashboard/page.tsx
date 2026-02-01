@@ -3,8 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase, deleteDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { GivingModal } from "@/components/landing/giving-modal";
 import Link from 'next/link';
@@ -76,11 +76,18 @@ export default function DashboardPage() {
       return;
     }
 
-    try {
-      await deleteUser(user);
+    // Capture the user ID before any deletion, as the user object will become invalid.
+    const userId = user.uid;
 
-      const userDocRef = doc(firestore, 'users', user.uid);
-      deleteDocumentNonBlocking(userDocRef);
+    try {
+      // Step 1: Delete the user's document from Firestore.
+      // This operation requires the user to be authenticated.
+      const userDocRef = doc(firestore, 'users', userId);
+      await deleteDoc(userDocRef);
+
+      // Step 2: Delete the user's authentication record.
+      // This will sign the user out.
+      await deleteUser(user);
 
       toast({
         title: "Account Deleted",
@@ -90,6 +97,7 @@ export default function DashboardPage() {
       router.push('/');
 
     } catch (error: any) {
+      // Handle specific errors, like needing recent re-authentication
       if (error.code === 'auth/requires-recent-login') {
         toast({
           variant: "destructive",
@@ -97,10 +105,11 @@ export default function DashboardPage() {
           description: "This is a sensitive action. Please sign out and sign back in before deleting your account.",
         });
       } else {
+        // Generic error handler for other issues (e.g., network, Firestore rules failure on the doc delete)
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to delete your account. " + error.message,
+          description: `Failed to delete your account. ${error.message}`,
         });
       }
     } finally {
@@ -296,5 +305,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
