@@ -100,6 +100,11 @@ export default function SignupPage() {
         <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-primary/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
+        <Link href="/" className="absolute top-8 left-8 z-20 flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors">
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span>Back to Home</span>
+        </Link>
+
         <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-[520px] glass-card rounded-2xl p-8 sm:p-10 shadow-2xl">
                 <div className="mb-8 text-center">
