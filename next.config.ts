@@ -9,7 +9,7 @@ const ContentSecurityPolicy = `
   img-src 'self' data: https://images.unsplash.com https://picsum.photos https://placehold.co https://lh3.googleusercontent.com;
   connect-src 'self' https://*.googleapis.com https://www.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com wss://firestore.googleapis.com;
   frame-src 'self' https://checkout.flutterwave.com https://studio-1357235131-b01a2.firebaseapp.com;
-  frame-ancestors 'self' https://*.cloudworkstations.dev;
+  frame-ancestors 'self' https://*.firebaseapp.com https://*.cloud.goog https://*.cloudworkstations.dev;
   form-action 'self';
   base-uri 'self';
   object-src 'none';
