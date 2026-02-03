@@ -114,19 +114,19 @@ export default function DashboardPage() {
     <div className="w-full flex justify-center py-8 md:py-12 px-6 md:px-10 lg:px-40">
         <div className="w-full max-w-6xl flex flex-col gap-10">
             {/* Welcome / Hero Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-[#331133]">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 lg:gap-8 pb-8 border-b border-[#331133]">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-white text-4xl md:text-5xl font-black tracking-tight">
+                    <h1 className="text-white text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
                         Welcome Back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">{displayName}</span>
                     </h1>
                     <p className="text-slate-400 text-lg font-medium max-w-2xl">
                         Your generosity is making a global impact. Thank you for partnering with us.
                     </p>
                 </div>
-                <div className="flex flex-col items-start md:items-end gap-3">
-                    <div className="text-right hidden md:block">
+                <div className="w-full lg:w-auto pt-6 lg:pt-0 mt-6 lg:mt-0 border-t border-[#331133] lg:border-none">
+                    <div className="text-left lg:text-right">
                         <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Total Sown Year-to-Date</span>
-                        <div className="text-3xl font-bold text-white font-mono">$0.00</div>
+                        <div className="text-4xl font-bold text-white font-mono mt-1">$0.00</div>
                     </div>
                 </div>
             </div>
