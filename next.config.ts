@@ -1,21 +1,6 @@
 
 import type {NextConfig} from 'next';
 
-const ContentSecurityPolicy = `
-  default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.flutterwave.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com;
-  img-src 'self' data: https://images.unsplash.com https://picsum.photos https://placehold.co https://lh3.googleusercontent.com;
-  connect-src 'self' https://*.googleapis.com https://www.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com wss://firestore.googleapis.com;
-  frame-src 'self' https://checkout.flutterwave.com https://studio-1357235131-b01a2.firebaseapp.com;
-  frame-ancestors 'self' https://*.firebaseapp.com https://*.cloud.goog https://*.cloudworkstations.dev;
-  form-action 'self';
-  base-uri 'self';
-  object-src 'none';
-`.replace(/\s{2,}/g, ' ').trim();
-
-
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
@@ -57,10 +42,6 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: ContentSecurityPolicy,
-          },
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains',
