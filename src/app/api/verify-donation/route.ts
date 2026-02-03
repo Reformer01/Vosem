@@ -3,25 +3,25 @@ import axios from 'axios';
 import nodemailer from 'nodemailer';
 
 export async function POST(req: NextRequest) {
-  const { transaction_id } = await req.json();
+  const { reference } = await req.json();
 
-  if (!transaction_id) {
-    return NextResponse.json({ message: 'Transaction ID is required' }, { status: 400 });
+  if (!reference) {
+    return NextResponse.json({ message: 'Transaction reference is required' }, { status: 400 });
   }
 
   // Ensure secret keys are available
-  if (!process.env.FLUTTERWAVE_SECRET_KEY || !process.env.GMAIL_USER || !process.env.GMAIL_APP_PASS) {
+  if (!process.env.PAYSTACK_SECRET_KEY || !process.env.GMAIL_USER || !process.env.GMAIL_APP_PASS) {
       console.error('Server is missing required environment variables for payment verification or email.');
       return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
   }
 
   try {
-    // Step 1: Verify transaction with Flutterwave
+    // Step 1: Verify transaction with Paystack
     const response = await axios.get(
-      `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
+      `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
         },
       }
     );
@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
     const data = response.data.data;
 
     // Step 2: Check if transaction was successful
-    if (data.status === 'successful') {
-      const amountPaid = data.amount;
+    if (data.status === 'success') {
+      const amountPaid = data.amount / 100; // Paystack returns amount in Kobo
       const donorEmail = data.customer.email;
-      const donorName = data.customer.name;
+      const donorName = data.customer.first_name || data.metadata.name;
       const currency = data.currency;
 
       // Step 3: Send receipt email
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
                 <h1 style="color: #7c28c5;">Thank You for Your Donation</h1>
                 <p>Dear ${donorName || 'Beloved'},</p>
                 <p>We are writing to confirm that we have received your generous donation of <strong>${currency} ${amountPaid.toLocaleString()}</strong>.</p>
-                <p>Your transaction reference is: <strong>${data.tx_ref}</strong></p>
+                <p>Your transaction reference is: <strong>${data.reference}</strong></p>
                 <p>Your contribution is invaluable to us and will go a long way in supporting the ministry and spreading the gospel. We pray that God blesses you abundantly for your faithfulness.</p>
                 <br/>
                 <p>With gratitude,<br/>The VOSEM International Team</p>
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       });
 
     } else {
-      // Transaction was not successful on Flutterwave's end
+      // Transaction was not successful on Paystack's end
       return NextResponse.json({ status: 'failed', message: 'Transaction not successful' }, { status: 400 });
     }
   } catch (error) {

@@ -9,11 +9,11 @@ function PaymentProcessingContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const transaction_id = searchParams.get('transaction_id');
+    const reference = searchParams.get('reference');
     const amount = searchParams.get('amount');
 
-    if (!transaction_id) {
-      // If there's no transaction ID, something went wrong, possibly a direct navigation.
+    if (!reference) {
+      // If there's no reference, something went wrong.
       router.push('/payment-failed');
       return;
     }
@@ -25,14 +25,14 @@ function PaymentProcessingContent() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ transaction_id }),
+          body: JSON.stringify({ reference }),
         });
 
         if (response.ok) {
           const result = await response.json();
           if (result.status === 'success') {
             // Verification successful, redirect to success page
-            router.push(`/payment-success?amount=${amount}&transaction_id=${transaction_id}`);
+            router.push(`/payment-success?amount=${amount}&reference=${reference}`);
           } else {
             // Verification failed on the backend
             router.push('/payment-failed');

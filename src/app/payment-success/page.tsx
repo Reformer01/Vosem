@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 function PaymentSuccessContent() {
     const searchParams = useSearchParams();
     const amount = searchParams.get('amount');
-    const transaction_id = searchParams.get('transaction_id');
+    const reference = searchParams.get('reference');
     const date = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -55,7 +55,7 @@ function PaymentSuccessContent() {
                             <div className="md:hidden w-16 h-px bg-accent/40"></div>
                             <div className="flex-1 px-4 flex flex-col gap-2">
                                 <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-sans">Reference</span>
-                                <span className="text-white/80 text-lg md:text-xl font-mono">{transaction_id || '...'}</span>
+                                <span className="text-white/80 text-lg md:text-xl font-mono">{reference || '...'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-center w-full gap-5">

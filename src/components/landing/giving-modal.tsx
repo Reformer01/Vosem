@@ -24,17 +24,12 @@ import { HeartHandshake, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { usePaystackPayment } from "react-paystack";
 
 interface GivingModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   defaultPurpose: string;
-}
-
-declare global {
-  interface Window {
-    FlutterwaveCheckout: (options: any) => void;
-  }
 }
 
 export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModalProps) {
@@ -53,9 +48,41 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     }
   }, [isOpen, defaultPurpose]);
 
+  const finalAmount = Number(customAmount) || Number(amount);
+
+  const config = {
+    reference: ("VOSEM-" + Date.now()).toString(),
+    email: user?.email || "",
+    amount: finalAmount * 100, // Amount in Kobo
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
+    metadata: {
+      name: user?.displayName || "Anonymous Giver",
+      purpose: purpose,
+      custom_fields: [
+        {
+          display_name: "Giving Purpose",
+          variable_name: "giving_purpose",
+          value: purpose,
+        }
+      ]
+    },
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
+  const onSuccess = (reference: { reference: string }) => {
+    onOpenChange(false);
+    // Redirect to our processing page for server-side verification
+    router.push(`/payment-processing?amount=${finalAmount}&reference=${reference.reference}`);
+  };
+
+  const onClose = () => {
+    // This is called when the user closes the payment modal.
+  };
+
   const handleProceed = () => {
     if (!user) {
-       toast({
+      toast({
         variant: "destructive",
         title: "Not Logged In",
         description: "Please log in or create an account to give.",
@@ -63,42 +90,18 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       router.push('/login');
       return;
     }
-    const finalAmount = Number(customAmount) || Number(amount);
     
-    if (typeof window.FlutterwaveCheckout === 'function') {
-      window.FlutterwaveCheckout({
-        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY,
-        tx_ref: "VOSEM-" + Date.now(),
-        amount: finalAmount,
-        currency: "NGN",
-        payment_options: "card, ussd, banktransfer",
-        customer: {
-          email: user.email || '',
-          name: user.displayName || 'Anonymous Member',
-        },
-        customizations: {
-          title: "VOSEM INT'L Giving",
-          description: `Contribution for ${purpose}`,
-        },
-        callback: function (data: any) {
-          onOpenChange(false);
-          // Redirect to our processing page for server-side verification
-          router.push(`/payment-processing?amount=${data.amount}&transaction_id=${data.transaction_id}`);
-        },
-        onclose: function () {
-          // This is called when the user closes the payment modal.
-          // We don't automatically redirect to a failure page, as they might just be cancelling.
-        },
-      });
-    } else {
-      console.error("Flutterwave Checkout script not loaded.");
-      // Fallback or error message for when the script fails to load
-       toast({
+    if (!process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY) {
+      console.error("Paystack Public Key is not configured.");
+      toast({
         variant: "destructive",
         title: "Payment Error",
-        description: "Could not initialize the payment gateway. Please try again later.",
+        description: "Could not initialize the payment gateway. Please contact support.",
       });
+      return;
     }
+
+    initializePayment({ onSuccess, onClose });
   };
 
   return (
