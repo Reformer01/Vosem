@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 <Link className={navLinkClasses("/dashboard")} href="/dashboard">Dashboard</Link>
                                 <button onClick={() => setIsModalOpen(true)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">Give</button>
                                 <Link className={navLinkClasses("/dashboard/profile")} href="/dashboard/profile">Profile</Link>
-                                <Link className="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">Settings</Link>
+                                <Link className={navLinkClasses("/dashboard/settings")} href="/dashboard/settings">Settings</Link>
                             </nav>
                             <div className="h-6 w-px bg-[#331133]"></div>
                             <div className="flex items-center gap-4">
