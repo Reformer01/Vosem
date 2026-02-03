@@ -55,6 +55,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     email: user?.email || "",
     amount: finalAmount * 100, // Amount in Kobo
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
+    channels: ['card', 'bank', 'ussd'],
     metadata: {
       name: user?.displayName || "Anonymous Giver",
       purpose: purpose,
