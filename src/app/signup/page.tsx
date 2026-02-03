@@ -103,9 +103,9 @@ export default function SignupPage() {
         <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-[520px] glass-card rounded-2xl p-8 sm:p-10 shadow-2xl">
                 <div className="mb-8 text-center">
-                    <div className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
-                        <span className="material-symbols-outlined">diversity_3</span>
-                    </div>
+                    <Link href="/" className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
+                        <VosemLogoIcon className="size-8" />
+                    </Link>
                     <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">Join the Family</h1>
                     <p className="text-muted-foreground text-base">Connect, grow, and worship with us.</p>
                 </div>
