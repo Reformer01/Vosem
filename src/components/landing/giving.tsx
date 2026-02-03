@@ -7,6 +7,8 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { PiggyBank, HeartHandshake, Building } from "lucide-react";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { GivingModal } from "./giving-modal";
 
 const givingBgImage = PlaceHolderImages.find(img => img.id === 'giving-bg');
 
@@ -32,10 +34,13 @@ const givingOptions = [
 export default function Giving() {
   const { user } = useUser();
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [givingPurpose, setGivingPurpose] = useState("Offerings");
 
-  const handleGiveNowClick = () => {
+  const handleGiveClick = (purpose: string) => {
     if (user) {
-      router.push('/dashboard');
+      setGivingPurpose(purpose);
+      setIsModalOpen(true);
     } else {
       router.push('/login');
     }
@@ -81,7 +86,7 @@ export default function Giving() {
                 </p>
                 <Button 
                   className="w-full py-6 rounded-xl bg-accent text-white font-bold hover:bg-primary transition-colors shadow-lg hover:shadow-accent/40 text-base"
-                  onClick={handleGiveNowClick}
+                  onClick={() => handleGiveClick(option.title)}
                 >
                   Give Now
                 </Button>
@@ -90,6 +95,7 @@ export default function Giving() {
           </div>
         </div>
       </section>
+      <GivingModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} defaultPurpose={givingPurpose} />
     </>
   );
 }
