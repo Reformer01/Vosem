@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,11 +17,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { VosemLogoIcon, GoogleIcon, FacebookIcon } from '@/components/icons';
+import { VosemLogoIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
-import { User, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, UserCredential } from 'firebase/auth';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -31,7 +30,6 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
-  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const [authError, setAuthError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -70,50 +68,6 @@ export default function LoginPage() {
     );
   }
   
-  const handleSocialSignIn = async (userCredential: UserCredential) => {
-    const user = userCredential.user;
-    if (user && firestore) {
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (!docSnap.exists()) {
-            const userProfile: { [key: string]: any } = {
-                uid: user.uid,
-                name: user.displayName || user.email,
-                email: user.email,
-                createdAt: serverTimestamp(),
-            };
-            if (user.phoneNumber) {
-                userProfile.whatsappNumber = user.phoneNumber;
-            }
-            await setDoc(userDocRef, userProfile);
-        }
-        router.push('/dashboard');
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setAuthError(null);
-    try {
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      await handleSocialSignIn(userCredential);
-    } catch (error: any) {
-      console.error(error);
-      setAuthError("Could not sign in with Google. Please try again later.");
-    }
-  };
-
-  const handleFacebookSignIn = async () => {
-    setAuthError(null);
-    try {
-      const provider = new FacebookAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      await handleSocialSignIn(userCredential);
-    } catch (error: any) {
-      console.error(error);
-      setAuthError("Could not sign in with Facebook. Please try again later.");
-    }
-  };
 
   return (
     <div className="bg-background text-white font-sans min-h-screen flex flex-col relative overflow-hidden">
@@ -192,26 +146,6 @@ export default function LoginPage() {
                             Sign In
                             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                         </Button>
-
-                         <div className="relative py-2">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-white/10"></div>
-                            </div>
-                            <div className="relative flex justify-center">
-                                <span className="bg-card px-2 text-xs text-muted-foreground uppercase">Or continue with</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Button type="button" onClick={handleGoogleSignIn} variant="outline" className="flex items-center justify-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 border-white/10 text-white text-sm font-medium h-10 transition-all">
-                                <GoogleIcon className="w-5 h-5" />
-                                Google
-                            </Button>
-                            <Button type="button" onClick={handleFacebookSignIn} variant="outline" className="flex items-center justify-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 border-white/10 text-white text-sm font-medium h-10 transition-all">
-                                <FacebookIcon className="w-5 h-5" />
-                                Facebook
-                            </Button>
-                        </div>
                     </form>
                 </Form>
 
