@@ -149,6 +149,10 @@
         "content": {
           "type": "string",
           "description": "The text content of the testimony."
+        },
+        "approved": {
+          "type": "boolean",
+          "description": "Indicates if the testimony is approved for public view. Defaults to false."
         }
       },
       "required": [
@@ -156,7 +160,8 @@
         "author",
         "authorId",
         "date",
-        "content"
+        "content",
+        "approved"
       ]
     },
     "PrayerRequest": {

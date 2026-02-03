@@ -23,6 +23,8 @@
  *   "write-only" drop box. Any signed-in user can submit a request, but no user
  *   (including the author) can read, update, or delete requests through the client,
  *   ensuring privacy.
+ * - Backend Validation: All user-created data (User Profiles, Testimonies, Prayer Requests)
+ *   is validated against a strict schema to ensure data integrity and prevent malformed data.
  *
  * Denormalization for Authorization: This ruleset is designed with denormalization in
  * mind. For user-owned content (like Testimonies and User Profiles), it is critical that an `authorId` or `uid`
@@ -34,29 +36,64 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Helper Functions
-    /**
-     * isSignedIn
-     * @description Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * isOwner
-     * @description Checks if the requesting user is the owner of the document.
-     */
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
+    // --- User Profile Validation Functions ---
+    function isCreatingUserProfile(data) {
+      return data.uid == request.auth.uid
+        && data.name is string && data.name.size() >= 2
+        && data.email is string
+        && data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$')
+        && data.createdAt == request.time
+        && data.whatsappNumber is string
+        && data.keys().hasAll(['uid', 'name', 'email', 'createdAt', 'whatsappNumber']);
+    }
+    
+    function canUpdateUserProfile(data) {
+      // User can only update their name and whatsappNumber
+      return !('uid' in data)
+          && !('email' in data)
+          && !('createdAt' in data)
+          && (!('name' in data) || (data.name is string && data.name.size() >= 2))
+          && (!('whatsappNumber' in data) || (data.whatsappNumber is string));
+    }
+    
+    // --- Testimony Validation Functions ---
+    function isCreatingTestimony(data) {
+      return data.keys().hasAll(['author', 'authorId', 'content', 'date', 'approved'])
+        && data.author is string && data.author.size() > 0
+        && data.authorId == request.auth.uid
+        && data.content is string && data.content.size() >= 20 && data.content.size() <= 1000
+        && data.date == request.time
+        && data.approved == false; // Users can only create unapproved testimonies
+    }
+    
+    // --- Prayer Request Validation Functions ---
+    function isCreatingPrayerRequest(data) {
+        return data.keys().hasAll(['author', 'content', 'date', 'isAnonymous'])
+            && data.author is string
+            && data.content is string && data.content.size() > 0
+            && data.date == request.time
+            && data.isAnonymous is bool;
+    }
+
     /**
-     * @description User profile data.
+     * @description User profile data. A user can manage their own profile.
      * @path /users/{userId}
-     * @allow A user can read and write to their own profile.
+     * @allow A user can read, create, update, and delete their own profile.
+     * @allow Create and update operations are validated against a schema.
      */
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isCreatingUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && canUpdateUserProfile(request.resource.data);
+      allow delete: if isOwner(userId);
     }
 
     /**
@@ -69,9 +106,7 @@ service cloud.firestore {
     match /events/{eventId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-
-      // Writes are disabled until an admin/personnel role system is implemented.
-      allow create, update, delete: if false;
+      allow create, update, delete: if false; // Writes are disabled until an admin/personnel role system is implemented.
     }
 
     /**
@@ -84,36 +119,35 @@ service cloud.firestore {
     match /sermons/{sermonId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-
-      // Writes are disabled until an admin/personnel role system is implemented.
-      allow create, update, delete: if false;
+      allow create, update, delete: if false; // Writes are disabled until an admin/personnel role system is implemented.
     }
 
     /**
      * @description User-submitted testimonies.
      * @path /testimonies/{testimonyId}
      * @allow Authenticated users can read testimonies.
-     * @allow A user can create, update, or delete their own testimony.
+     * @allow A user can create their own testimony (with validation).
+     * @allow A user can delete their own testimony.
+     * @deny Users cannot update testimonies for now.
      * @principle Public read for authenticated users, with owner-only writes.
      */
     match /testimonies/{testimonyId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow create: if isSignedIn() && isCreatingTestimony(request.resource.data);
+      allow update: if false; // Disallowed until a proper update flow is designed.
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     /**
      * @description A private "drop-box" for user-submitted prayer requests.
      * @path /prayer_requests/{prayerRequestId}
-     * @allow A signed-in user (auth!=null) submits a new prayer request. (create)
+     * @allow A signed-in user (auth!=null) submits a new, validated prayer request. (create)
      * @deny Any user, including the original author, attempts to read, update, or delete a prayer request. (get, update, delete)
      * @principle Implements a "write-only" pattern. Data can be submitted by any authenticated user but cannot be read back, ensuring privacy.
      */
     match /prayer_requests/{prayerRequestId} {
-      allow create: if isSignedIn();
-      
+      allow create: if isSignedIn() && isCreatingPrayerRequest(request.resource.data);
       allow get, list, update, delete: if false;
     }
   }
