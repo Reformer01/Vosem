@@ -57,7 +57,8 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
     } catch (error: any) {
-      setAuthError(error.message);
+      console.error(error);
+      setAuthError("Invalid credentials. Please check your email and password.");
     }
   };
   
@@ -80,6 +81,7 @@ export default function LoginPage() {
                 name: user.displayName || user.email,
                 email: user.email,
                 createdAt: serverTimestamp(),
+                whatsappNumber: user.phoneNumber || ''
             };
             await setDoc(userDocRef, userProfile);
         }
@@ -94,7 +96,8 @@ export default function LoginPage() {
       const userCredential = await signInWithPopup(auth, provider);
       await handleSocialSignIn(userCredential);
     } catch (error: any) {
-      setAuthError(error.message);
+      console.error(error);
+      setAuthError("Could not sign in with Google. Please try again later.");
     }
   };
 
@@ -105,7 +108,8 @@ export default function LoginPage() {
       const userCredential = await signInWithPopup(auth, provider);
       await handleSocialSignIn(userCredential);
     } catch (error: any) {
-      setAuthError(error.message);
+      console.error(error);
+      setAuthError("Could not sign in with Facebook. Please try again later.");
     }
   };
 

@@ -1,3 +1,4 @@
+
 /**
  * Core Philosophy: This ruleset establishes a security model for a church application,
  * balancing public access to information with secure, context-aware write permissions.
@@ -46,13 +47,25 @@ service cloud.firestore {
 
     // --- User Profile Validation Functions ---
     function isCreatingUserProfile(data) {
-      return data.uid == request.auth.uid
+      // Core fields that are always required
+      let requiredFields = ['uid', 'name', 'email', 'createdAt'];
+      let baseValidation = data.uid == request.auth.uid
         && data.name is string && data.name.size() >= 2
         && data.email is string
         && data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$')
-        && data.createdAt == request.time
-        && data.whatsappNumber is string
-        && data.keys().hasAll(['uid', 'name', 'email', 'createdAt', 'whatsappNumber']);
+        && data.createdAt == request.time;
+
+      // Handle optional 'whatsappNumber' field
+      if (data.keys().hasAny(['whatsappNumber'])) {
+        return baseValidation
+          && data.whatsappNumber is string
+          && data.keys().hasAll(requiredFields.concat(['whatsappNumber']))
+          && data.keys().size() == 5;
+      } else {
+        return baseValidation
+          && data.keys().hasAll(requiredFields)
+          && data.keys().size() == 4;
+      }
     }
     
     function canUpdateUserProfile(incoming, existing) {
@@ -63,7 +76,7 @@ service cloud.firestore {
           && incoming.uid == existing.uid
           && incoming.email == existing.email
           && incoming.createdAt == existing.createdAt
-          // Ensure no extra fields are added
+          // Ensure no extra fields are added and only allowed fields are present
           && incoming.keys().hasOnly(['uid', 'name', 'email', 'createdAt', 'whatsappNumber']);
     }
     

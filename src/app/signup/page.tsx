@@ -93,7 +93,12 @@ export default function SignupPage() {
       router.push('/dashboard');
 
     } catch (error: any) {
-      setAuthError(error.message);
+      console.error(error);
+      if (error.code === 'auth/email-already-in-use') {
+        setAuthError('This email address is already in use.');
+      } else {
+        setAuthError('An error occurred during signup. Please try again.');
+      }
     }
   };
 
@@ -104,7 +109,8 @@ export default function SignupPage() {
         const userCredential = await signInWithPopup(auth, provider);
         await handleSocialSignIn(userCredential);
     } catch (error: any) {
-        setAuthError(error.message);
+        console.error(error);
+        setAuthError('Could not sign up with Google. Please try again later.');
     }
   };
 
@@ -115,7 +121,8 @@ export default function SignupPage() {
         const userCredential = await signInWithPopup(auth, provider);
         await handleSocialSignIn(userCredential);
     } catch (error: any) {
-        setAuthError(error.message);
+        console.error(error);
+        setAuthError('Could not sign up with Facebook. Please try again later.');
     }
   };
   
