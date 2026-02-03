@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getAuth, User, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, User, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, UserCredential } from 'firebase/auth';
 import { doc, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
-import { useUser, useFirestore, initiateGoogleSignIn, initiateFacebookSignIn } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -47,71 +47,76 @@ export default function SignupPage() {
     },
   });
 
-  // This useEffect handles SOCIAL logins and redirecting already logged-in users.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // This is for social logins, where displayName is pre-populated
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const docSnap = await getDoc(userDocRef);
-        
-        // If the document doesn't exist, it's a first-time social login.
-        if (!docSnap.exists()) {
-          const userProfile = {
-            uid: user.uid,
-            name: user.displayName || user.email, // Fallback to email
-            email: user.email,
-            createdAt: serverTimestamp(),
-            whatsappNumber: user.phoneNumber || ''
-          };
-          // Use blocking setDoc to ensure profile is created before redirect
-          await setDoc(userDocRef, userProfile);
-        }
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
 
-        // Redirect any logged-in user to the dashboard.
-        router.push('/dashboard');
+
+  const handleSocialSignIn = async (userCredential: UserCredential) => {
+    const user = userCredential.user;
+    if (user && firestore) {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (!docSnap.exists()) {
+        const userProfile = {
+          uid: user.uid,
+          name: user.displayName || user.email,
+          email: user.email,
+          createdAt: serverTimestamp(),
+          whatsappNumber: user.phoneNumber || ''
+        };
+        await setDoc(userDocRef, userProfile);
       }
-    });
-
-    return () => unsubscribe();
-  }, [auth, firestore, router]);
-
+      router.push('/dashboard');
+    }
+  };
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     setAuthError(null);
     try {
-      // 1. Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // 2. Create profile object with form data
       const userProfile = {
         uid: user.uid,
-        name: values.name, // Use the name from the form!
+        name: values.name,
         email: values.email,
         whatsappNumber: values.whatsapp || '',
         createdAt: serverTimestamp(),
       };
       
-      // 3. Save profile to Firestore
       const userDocRef = doc(firestore, 'users', user.uid);
       await setDoc(userDocRef, userProfile);
 
-      // 4. Redirect to dashboard (onAuthStateChanged will also fire, but that's okay)
       router.push('/dashboard');
 
     } catch (error: any) {
-      // Handle Firebase auth errors (e.g., email-already-in-use)
       setAuthError(error.message);
     }
   };
 
-  const handleGoogleSignIn = () => {
-    initiateGoogleSignIn(auth);
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    try {
+        const provider = new GoogleAuthProvider();
+        const userCredential = await signInWithPopup(auth, provider);
+        await handleSocialSignIn(userCredential);
+    } catch (error: any) {
+        setAuthError(error.message);
+    }
   };
 
-  const handleFacebookSignIn = () => {
-    initiateFacebookSignIn(auth);
+  const handleFacebookSignIn = async () => {
+    setAuthError(null);
+    try {
+        const provider = new FacebookAuthProvider();
+        const userCredential = await signInWithPopup(auth, provider);
+        await handleSocialSignIn(userCredential);
+    } catch (error: any) {
+        setAuthError(error.message);
+    }
   };
   
   if (isUserLoading || user) {

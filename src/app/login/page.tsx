@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, initiateEmailSignIn, initiateGoogleSignIn, initiateFacebookSignIn, setDocumentNonBlocking, useFirestore } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,8 +20,8 @@ import {
 import { VosemLogoIcon, GoogleIcon, FacebookIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { User, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, UserCredential } from 'firebase/auth';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -45,31 +45,20 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    const handleAuthChange = async (user: User | null) => {
-      if (user) {
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const docSnap = await getDoc(userDocRef);
-
-        if (!docSnap.exists()) {
-          const userProfile = {
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            createdAt: serverTimestamp(),
-          };
-          setDocumentNonBlocking(userDocRef, userProfile, { merge: false });
-        }
-        router.push('/dashboard');
-      }
-    };
-    const unsubscribe = onAuthStateChanged(auth, handleAuthChange);
-    return () => unsubscribe();
-  }, [auth, firestore, router]);
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
 
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setAuthError(null);
-    initiateEmailSignIn(auth, values.email, values.password);
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      router.push('/dashboard');
+    } catch (error: any) {
+      setAuthError(error.message);
+    }
   };
   
   if (isUserLoading || user) {
@@ -79,13 +68,45 @@ export default function LoginPage() {
       </div>
     );
   }
-
-  const handleGoogleSignIn = () => {
-    initiateGoogleSignIn(auth);
+  
+  const handleSocialSignIn = async (userCredential: UserCredential) => {
+    const user = userCredential.user;
+    if (user && firestore) {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (!docSnap.exists()) {
+            const userProfile = {
+                uid: user.uid,
+                name: user.displayName || user.email,
+                email: user.email,
+                createdAt: serverTimestamp(),
+            };
+            await setDoc(userDocRef, userProfile);
+        }
+        router.push('/dashboard');
+    }
   };
 
-  const handleFacebookSignIn = () => {
-    initiateFacebookSignIn(auth);
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await handleSocialSignIn(userCredential);
+    } catch (error: any) {
+      setAuthError(error.message);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setAuthError(null);
+    try {
+      const provider = new FacebookAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await handleSocialSignIn(userCredential);
+    } catch (error: any) {
+      setAuthError(error.message);
+    }
   };
 
   return (
