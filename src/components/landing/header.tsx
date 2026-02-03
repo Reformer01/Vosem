@@ -39,7 +39,7 @@ export default function Header() {
             VOSEM <span className="text-accent">INT'L</span>
           </h1>
         </Link>
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="text-sm font-semibold text-white/90 hover:text-accent transition-colors">
               {link.label}
@@ -67,7 +67,7 @@ export default function Header() {
             </>
           )}
         </div>
-        <div className="md:hidden">
+        <div className="lg:hidden">
           {isMounted ? (
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
