@@ -126,7 +126,7 @@ export default function DashboardPage() {
                 <div className="w-full lg:w-auto pt-6 lg:pt-0 mt-6 lg:mt-0 border-t border-[#331133] lg:border-none">
                     <div className="text-left lg:text-right">
                         <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Total Sown Year-to-Date</span>
-                        <div className="text-4xl font-bold text-white font-mono mt-1">$0.00</div>
+                        <div className="text-4xl font-bold text-white font-mono mt-1">₦0.00</div>
                     </div>
                 </div>
             </div>
