@@ -55,13 +55,16 @@ service cloud.firestore {
         && data.keys().hasAll(['uid', 'name', 'email', 'createdAt', 'whatsappNumber']);
     }
     
-    function canUpdateUserProfile(data) {
+    function canUpdateUserProfile(incoming, existing) {
       // User can only update their name and whatsappNumber
-      return !('uid' in data)
-          && !('email' in data)
-          && !('createdAt' in data)
-          && (!('name' in data) || (data.name is string && data.name.size() >= 2))
-          && (!('whatsappNumber' in data) || (data.whatsappNumber is string));
+      return incoming.name is string && incoming.name.size() >= 2
+          && incoming.whatsappNumber is string
+          // Ensure immutable fields are not changed
+          && incoming.uid == existing.uid
+          && incoming.email == existing.email
+          && incoming.createdAt == existing.createdAt
+          // Ensure no extra fields are added
+          && incoming.keys().hasOnly(['uid', 'name', 'email', 'createdAt', 'whatsappNumber']);
     }
     
     // --- Testimony Validation Functions ---
@@ -92,7 +95,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId) && isCreatingUserProfile(request.resource.data);
-      allow update: if isOwner(userId) && canUpdateUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && canUpdateUserProfile(request.resource.data, resource.data);
       allow delete: if isOwner(userId);
     }
 
