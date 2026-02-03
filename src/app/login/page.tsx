@@ -76,13 +76,15 @@ export default function LoginPage() {
         const userDocRef = doc(firestore, 'users', user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
-            const userProfile = {
+            const userProfile: { [key: string]: any } = {
                 uid: user.uid,
                 name: user.displayName || user.email,
                 email: user.email,
                 createdAt: serverTimestamp(),
-                whatsappNumber: user.phoneNumber || ''
             };
+            if (user.phoneNumber) {
+                userProfile.whatsappNumber = user.phoneNumber;
+            }
             await setDoc(userDocRef, userProfile);
         }
         router.push('/dashboard');

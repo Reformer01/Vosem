@@ -52,8 +52,7 @@ service cloud.firestore {
       let baseValidation = data.uid == request.auth.uid
         && data.name is string && data.name.size() >= 2
         && data.email is string
-        && data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$')
-        && data.createdAt == request.time;
+        && data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$');
 
       // Handle optional 'whatsappNumber' field
       if (data.keys().hasAny(['whatsappNumber'])) {
@@ -70,14 +69,23 @@ service cloud.firestore {
     
     function canUpdateUserProfile(incoming, existing) {
       // User can only update their name and whatsappNumber
-      return incoming.name is string && incoming.name.size() >= 2
-          && incoming.whatsappNumber is string
-          // Ensure immutable fields are not changed
-          && incoming.uid == existing.uid
+      let canUpdate = incoming.name is string && incoming.name.size() >= 2;
+
+      // Allow whatsappNumber to be updated or removed
+      if (incoming.keys().has('whatsappNumber')) {
+          canUpdate = canUpdate && incoming.whatsappNumber is string;
+      }
+
+      // Ensure immutable fields are not changed
+      let immutableFieldsUnchanged = incoming.uid == existing.uid
           && incoming.email == existing.email
-          && incoming.createdAt == existing.createdAt
-          // Ensure no extra fields are added and only allowed fields are present
-          && incoming.keys().hasOnly(['uid', 'name', 'email', 'createdAt', 'whatsappNumber']);
+          && incoming.createdAt == existing.createdAt;
+
+      // Ensure no extra fields are added and only allowed fields are present
+      let allowedKeys = ['uid', 'name', 'email', 'createdAt', 'whatsappNumber'];
+      let keysAreValid = incoming.keys().hasOnly(allowedKeys);
+
+      return canUpdate && immutableFieldsUnchanged && keysAreValid;
     }
     
     // --- Testimony Validation Functions ---
