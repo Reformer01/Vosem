@@ -7,21 +7,49 @@ import { VosemLogoIcon } from '@/components/icons';
 function PaymentProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const amount = searchParams.get('amount');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const transaction_id = `VOSEM-${Date.now()}`;
-      // Simulate a random outcome for the payment
-      if (Math.random() > 0.2) { // 80% success rate
-        router.push(`/payment-success?amount=${amount}&transaction_id=${transaction_id}`);
-      } else {
+    const transaction_id = searchParams.get('transaction_id');
+    const amount = searchParams.get('amount');
+
+    if (!transaction_id) {
+      // If there's no transaction ID, something went wrong, possibly a direct navigation.
+      router.push('/payment-failed');
+      return;
+    }
+
+    const verifyPayment = async () => {
+      try {
+        const response = await fetch('/api/verify-donation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transaction_id }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.status === 'success') {
+            // Verification successful, redirect to success page
+            router.push(`/payment-success?amount=${amount}&transaction_id=${transaction_id}`);
+          } else {
+            // Verification failed on the backend
+            router.push('/payment-failed');
+          }
+        } else {
+          // Network or server error
+          router.push('/payment-failed');
+        }
+      } catch (error) {
+        console.error('Verification request failed:', error);
         router.push('/payment-failed');
       }
-    }, 3000); // 3-second processing time
+    };
 
-    return () => clearTimeout(timer);
-  }, [router, amount]);
+    verifyPayment();
+  }, [router, searchParams]);
+
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#0f0510] group/design-root overflow-x-hidden font-sans text-white">

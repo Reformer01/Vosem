@@ -19,3 +19,9 @@ secrets:
     version: latest
   - secret: NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY
     version: latest
+  - secret: FLUTTERWAVE_SECRET_KEY
+    version: latest
+  - secret: GMAIL_USER
+    version: latest
+  - secret: GMAIL_APP_PASS
+    version: latest

@@ -23,6 +23,7 @@ import {
 import { HeartHandshake, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUser } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface GivingModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ declare global {
 
 export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModalProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const { user } = useUser();
   const [purpose, setPurpose] = useState(defaultPurpose);
   const [amount, setAmount] = useState("10000");
@@ -53,8 +55,12 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
   const handleProceed = () => {
     if (!user) {
-      console.error("User is not logged in.");
-      // Optionally, show a toast message to the user.
+       toast({
+        variant: "destructive",
+        title: "Not Logged In",
+        description: "Please log in or create an account to give.",
+      });
+      router.push('/login');
       return;
     }
     const finalAmount = Number(customAmount) || Number(amount);
@@ -76,19 +82,22 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
         },
         callback: function (data: any) {
           onOpenChange(false);
-          router.push(`/payment-success?amount=${data.amount}&transaction_id=${data.transaction_id}`);
+          // Redirect to our processing page for server-side verification
+          router.push(`/payment-processing?amount=${data.amount}&transaction_id=${data.transaction_id}`);
         },
         onclose: function () {
-          // Redirect to failed page if user closes modal without completing payment
-          // router.push('/payment-failed');
+          // This is called when the user closes the payment modal.
+          // We don't automatically redirect to a failure page, as they might just be cancelling.
         },
       });
     } else {
       console.error("Flutterwave Checkout script not loaded.");
-      // Fallback or error message
-      const finalAmount = Number(customAmount) || Number(amount);
-      router.push(`/payment-processing?amount=${finalAmount}`);
-      onOpenChange(false);
+      // Fallback or error message for when the script fails to load
+       toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: "Could not initialize the payment gateway. Please try again later.",
+      });
     }
   };
 
