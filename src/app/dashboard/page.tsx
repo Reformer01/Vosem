@@ -131,25 +131,6 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Recurring Giving Section */}
-            <section>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-white text-2xl font-bold flex items-center gap-3">
-                        <span className="material-symbols-outlined text-primary">autorenew</span>
-                        Active Commitments
-                    </h2>
-                    <Link className="text-primary text-sm font-semibold hover:underline" href="#">View All Plans</Link>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="glass-panel p-5 rounded-xl flex items-center justify-center text-center text-slate-400">
-                        <p>You have no active commitments. <br/>Set one up today to automate your giving!</p>
-                    </div>
-                    <div className="glass-panel p-5 rounded-xl flex items-center justify-center text-center text-slate-400">
-                        <p>Your second commitment card could be here.</p>
-                    </div>
-                </div>
-            </section>
-
             {/* Seed History Section */}
             <section className="flex flex-col gap-4">
                 <div className="flex items-end justify-between">
