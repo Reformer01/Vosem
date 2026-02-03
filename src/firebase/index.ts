@@ -22,6 +22,11 @@ export function initializeFirebase() {
       if (process.env.NODE_ENV === "production") {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
       }
+      
+      if (!firebaseConfig.apiKey) {
+        throw new Error('Firebase API Key is missing. Please ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in your .env file and restart the development server.');
+      }
+      
       firebaseApp = initializeApp(firebaseConfig);
     }
 
