@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -38,11 +38,20 @@ export default function DashboardPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   const donationsQuery = useMemoFirebase(
-    () => user ? query(collection(firestore, 'donations'), where('userId', '==', user.uid), orderBy('createdAt', 'desc')) : null,
+    () => user ? query(collection(firestore, 'donations'), where('userId', '==', user.uid)) : null,
     [user, firestore]
   );
 
-  const { data: donations, isLoading: isDonationsLoading } = useCollection<Donation>(donationsQuery);
+  const { data: unsortedDonations, isLoading: isDonationsLoading } = useCollection<Donation>(donationsQuery);
+
+  const donations = useMemo(() => {
+    if (!unsortedDonations) return null;
+    return [...unsortedDonations].sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA; // Sort descending (newest first)
+    });
+  }, [unsortedDonations]);
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
