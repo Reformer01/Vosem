@@ -4,6 +4,14 @@ import axios from 'axios';
 import nodemailer from 'nodemailer';
 import * as admin from 'firebase-admin';
 
+// In-memory store for rate limiting.
+// Note: This is a simple in-memory solution suitable for a single server instance.
+// For multi-instance deployments, a distributed store like Redis would be required.
+const ipRequestCounts = new Map<string, { count: number; windowStart: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 15; // Allow 15 requests per IP per minute
+
+
 // Initialize Firebase Admin SDK
 // This will automatically use the GOOGLE_APPLICATION_CREDENTIALS environment variable
 // in production on Firebase App Hosting.
@@ -18,6 +26,30 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 export async function POST(req: NextRequest) {
+  // Simple IP-based rate limiting to prevent abuse
+  const ip = req.headers.get('x-forwarded-for') ?? req.ip ?? '127.0.0.1';
+  const now = Date.now();
+
+  const record = ipRequestCounts.get(ip);
+
+  if (record) {
+    const isNewWindow = now - record.windowStart > RATE_LIMIT_WINDOW_MS;
+    if (isNewWindow) {
+      // Start a new window
+      ipRequestCounts.set(ip, { count: 1, windowStart: now });
+    } else {
+      // Check request count in the current window
+      if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+        return NextResponse.json({ message: 'Too many requests. Please try again later.' }, { status: 429 });
+      }
+      // Increment count
+      record.count++;
+    }
+  } else {
+    // First request from this IP
+    ipRequestCounts.set(ip, { count: 1, windowStart: now });
+  }
+  
   const { reference } = await req.json();
 
   if (!reference) {
