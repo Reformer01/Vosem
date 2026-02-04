@@ -21,7 +21,7 @@
  * - Testimony Ownership: The rules anticipate that testimonies should be editable only
  *   by their original authors. The data model now includes a secure 'authorId' (UID) field.
  * - Private Prayer Requests: The /prayer_requests collection is configured as a
- *   "write-only" drop box. Any signed-in user can submit a request, but no user
+ *   "write-only" drop box. Any signed-in user can submit a new request, but no user
  *   (including the author) can read, update, or delete requests through the client,
  *   ensuring privacy.
  * - Private Donations: The /donations collection is written by a trusted backend
@@ -184,9 +184,9 @@ service cloud.firestore {
      * @deny Writes are disabled from the client; they must go through the backend API.
      */
     match /donations/{donationId} {
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      // Allow a user to query for their own donations only.
-      allow list: if isSignedIn() && request.query.where.userId == request.auth.uid;
+      // A user can read (get or list) their own donation records.
+      // For list operations, the query MUST include `where('userId', '==', request.auth.uid)`.
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create, update, delete: if false; // Writes must be done by the backend.
     }
   }
