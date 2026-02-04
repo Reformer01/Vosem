@@ -1,10 +1,16 @@
 'use client';
+
 import { VosemLogoIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { RefreshCw, Headset, AlertTriangle, ChevronDown } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function PaymentFailedPage() {
+function PaymentFailedContent() {
+  const searchParams = useSearchParams();
+  const reason = searchParams.get('reason');
+
   return (
     <div className="bg-background font-sans text-white antialiased min-h-screen flex flex-col">
       <Link href="/" className="absolute top-8 left-8 z-20 flex items-center gap-3">
@@ -21,10 +27,10 @@ export default function PaymentFailedPage() {
           </div>
 
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Something went wrong
+            Payment Unsuccessful
           </h1>
-          <p className="mb-8 text-lg font-normal leading-relaxed text-white/60">
-            Transaction declined. Please check your card details or try a different payment method.
+          <p className="mb-8 text-base font-normal leading-relaxed text-white/60">
+            {reason || 'Your transaction could not be completed. Please check your details or try a different payment method.'}
           </p>
 
           <div className="flex flex-col sm:flex-row sm:gap-4 gap-3">
@@ -40,12 +46,6 @@ export default function PaymentFailedPage() {
             </Button>
           </div>
 
-          <div className="mt-8 border-t border-white/10 pt-6">
-            <button className="group flex items-center justify-center gap-1 text-sm text-white/40 transition-colors hover:text-white/60 mx-auto">
-              <span>Error Code: 502</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
-          </div>
         </div>
       </main>
 
@@ -56,4 +56,17 @@ export default function PaymentFailedPage() {
       </footer>
     </div>
   );
+}
+
+
+export default function PaymentFailedPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center bg-background">
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
+            </div>
+        }>
+            <PaymentFailedContent />
+        </Suspense>
+    )
 }

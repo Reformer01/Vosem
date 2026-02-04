@@ -13,8 +13,7 @@ function PaymentProcessingContent() {
     const amount = searchParams.get('amount');
 
     if (!reference) {
-      // If there's no reference, something went wrong.
-      router.replace('/payment-failed');
+      router.replace('/payment-failed?reason=No_transaction_reference_found');
       return;
     }
 
@@ -32,19 +31,19 @@ function PaymentProcessingContent() {
           const result = await response.json();
           if (result.status === 'success') {
             const currency = result.data?.currency || 'NGN';
-            // Verification successful, redirect to success page
             router.replace(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
           } else {
-            // Verification failed on the backend
-            router.replace('/payment-failed');
+            const reason = result.message || 'Payment verification failed.';
+            router.replace(`/payment-failed?reason=${encodeURIComponent(reason)}`);
           }
         } else {
-          // Network or server error
-          router.replace('/payment-failed');
+           const reason = `Server error: ${response.statusText} (${response.status})`;
+           router.replace(`/payment-failed?reason=${encodeURIComponent(reason)}`);
         }
       } catch (error) {
         console.error('Verification request failed:', error);
-        router.replace('/payment-failed');
+        const reason = 'Could not connect to the verification service.';
+        router.replace(`/payment-failed?reason=${encodeURIComponent(reason)}`);
       }
     };
 

@@ -26,7 +26,11 @@ function PaymentSuccessContent() {
             style: 'currency',
             currency: currency,
           }).format(Number(amount))
-        : '...';
+        : 'an incredible gift';
+    
+    const whatsAppMessage = `I just sowed a seed of ${formattedAmount} at VOSEM INT'L! Join us in experiencing God's grace. https://vosem.org/giving`;
+    const whatsAppLink = `https://wa.me/?text=${encodeURIComponent(whatsAppMessage)}`;
+
 
     return (
         <div className="bg-[#0f0510] text-white font-sans relative selection:bg-accent/30">
@@ -91,7 +95,7 @@ function PaymentSuccessContent() {
                                     </Button>
                                 )}
                             </div>
-                            <a className="flex w-full sm:w-auto min-w-[240px] sm:min-w-[400px] h-14 cursor-pointer items-center justify-center rounded-xl bg-white/5 hover:bg-[#25D366]/10 border border-[#25D366]/40 backdrop-blur-md transition-all text-white gap-3 px-8 text-sm font-bold tracking-wide group mt-4 font-sans" href="https://wa.me/?text=I%20just%20sowed%20a%20seed%20at%20VOSEM%20INT'L!%20Join%20us%20in%20experiencing%20God's%20grace.%20https://vosem.org" target="_blank" rel="noopener noreferrer">
+                            <a className="flex w-full sm:w-auto min-w-[240px] sm:min-w-[400px] h-14 cursor-pointer items-center justify-center rounded-xl bg-white/5 hover:bg-[#25D366]/10 border border-[#25D366]/40 backdrop-blur-md transition-all text-white gap-3 px-8 text-sm font-bold tracking-wide group mt-4 font-sans" href={whatsAppLink} target="_blank" rel="noopener noreferrer">
                                 <WhatsAppIcon className="w-6 h-6 text-[#25D366] transition-transform group-hover:scale-110" />
                                 <span className="truncate">Share Testimony on WhatsApp</span>
                             </a>
