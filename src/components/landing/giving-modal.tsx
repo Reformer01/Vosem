@@ -110,7 +110,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={!isPaying}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-[520px] rounded-2xl overflow-hidden glass-panel border-white/10 dark:bg-[#141414]/80">
         {!isPaying ? (
           <>
@@ -204,6 +204,8 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
           </>
         ) : (
           <div className="flex flex-col items-center justify-center p-10 h-[580px]">
+            <DialogTitle className="sr-only">Processing Payment</DialogTitle>
+            <DialogDescription className="sr-only">Please wait while we redirect you to the secure payment gateway.</DialogDescription>
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
             <p className="mt-6 text-muted-foreground font-medium">Redirecting to secure payment gateway...</p>
           </div>
