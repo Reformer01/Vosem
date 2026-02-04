@@ -96,6 +96,7 @@ service cloud.firestore {
     // --- Testimony Validation Functions ---
     function isCreatingTestimony(data) {
       return data.keys().hasAll(['author', 'authorId', 'content', 'date', 'approved'])
+        && data.keys().size() == 5
         && data.author is string && data.author.size() > 0
         && data.authorId == request.auth.uid
         && data.content is string && data.content.size() >= 20 && data.content.size() <= 1000
@@ -106,6 +107,7 @@ service cloud.firestore {
     // --- Prayer Request Validation Functions ---
     function isCreatingPrayerRequest(data) {
         return data.keys().hasAll(['author', 'content', 'date', 'isAnonymous'])
+            && data.keys().size() == 4
             && data.author is string
             && data.content is string && data.content.size() > 0
             && data.date == request.time
@@ -189,10 +191,8 @@ service cloud.firestore {
     match /donations/{donationId} {
       // A user can read (get or list) their own donation records.
       // For list operations, the query MUST include `where('userId', '==', request.auth.uid)`.
-      // The rule also defensively checks for the existence of the 'userId' field.
-      allow read: if isSignedIn() &&
-                     'userId' in resource.data &&
-                     resource.data.userId == request.auth.uid;
+      // The rule now implicitly trusts the query to filter correctly.
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create, update, delete: if false; // Writes must be done by the backend.
     }
   }
