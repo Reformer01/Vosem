@@ -1,6 +1,6 @@
 'use client';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth, useStorage } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import { ProfileForm } from '@/components/dashboard/profile-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
-import { reauthenticateWithCredential, EmailAuthProvider, updatePassword, signOut } from 'firebase/auth';
+import { useState, useRef, type ChangeEvent } from 'react';
+import { reauthenticateWithCredential, EmailAuthProvider, updatePassword, signOut, updateProfile } from 'firebase/auth';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useRouter } from 'next/navigation';
 
 interface UserProfile {
   name: string;
   email: string;
   whatsappNumber?: string;
+  photoURL?: string;
 }
 
 const passwordSchema = z.object({
@@ -34,9 +36,12 @@ export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const auth = useAuth();
+  const storage = useStorage();
   const router = useRouter();
   const { toast } = useToast();
   const [isPasswordChanging, setIsPasswordChanging] = useState(false);
+  const [isPictureUploading, setIsPictureUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -92,6 +97,57 @@ export default function ProfilePage() {
     }
   };
 
+  const handlePictureChangeClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsPictureUploading(true);
+
+    if (!file.type.startsWith('image/')) {
+      toast({ variant: "destructive", title: "Upload Failed", description: "Please select an image file." });
+      setIsPictureUploading(false);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({ variant: "destructive", title: "Upload Failed", description: "Image size cannot exceed 5MB." });
+      setIsPictureUploading(false);
+      return;
+    }
+
+    const imageRef = storageRef(storage, `profile-pictures/${user.uid}`);
+
+    try {
+      await uploadBytes(imageRef, file);
+      const downloadURL = await getDownloadURL(imageRef);
+      
+      await updateProfile(user, { photoURL: downloadURL });
+      
+      const userDocRef = doc(firestore, 'users', user.uid);
+      await updateDoc(userDocRef, { photoURL: downloadURL });
+
+      toast({
+        title: "Profile Picture Updated",
+        description: "Your new picture has been saved.",
+      });
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: "Could not update your profile picture. Please try again.",
+      });
+    } finally {
+      setIsPictureUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
 
   if (isUserLoading || isProfileLoading || !user) {
     return (
@@ -122,14 +178,28 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center gap-4 w-full sm:w-48">
                     <Avatar className="w-32 h-32 text-4xl border-4 border-primary/30">
                         {user.photoURL ? (
-                            <AvatarImage src={user.photoURL} alt={userProfile.name} />
+                            <AvatarImage src={user.photoURL} alt={userProfile.name} key={user.photoURL} />
                         ) : (
                              <AvatarFallback className="bg-input text-slate-400">
                                 {userProfile.name?.charAt(0).toUpperCase()}
                              </AvatarFallback>
                         )}
                     </Avatar>
-                    <Button variant="outline" className="w-full bg-white/5 hover:bg-white/10" disabled>Change Picture</Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept="image/png, image/jpeg, image/gif"
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-white/5 hover:bg-white/10" 
+                      onClick={handlePictureChangeClick}
+                      disabled={isPictureUploading}
+                    >
+                      {isPictureUploading ? 'Uploading...' : 'Change Picture'}
+                    </Button>
                 </div>
                 <div className="flex-1 w-full">
                     <ProfileForm userProfile={userProfile} />

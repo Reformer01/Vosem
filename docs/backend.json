@@ -23,6 +23,11 @@
           "type": "string",
           "description": "The user's WhatsApp number."
         },
+        "photoURL": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        },
         "createdAt": {
           "type": "string",
           "description": "The timestamp when the user profile was created.",

@@ -69,25 +69,28 @@ service cloud.firestore {
       }
     }
     
-    function canUpdateUserProfile(incoming, existing) {
-      // User can only update their name and whatsappNumber
-      let canUpdate = incoming.name is string && incoming.name.size() >= 2;
+    function canUpdateUserProfile(request, resource) {
+      let incomingData = request.resource.data;
+      let existingData = resource.data;
+      
+      // The only fields that can be changed are 'name', 'whatsappNumber', and 'photoURL'
+      let mutableFields = ['name', 'whatsappNumber', 'photoURL'];
+      
+      // Ensure that the set of fields being changed is a subset of the mutable fields.
+      let changedKeys = incomingData.diff(existingData).affectedKeys();
+      let areChangesAllowed = changedKeys.hasOnly(mutableFields);
 
-      // Allow whatsappNumber to be updated or removed
-      if (incoming.keys().has('whatsappNumber')) {
-          canUpdate = canUpdate && incoming.whatsappNumber is string;
-      }
+      // Validate the types of the fields being updated.
+      let nameIsValid = !changedKeys.has('name') || (incomingData.name is string && incomingData.name.size() >= 2);
+      let whatsappIsValid = !changedKeys.has('whatsappNumber') || incomingData.whatsappNumber is string;
+      let photoURLIsValid = !changedKeys.has('photoURL') || (incomingData.photoURL is string && incomingData.photoURL.matches('^https?://.*'));
+      
+      // Immutable fields must not change
+      let immutableFieldsUnchanged = incomingData.uid == existingData.uid
+          && incomingData.email == existingData.email
+          && incomingData.createdAt == existingData.createdAt;
 
-      // Ensure immutable fields are not changed
-      let immutableFieldsUnchanged = incoming.uid == existing.uid
-          && incoming.email == existing.email
-          && incoming.createdAt == existing.createdAt;
-
-      // Ensure no extra fields are added and only allowed fields are present
-      let allowedKeys = ['uid', 'name', 'email', 'createdAt', 'whatsappNumber'];
-      let keysAreValid = incoming.keys().hasOnly(allowedKeys);
-
-      return canUpdate && immutableFieldsUnchanged && keysAreValid;
+      return areChangesAllowed && nameIsValid && whatsappIsValid && photoURLIsValid && immutableFieldsUnchanged;
     }
     
     // --- Testimony Validation Functions ---
@@ -118,7 +121,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId) && isCreatingUserProfile(request.resource.data);
-      allow update: if isOwner(userId) && canUpdateUserProfile(request.resource.data, resource.data);
+      allow update: if isOwner(userId) && canUpdateUserProfile(request, resource);
       allow delete: if isOwner(userId);
     }
 
