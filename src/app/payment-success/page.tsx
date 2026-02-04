@@ -74,10 +74,14 @@ function PaymentSuccessContent() {
                                         <Link href="/">Return to Home</Link>
                                     </Button>
                                 )}
-                                <Button variant="ghost" className="w-full sm:w-auto min-w-[200px] h-14 rounded-full text-white/70 hover:text-white hover:bg-white/5 transition-all text-base font-medium font-sans gap-2 border border-transparent hover:border-white/10">
-                                    <Download size={20} />
-                                    <span>Download Receipt</span>
-                                </Button>
+                                {reference && (
+                                    <Button asChild variant="ghost" className="w-full sm:w-auto min-w-[200px] h-14 rounded-full text-white/70 hover:text-white hover:bg-white/5 transition-all text-base font-medium font-sans gap-2 border border-transparent hover:border-white/10">
+                                        <Link href={`/receipt/${reference}`} target="_blank">
+                                            <Download size={20} />
+                                            <span>Download Receipt</span>
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                             <a className="flex w-full sm:w-auto min-w-[240px] sm:min-w-[400px] h-14 cursor-pointer items-center justify-center rounded-xl bg-white/5 hover:bg-[#25D366]/10 border border-[#25D366]/40 backdrop-blur-md transition-all text-white gap-3 px-8 text-sm font-bold tracking-wide group mt-4 font-sans" href="https://wa.me/?text=I%20just%20sowed%20a%20seed%20at%20VOSEM%20INT'L!%20Join%20us%20in%20experiencing%20God's%20grace.%20https://vosem.org" target="_blank" rel="noopener noreferrer">
                                 <WhatsAppIcon className="w-6 h-6 text-[#25D366] transition-transform group-hover:scale-110" />

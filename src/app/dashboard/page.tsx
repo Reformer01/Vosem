@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -6,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface UserProfile {
   name: string;
@@ -132,9 +132,9 @@ export default function DashboardPage() {
                                         </span>
                                       </td>
                                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-primary hover:text-purple-300 transition-colors">
+                                        <Link href={`/receipt/${donation.id}`} className="text-primary hover:text-purple-300 transition-colors">
                                           View
-                                        </button>
+                                        </Link>
                                       </td>
                                     </tr>
                                   ))

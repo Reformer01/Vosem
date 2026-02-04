@@ -79,6 +79,24 @@
     background: hsl(var(--primary));
     border-radius: 4px;
   }
+  @media print {
+    body {
+      background-color: #ffffff;
+      color: #000000;
+    }
+    .printable-area {
+      border: 1px solid #e2e8f0 !important;
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      box-shadow: none;
+    }
+    .printable-area *, .printable-area {
+      color: #000000 !important;
+    }
+    .no-print {
+      display: none !important;
+    }
+  }
 }
 
 @layer components {
