@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
@@ -9,10 +10,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Transaction reference is required' }, { status: 400 });
   }
 
-  // Ensure secret keys are available
-  if (!process.env.PAYSTACK_SECRET_KEY || !process.env.GMAIL_USER || !process.env.GMAIL_APP_PASS) {
-      console.error('Server is missing required environment variables for payment verification or email.');
-      return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+  // Critical check: The API cannot function without the Paystack secret key.
+  if (!process.env.PAYSTACK_SECRET_KEY) {
+      console.error('Server is missing PAYSTACK_SECRET_KEY environment variable.');
+      return NextResponse.json({ message: 'Server configuration error: Missing payment key' }, { status: 500 });
   }
 
   try {
@@ -35,54 +36,59 @@ export async function POST(req: NextRequest) {
       const donorName = data.customer.first_name || data.metadata.name;
       const currency = data.currency;
 
-      // Step 3: Send receipt email
+      // Step 3: Attempt to send receipt email, but do not fail the request if it errors.
       try {
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASS,
-            },
-        });
+        // Check for email credentials only when we need them.
+        if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASS) {
+            console.warn('Gmail credentials are not set in .env file. Skipping receipt email.');
+        } else {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.GMAIL_USER,
+                    pass: process.env.GMAIL_APP_PASS,
+                },
+            });
 
-        const mailOptions = {
-            from: `"VOSEM INT'L Finance" <${process.env.GMAIL_USER}>`,
-            to: donorEmail,
-            subject: 'Thank You For Your Generous Giving',
-            html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6;">
-                <h1 style="color: #7c28c5;">Thank You for Your Donation</h1>
-                <p>Dear ${donorName || 'Beloved'},</p>
-                <p>We are writing to confirm that we have received your generous donation of <strong>${currency} ${amountPaid.toLocaleString()}</strong>.</p>
-                <p>Your transaction reference is: <strong>${data.reference}</strong></p>
-                <p>Your contribution is invaluable to us and will go a long way in supporting the ministry and spreading the gospel. We pray that God blesses you abundantly for your faithfulness.</p>
-                <br/>
-                <p>With gratitude,<br/>The VOSEM International Team</p>
-            </div>
-            `,
-        };
-        
-        await transporter.sendMail(mailOptions);
-
+            const mailOptions = {
+                from: `"VOSEM INT'L Finance" <${process.env.GMAIL_USER}>`,
+                to: donorEmail,
+                subject: 'Thank You For Your Generous Giving',
+                html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6;">
+                    <h1 style="color: #7c28c5;">Thank You for Your Donation</h1>
+                    <p>Dear ${donorName || 'Beloved'},</p>
+                    <p>We are writing to confirm that we have received your generous donation of <strong>${currency} ${amountPaid.toLocaleString()}</strong>.</p>
+                    <p>Your transaction reference is: <strong>${data.reference}</strong></p>
+                    <p>Your contribution is invaluable to us and will go a long way in supporting the ministry and spreading the gospel. We pray that God blesses you abundantly for your faithfulness.</p>
+                    <br/>
+                    <p>With gratitude,<br/>The VOSEM International Team</p>
+                </div>
+                `,
+            };
+            
+            await transporter.sendMail(mailOptions);
+        }
       } catch (emailError) {
           console.error("Failed to send receipt email:", emailError);
           // Do not block the success response if email fails.
           // The payment was successful, which is the most critical part.
       }
       
-      // Step 4: Return success response to the frontend
+      // Step 4: Return success response to the frontend regardless of email outcome.
       return NextResponse.json({
         status: 'success',
-        message: 'Payment verified and receipt sent!',
+        message: 'Payment verified successfully.',
         data,
       });
 
     } else {
       // Transaction was not successful on Paystack's end
-      return NextResponse.json({ status: 'failed', message: 'Transaction not successful' }, { status: 400 });
+      return NextResponse.json({ status: 'failed', message: `Transaction status from Paystack: ${data.status}` }, { status: 400 });
     }
   } catch (error) {
     console.error('Verification API Error:', error);
+    // This will catch errors from the axios call if the PAYSTACK_SECRET_KEY is invalid or network fails.
     return NextResponse.json({ message: 'Server error during verification' }, { status: 500 });
   }
 }
