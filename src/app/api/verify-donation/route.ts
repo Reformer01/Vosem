@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       const amountInKobo = data.amount;
       const amountInNaira = amountInKobo / 100;
       const donorEmail = data.customer.email;
-      const donorName = data.customer.first_name || data.metadata.name;
+      const donorName = data.metadata?.name || data.customer?.first_name || 'Valued Giver';
       const currency = data.currency;
       const userId = data.metadata?.userId;
 
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
                 html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6;">
                     <h1 style="color: #7c28c5;">Thank You for Your Donation</h1>
-                    <p>Dear ${donorName || 'Beloved'},</p>
+                    <p>Dear ${donorName},</p>
                     <p>We are writing to confirm that we have received your generous donation of <strong>${currency} ${amountInNaira.toLocaleString()}</strong>.</p>
                     <p>Your transaction reference is: <strong>${data.reference}</strong></p>
                     <p>Your contribution is invaluable to us and will go a long way in supporting the ministry and spreading the gospel. We pray that God blesses you abundantly for your faithfulness.</p>

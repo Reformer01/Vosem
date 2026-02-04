@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -58,6 +58,9 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
+
+      // Set the display name on the auth user object.
+      await updateProfile(user, { displayName: values.name });
 
       const userProfile: { [key: string]: any } = {
         uid: user.uid,
