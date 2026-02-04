@@ -57,7 +57,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     email: user?.email || "",
     amount: finalAmount * 100, // Amount in Kobo
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
-    channels: ['card'],
+    channels: ['card', 'bank', 'ussd'],
     metadata: {
       name: user?.displayName || "Anonymous Giver",
       purpose: purpose,
@@ -81,8 +81,6 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
   const onClose = () => {
     setIsPaying(false);
-    // If the main modal is still open, keep it open.
-    // Otherwise, this will be called before onSuccess, so we don't want to close it prematurely.
   };
 
   const handleProceed = () => {
@@ -111,7 +109,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
       <DialogContent className="p-0 max-w-[520px] rounded-2xl overflow-hidden glass-panel border-white/10 dark:bg-[#141414]/80">
         {!isPaying ? (
           <>
