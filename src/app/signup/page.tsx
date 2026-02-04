@@ -35,6 +35,7 @@ export default function SignupPage() {
   const { user, isUserLoading } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -55,11 +56,11 @@ export default function SignupPage() {
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     setAuthError(null);
+    setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // Set the display name on the auth user object.
       await updateProfile(user, { displayName: values.name });
 
       const userProfile: { [key: string]: any } = {
@@ -85,6 +86,8 @@ export default function SignupPage() {
       } else {
         setAuthError('An error occurred during signup. Please try again.');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -212,8 +215,8 @@ export default function SignupPage() {
                           <p className="text-sm text-red-500 text-center">{authError}</p>
                         )}
                         
-                        <Button type="submit" className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary hover:bg-[#d620d6] text-white font-bold h-12 mt-4 transition-all transform active:scale-[0.98] shadow-[0_0_20px_rgba(238,43,238,0.3)] hover:shadow-[0_0_25px_rgba(238,43,238,0.5)]">
-                            Create Account
+                        <Button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary hover:bg-[#d620d6] text-white font-bold h-12 mt-4 transition-all transform active:scale-[0.98] shadow-[0_0_20px_rgba(238,43,238,0.3)] hover:shadow-[0_0_25px_rgba(238,43,238,0.5)]">
+                            {isSubmitting ? 'Creating Account...' : 'Create Account'}
                             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                         </Button>
                     </form>

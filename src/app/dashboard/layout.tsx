@@ -7,6 +7,17 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useUser, useAuth } from '@/firebase';
 import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Menu, LogOut } from 'lucide-react';
+import { VosemLogoIcon } from '@/components/icons';
+
+const navLinks = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard/profile', label: 'Profile' },
+  { href: '/dashboard/settings', label: 'Settings' },
+];
+
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user } = useUser();
@@ -14,6 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const router = useRouter();
     const pathname = usePathname();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     const handleSignOut = () => {
         auth.signOut();
@@ -50,10 +62,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                         <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
                             <nav className="flex items-center gap-8">
-                                <Link className={navLinkClasses("/dashboard")} href="/dashboard">Dashboard</Link>
+                                {navLinks.map(link => (
+                                    <Link key={link.href} className={navLinkClasses(link.href)} href={link.href}>{link.label}</Link>
+                                ))}
                                 <button onClick={() => setIsModalOpen(true)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">Give</button>
-                                <Link className={navLinkClasses("/dashboard/profile")} href="/dashboard/profile">Profile</Link>
-                                <Link className={navLinkClasses("/dashboard/settings")} href="/dashboard/settings">Settings</Link>
                             </nav>
                             <div className="h-6 w-px bg-[#331133]"></div>
                             <div className="flex items-center gap-4">
@@ -70,10 +82,56 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 )}
                             </div>
                         </div>
-
-                        <button className="md:hidden text-white">
-                            <span className="material-symbols-outlined">menu</span>
-                        </button>
+                        
+                        <div className="md:hidden">
+                            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                              <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 p-2 rounded-full transition-colors">
+                                  <Menu />
+                                  <span className="sr-only">Open menu</span>
+                                </Button>
+                              </SheetTrigger>
+                              <SheetContent side="left" className="bg-background border-r-0 flex flex-col">
+                                <SheetHeader>
+                                  <SheetTitle className="sr-only">Menu</SheetTitle>
+                                </SheetHeader>
+                                <div>
+                                  <div className="flex items-center gap-3 mb-8">
+                                    <VosemLogoIcon className="size-8 text-primary" />
+                                    <h2 className="text-xl font-extrabold tracking-tighter text-white font-sans">
+                                      VOSEM <span className="text-primary">INT'L</span>
+                                    </h2>
+                                  </div>
+                                  <div className="flex flex-col gap-6">
+                                    {navLinks.map((link) => (
+                                      <SheetClose key={link.href} asChild>
+                                        <Link
+                                          href={link.href}
+                                          className="text-lg font-semibold text-white/90 hover:text-primary transition-colors"
+                                          onClick={() => setIsSheetOpen(false)}
+                                        >
+                                          {link.label}
+                                        </Link>
+                                      </SheetClose>
+                                    ))}
+                                    <button
+                                      onClick={() => { setIsModalOpen(true); setIsSheetOpen(false); }}
+                                      className="text-left text-lg font-semibold text-white/90 hover:text-primary transition-colors"
+                                    >
+                                      Give
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="border-t border-white/10 mt-auto pt-6">
+                                   <div className="space-y-4">
+                                      <Button onClick={() => { handleSignOut(); setIsSheetOpen(false); }} variant="outline" className="w-full text-white bg-transparent border-white/20 rounded-full">
+                                        <LogOut className="mr-2" /> Logout
+                                      </Button>
+                                    </div>
+                                  </div>
+                              </SheetContent>
+                            </Sheet>
+                        </div>
                     </div>
                 </header>
 
