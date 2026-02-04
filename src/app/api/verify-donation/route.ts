@@ -80,9 +80,27 @@ export async function POST(req: NextRequest) {
       const amountInKobo = data.amount;
       const amountInNaira = amountInKobo / 100;
       const donorEmail = data.customer.email;
-      const donorName = data.metadata?.name || data.customer?.first_name || 'Valued Giver';
       const currency = data.currency;
       const userId = data.metadata?.userId;
+      
+      let donorName = 'Valued Giver'; // Default name
+
+      // If a user ID is present, fetch their name from Firestore as the source of truth.
+      if (userId) {
+        try {
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (userDoc.exists && userDoc.data()?.name) {
+                donorName = userDoc.data()!.name;
+            } else {
+                // Fallback to Paystack metadata if Firestore profile is incomplete
+                donorName = data.metadata?.name || data.customer?.first_name || 'Valued Giver';
+            }
+        } catch (e) {
+            console.error(`Failed to fetch user profile for ${userId}, falling back to metadata name.`, e);
+            // Fallback on error
+            donorName = data.metadata?.name || data.customer?.first_name || 'Valued Giver';
+        }
+      }
 
       // Step 3: Save the successful transaction to Firestore if a user ID is present
       if (userId) {

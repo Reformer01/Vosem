@@ -242,6 +242,15 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp of when the donation was recorded."
+        },
+        "donorName": {
+          "type": "string",
+          "description": "The name of the donor, fetched from their user profile."
+        },
+        "donorEmail": {
+          "type": "string",
+          "description": "The email of the donor, captured from the transaction.",
+          "format": "email"
         }
       },
       "required": [
