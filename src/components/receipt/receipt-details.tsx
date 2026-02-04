@@ -27,7 +27,13 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
         day: 'numeric',
     });
 
-    const amountInNaira = donation.amount / 100;
+    const amountInMajorUnit = donation.amount / 100;
+    
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: donation.currency || 'NGN',
+    }).format(amountInMajorUnit);
+
 
     return (
         <div className="bg-background-dark text-slate-200 min-h-screen font-sans p-4 sm:p-8 md:p-12">
@@ -86,7 +92,7 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                                 <tbody>
                                     <tr className="border-b border-[#331133]">
                                         <td className="px-6 py-5 text-white font-medium">{donation.purpose}</td>
-                                        <td className="px-6 py-5 text-white font-mono text-right">₦{amountInNaira.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td className="px-6 py-5 text-white font-mono text-right">{formattedAmount}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -97,15 +103,15 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                         <div className="w-full max-w-xs">
                              <div className="flex justify-between items-center py-3 text-slate-300">
                                 <span>Subtotal</span>
-                                <span>₦{amountInNaira.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span>{formattedAmount}</span>
                              </div>
                               <div className="flex justify-between items-center py-3 text-slate-300 border-b border-[#331133]">
                                 <span>Fees</span>
-                                <span>₦0.00</span>
+                                <span>{new Intl.NumberFormat('en-US', { style: 'currency', currency: donation.currency || 'NGN' }).format(0)}</span>
                              </div>
                              <div className="flex justify-between items-center pt-4 text-white font-bold text-xl">
                                 <span>Total Paid</span>
-                                <span>₦{amountInNaira.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span>{formattedAmount}</span>
                              </div>
                         </div>
                     </section>

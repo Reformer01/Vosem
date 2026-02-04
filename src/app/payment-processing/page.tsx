@@ -31,8 +31,9 @@ function PaymentProcessingContent() {
         if (response.ok) {
           const result = await response.json();
           if (result.status === 'success') {
+            const currency = result.data?.currency || 'NGN';
             // Verification successful, redirect to success page
-            router.replace(`/payment-success?amount=${amount}&reference=${reference}`);
+            router.replace(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
           } else {
             // Verification failed on the backend
             router.replace('/payment-failed');

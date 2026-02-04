@@ -14,11 +14,19 @@ function PaymentSuccessContent() {
     const { user } = useUser();
     const amount = searchParams.get('amount');
     const reference = searchParams.get('reference');
+    const currency = searchParams.get('currency') || 'NGN';
     const date = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
     });
+
+    const formattedAmount = amount 
+        ? new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+          }).format(Number(amount))
+        : '...';
 
     return (
         <div className="bg-[#0f0510] text-white font-sans relative selection:bg-accent/30">
@@ -44,7 +52,7 @@ function PaymentSuccessContent() {
                             <div className="flex-1 px-4 flex flex-col gap-2">
                                 <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-sans">Amount</span>
                                 <span className="text-white text-4xl md:text-5xl font-display">
-                                    {amount ? `₦${Number(amount).toLocaleString()}` : '...'}
+                                    {formattedAmount}
                                 </span>
                             </div>
                             <div className="hidden md:block w-px h-16 bg-accent/40"></div>
