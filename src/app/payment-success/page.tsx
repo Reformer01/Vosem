@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { WhatsAppIcon } from '@/components/icons';
-import { CheckCircle, Download } from 'lucide-react';
+import { CheckCircle, Download, LayoutDashboard } from 'lucide-react';
 import Header from '@/components/landing/header';
 import { Suspense } from 'react';
+import { useUser } from '@/firebase';
 
 function PaymentSuccessContent() {
     const searchParams = useSearchParams();
+    const { user } = useUser();
     const amount = searchParams.get('amount');
     const reference = searchParams.get('reference');
     const date = new Date().toLocaleDateString('en-US', {
@@ -19,7 +21,7 @@ function PaymentSuccessContent() {
     });
 
     return (
-        <div className="bg-[#0f0510] text-white font-sans overflow-x-hidden relative selection:bg-accent/30">
+        <div className="bg-[#0f0510] text-white font-sans relative selection:bg-accent/30">
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-accent/10 rounded-full blur-[120px] mix-blend-screen opacity-40"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[150px] mix-blend-screen opacity-30"></div>
@@ -60,9 +62,18 @@ function PaymentSuccessContent() {
                         </div>
                         <div className="flex flex-col items-center w-full gap-5">
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 w-full">
-                                <Button asChild variant="outline" className="group relative w-full sm:w-auto min-w-[200px] h-14 rounded-full bg-accent/20 backdrop-blur-xl border-accent/50 hover:bg-accent/30 transition-all duration-300 text-white text-base font-semibold tracking-wide font-sans z-10">
-                                    <Link href="/">Return to Home</Link>
-                                </Button>
+                                {user ? (
+                                    <Button asChild className="group relative w-full sm:w-auto min-w-[200px] h-14 rounded-full bg-accent text-white text-base font-semibold tracking-wide font-sans z-10 hover:bg-white hover:text-accent transition-all duration-300">
+                                        <Link href="/dashboard" className="flex items-center gap-2">
+                                            <LayoutDashboard size={20} />
+                                            Go to Dashboard
+                                        </Link>
+                                    </Button>
+                                ) : (
+                                    <Button asChild variant="outline" className="group relative w-full sm:w-auto min-w-[200px] h-14 rounded-full bg-accent/20 backdrop-blur-xl border-accent/50 hover:bg-accent/30 transition-all duration-300 text-white text-base font-semibold tracking-wide font-sans z-10">
+                                        <Link href="/">Return to Home</Link>
+                                    </Button>
+                                )}
                                 <Button variant="ghost" className="w-full sm:w-auto min-w-[200px] h-14 rounded-full text-white/70 hover:text-white hover:bg-white/5 transition-all text-base font-medium font-sans gap-2 border border-transparent hover:border-white/10">
                                     <Download size={20} />
                                     <span>Download Receipt</span>
