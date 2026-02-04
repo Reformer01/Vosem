@@ -60,6 +60,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     channels: ['card', 'bank', 'ussd'],
     metadata: {
       name: user?.displayName || "Anonymous Giver",
+      userId: user?.uid,
       purpose: purpose,
       custom_fields: [
         {
@@ -76,7 +77,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const onSuccess = (reference: { reference: string }) => {
     setIsPaying(false);
     onOpenChange(false);
-    router.push(`/payment-processing?amount=${finalAmount}&reference=${reference.reference}`);
+    router.replace(`/payment-processing?amount=${finalAmount}&reference=${reference.reference}`);
   };
 
   const onClose = () => {
@@ -109,7 +110,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-[520px] rounded-2xl overflow-hidden glass-panel border-white/10 dark:bg-[#141414]/80">
         {!isPaying ? (
           <>

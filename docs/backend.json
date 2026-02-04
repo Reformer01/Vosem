@@ -200,6 +200,54 @@
         "content",
         "isAnonymous"
       ]
+    },
+    "Donation": {
+      "title": "Donation",
+      "type": "object",
+      "description": "Represents a single donation transaction made by a user.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who made the donation."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount donated, in the smallest currency unit (e.g., Kobo)."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency of the donation (e.g., NGN)."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "The purpose of the giving (e.g., Tithes, Offerings)."
+        },
+        "reference": {
+          "type": "string",
+          "description": "The Paystack transaction reference."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the transaction (e.g., success)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the donation was recorded."
+        }
+      },
+      "required": [
+        "userId",
+        "amount",
+        "currency",
+        "purpose",
+        "reference",
+        "status",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -289,8 +337,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/donations/{donationId}",
+        "definition": {
+          "entityName": "Donation",
+          "schema": {
+            "$ref": "#/backend/entities/Donation"
+          },
+          "description": "Stores all donation transactions. Users can only read their own.",
+          "params": [
+            {
+              "name": "donationId",
+              "description": "Unique identifier for the donation."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the VOSEM International website's features, focusing on secure and scalable data access. The structure prioritizes Authorization Independence by avoiding hierarchical authorization dependencies (`get()` calls in security rules). It also facilitates QAPs (Rules are not Filters) by segregating data with different access needs into separate collections.\n\n*   **Users:** Stores user profiles. Each user can read and write their own profile.\n*   **Events:** Stores church events. No specific ownership or membership is defined, assuming a general read access for all users and write access restricted to authorized personnel (e.g., admins). Segregation enables a simple rule where only authenticated users can read events, and only those with specific roles (not implemented here but could be easily added via a `/roles_event_admin/{uid}` collection check) can create/modify them.\n*   **Sermons:** Stores recorded sermons. Similar to events, assumes general read access and restricted write access.\n*   **Testimonies:** Stores user-submitted testimonies. All authenticated users can create, read, update and delete their own.\n*   **Prayer Requests:** Stores user-submitted prayer requests.  This is a public write, private read scenario."
+    "reasoning": "The Firestore data structure is designed to support the VOSEM International website's features, focusing on secure and scalable data access. The structure prioritizes Authorization Independence by avoiding hierarchical authorization dependencies (`get()` calls in security rules). It also facilitates QAPs (Rules are not Filters) by segregating data with different access needs into separate collections.\n\n*   **Users:** Stores user profiles. Each user can read and write their own profile.\n*   **Events:** Stores church events. No specific ownership or membership is defined, assuming a general read access for all users and write access restricted to authorized personnel (e.g., admins). Segregation enables a simple rule where only authenticated users can read events, and only those with specific roles (not implemented here but could be easily added via a `/roles_event_admin/{uid}` collection check) can create/modify them.\n*   **Sermons:** Stores recorded sermons. Similar to events, assumes general read access and restricted write access.\n*   **Testimonies:** Stores user-submitted testimonies. All authenticated users can create, read, update and delete their own.\n*   **Prayer Requests:** Stores user-submitted prayer requests.  This is a public write, private read scenario.\n*   **Donations:** Stores transaction records from Paystack. These are written by the backend API and can only be read by the user who made the donation."
   }
 }

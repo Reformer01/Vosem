@@ -3,14 +3,26 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 
 interface UserProfile {
   name: string;
   email: string;
   whatsappNumber?: string;
+}
+
+interface Donation {
+  id: string;
+  amount: number; // in kobo
+  currency: string;
+  purpose: string;
+  status: string;
+  createdAt: {
+    seconds: number;
+    nanoseconds: number;
+  };
 }
 
 export default function DashboardPage() {
@@ -25,15 +37,22 @@ export default function DashboardPage() {
   
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  const donationsQuery = useMemoFirebase(
+    () => user ? query(collection(firestore, 'donations'), where('userId', '==', user.uid), orderBy('createdAt', 'desc')) : null,
+    [user, firestore]
+  );
+
+  const { data: donations, isLoading: isDonationsLoading } = useCollection<Donation>(donationsQuery);
+
   useEffect(() => {
     if (!isAuthLoading && !user) {
       router.push('/login');
     }
   }, [user, isAuthLoading, router]);
 
-  const isUserLoading = isAuthLoading || (user && isProfileLoading);
+  const isLoading = isAuthLoading || isProfileLoading || (user && isDonationsLoading);
 
-  if (isUserLoading || !user) {
+  if (isLoading || !user) {
     return (
       <div className="flex flex-1 items-center justify-center bg-background-dark">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
@@ -42,6 +61,7 @@ export default function DashboardPage() {
   }
   
   const displayName = userProfile?.name || user.displayName || user.email;
+  const totalSown = donations?.reduce((acc, donation) => acc + donation.amount, 0) || 0;
 
   return (
     <div className="w-full flex justify-center py-8 md:py-12 px-6 md:px-10 lg:px-40">
@@ -59,7 +79,7 @@ export default function DashboardPage() {
                 <div className="w-full lg:w-auto pt-6 lg:pt-0 mt-6 lg:mt-0 border-t border-[#331133] lg:border-none">
                     <div className="text-left lg:text-right">
                         <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Total Sown Year-to-Date</span>
-                        <div className="text-4xl font-bold text-white font-mono mt-1">₦0.00</div>
+                        <div className="text-4xl font-bold text-white font-mono mt-1">₦{(totalSown / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                 </div>
             </div>
@@ -96,20 +116,46 @@ export default function DashboardPage() {
                                 </tr>
                             </thead>
                             <tbody className="text-sm divide-y divide-[#331133]">
-                                <tr>
+                                {donations && donations.length > 0 ? (
+                                  donations.map(donation => (
+                                    <tr key={donation.id} className="glass-row">
+                                      <td className="px-6 py-4 whitespace-nowrap text-slate-300">
+                                        {donation.createdAt ? new Date(donation.createdAt.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '...'}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-slate-200 font-medium">{donation.purpose}</td>
+                                      <td className="px-6 py-4 whitespace-nowrap font-mono text-white">
+                                          ₦{(donation.amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full capitalize bg-green-500/10 text-green-300 border border-green-500/20">
+                                          {donation.status}
+                                        </span>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button className="text-primary hover:text-purple-300 transition-colors">
+                                          View
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
                                     <td colSpan={5} className="text-center p-8 text-slate-400">
-                                        You have no donation history yet. Your seeds will appear here.
+                                      You have no donation history yet. Your seeds will appear here.
                                     </td>
-                                </tr>
+                                  </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
+                    {donations && donations.length > 0 && (
                         <div className="px-6 py-4 border-t border-[#331133] bg-[#120a12]/50 flex justify-center">
-                        <button className="text-sm text-slate-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
-                            View Full History
-                            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                        </button>
-                    </div>
+                            <button className="text-sm text-slate-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Full History
+                                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </section>
 

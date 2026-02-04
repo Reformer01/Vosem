@@ -2,6 +2,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
+import * as admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK
+// This will automatically use the GOOGLE_APPLICATION_CREDENTIALS environment variable
+// in production on Firebase App Hosting.
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp();
+  } catch (error) {
+    console.error('Firebase admin initialization error', error);
+  }
+}
+
+const db = admin.firestore();
 
 export async function POST(req: NextRequest) {
   const { reference } = await req.json();
@@ -31,12 +45,38 @@ export async function POST(req: NextRequest) {
 
     // Step 2: Check if transaction was successful
     if (data.status === 'success') {
-      const amountPaid = data.amount / 100; // Paystack returns amount in Kobo
+      const amountInKobo = data.amount;
+      const amountInNaira = amountInKobo / 100;
       const donorEmail = data.customer.email;
       const donorName = data.customer.first_name || data.metadata.name;
       const currency = data.currency;
+      const userId = data.metadata?.userId;
 
-      // Step 3: Attempt to send receipt email, but do not fail the request if it errors.
+      // Step 3: Save the successful transaction to Firestore if a user ID is present
+      if (userId) {
+        try {
+          const donationData = {
+            userId: userId,
+            amount: amountInKobo,
+            currency: currency,
+            purpose: data.metadata.purpose || 'N/A',
+            reference: data.reference,
+            status: data.status,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            donorName: donorName,
+            donorEmail: donorEmail,
+          };
+          // Use the Paystack reference as the document ID to prevent duplicates
+          await db.collection('donations').doc(data.reference).set(donationData);
+        } catch (firestoreError) {
+          // This is a critical error for monitoring, but should not block the user flow
+          console.error(`CRITICAL: Failed to save donation ${data.reference} to Firestore:`, firestoreError);
+        }
+      } else {
+        console.warn(`Skipping Firestore write: userId not found in metadata for transaction ${data.reference}`);
+      }
+
+      // Step 4: Attempt to send receipt email, but do not fail the request if it errors.
       try {
         // Check for email credentials only when we need them.
         if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASS) {
@@ -58,7 +98,7 @@ export async function POST(req: NextRequest) {
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6;">
                     <h1 style="color: #7c28c5;">Thank You for Your Donation</h1>
                     <p>Dear ${donorName || 'Beloved'},</p>
-                    <p>We are writing to confirm that we have received your generous donation of <strong>${currency} ${amountPaid.toLocaleString()}</strong>.</p>
+                    <p>We are writing to confirm that we have received your generous donation of <strong>${currency} ${amountInNaira.toLocaleString()}</strong>.</p>
                     <p>Your transaction reference is: <strong>${data.reference}</strong></p>
                     <p>Your contribution is invaluable to us and will go a long way in supporting the ministry and spreading the gospel. We pray that God blesses you abundantly for your faithfulness.</p>
                     <br/>
@@ -75,10 +115,10 @@ export async function POST(req: NextRequest) {
           // The payment was successful, which is the most critical part.
       }
       
-      // Step 4: Return success response to the frontend regardless of email outcome.
+      // Step 5: Return success response to the frontend regardless of email outcome.
       return NextResponse.json({
         status: 'success',
-        message: 'Payment verified successfully.',
+        message: 'Payment verified and recorded successfully.',
         data,
       });
 

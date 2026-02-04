@@ -6,8 +6,8 @@
  * users, with writes reserved for future administrative roles. User-generated content
  * like prayer requests follows a "drop-box" model (write-only), ensuring privacy.
  *
- * Data Structure: The data is organized into a flat structure with four main
- * top-level collections: /events, /sermons, /testimonies, and /prayer_requests.
+ * Data Structure: The data is organized into a flat structure with five main
+ * top-level collections: /events, /sermons, /testimonies, /prayer_requests, and /donations.
  * This segregation simplifies security rules by avoiding complex hierarchical lookups
  * and ensures performant queries.
  *
@@ -24,6 +24,8 @@
  *   "write-only" drop box. Any signed-in user can submit a request, but no user
  *   (including the author) can read, update, or delete requests through the client,
  *   ensuring privacy.
+ * - Private Donations: The /donations collection is written by a trusted backend
+ *   service. Client-side, users are only permitted to read their own donation history.
  * - Backend Validation: All user-created data (User Profiles, Testimonies, Prayer Requests)
  *   is validated against a strict schema to ensure data integrity and prevent malformed data.
  *
@@ -173,6 +175,19 @@ service cloud.firestore {
     match /prayer_requests/{prayerRequestId} {
       allow create: if isSignedIn() && isCreatingPrayerRequest(request.resource.data);
       allow get, list, update, delete: if false;
+    }
+
+    /**
+     * @description Stores donation history.
+     * @path /donations/{donationId}
+     * @allow A user can only read their own donation records.
+     * @deny Writes are disabled from the client; they must go through the backend API.
+     */
+    match /donations/{donationId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Allow a user to query for their own donations only.
+      allow list: if isSignedIn() && request.query.where.userId == request.auth.uid;
+      allow create, update, delete: if false; // Writes must be done by the backend.
     }
   }
 }
