@@ -186,7 +186,10 @@ service cloud.firestore {
     match /donations/{donationId} {
       // A user can read (get or list) their own donation records.
       // For list operations, the query MUST include `where('userId', '==', request.auth.uid)`.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // The rule also defensively checks for the existence of the 'userId' field.
+      allow read: if isSignedIn() &&
+                     'userId' in resource.data &&
+                     resource.data.userId == request.auth.uid;
       allow create, update, delete: if false; // Writes must be done by the backend.
     }
   }
