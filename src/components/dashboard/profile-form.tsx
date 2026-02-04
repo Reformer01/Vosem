@@ -3,9 +3,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,6 +16,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { updateProfile } from 'firebase/auth';
+import { useState } from 'react';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -38,6 +39,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -46,26 +48,45 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
       email: userProfile.email || '',
       whatsappNumber: userProfile.whatsappNumber || '',
     },
+    mode: 'onChange',
   });
 
-  const onSubmit = (data: ProfileFormValues) => {
+  const onSubmit = async (data: ProfileFormValues) => {
     if (!user) return;
-
-    const userDocRef = doc(firestore, 'users', user.uid);
+    setIsSaving(true);
     
-    // We only want to update fields that can be changed
-    const updateData = {
-        name: data.name,
-        whatsappNumber: data.whatsappNumber
+    try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        
+        // Update auth profile display name
+        if (user.displayName !== data.name) {
+          await updateProfile(user, { displayName: data.name });
+        }
+
+        // Prepare data for Firestore update
+        const updateData = {
+            name: data.name,
+            whatsappNumber: data.whatsappNumber || ''
+        };
+        
+        // Update firestore document
+        await updateDoc(userDocRef, updateData);
+
+        toast({
+          title: 'Profile Updated',
+          description: 'Your information has been saved successfully.',
+        });
+        form.reset(data); // Resets the form's dirty state
+    } catch (error) {
+        console.error("Error updating profile: ", error);
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not save your profile changes. Please try again.",
+        });
+    } finally {
+        setIsSaving(false);
     }
-
-    updateDocumentNonBlocking(userDocRef, updateData);
-
-    toast({
-      title: 'Profile Updated',
-      description: 'Your information has been saved successfully.',
-    });
-    form.reset(data); // Resets the form's dirty state
   };
 
   return (
@@ -91,7 +112,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Email Address</FormLabel>
               <FormControl>
-                <Input placeholder="Your email" {...field} disabled className="bg-input/80 border-transparent"/>
+                <Input placeholder="Your email" {...field} disabled className="bg-input/80 border-transparent cursor-not-allowed"/>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,8 +131,8 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={!form.formState.isDirty}>
-          Save Changes
+        <Button type="submit" disabled={!form.formState.isDirty || isSaving}>
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
       </form>
     </Form>

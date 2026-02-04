@@ -1,10 +1,18 @@
 'use client';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { ProfileForm } from '@/components/dashboard/profile-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { reauthenticateWithCredential, EmailAuthProvider, updatePassword, signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 interface UserProfile {
   name: string;
@@ -12,9 +20,23 @@ interface UserProfile {
   whatsappNumber?: string;
 }
 
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, { message: "Current password is required." }),
+  newPassword: z.string().min(8, { message: "New password must be at least 8 characters." }),
+  confirmPassword: z.string(),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "New passwords don't match",
+  path: ["confirmPassword"],
+});
+
+
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isPasswordChanging, setIsPasswordChanging] = useState(false);
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -22,6 +44,54 @@ export default function ProfilePage() {
   );
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
+
+  const onPasswordSubmit = async (values: z.infer<typeof passwordSchema>) => {
+    if (!user || !user.email) return;
+
+    setIsPasswordChanging(true);
+    
+    const credential = EmailAuthProvider.credential(user.email, values.currentPassword);
+
+    try {
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, values.newPassword);
+      
+      toast({
+        title: "Password Updated",
+        description: "Your password has been changed successfully. Please log in again.",
+      });
+
+      await signOut(auth);
+      router.push('/login');
+
+    } catch (error: any) {
+      let description = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = "The current password you entered is incorrect.";
+      } else if (error.code === 'auth/weak-password') {
+        description = "The new password is too weak.";
+      }
+      console.error("Password change error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error Changing Password",
+        description: description,
+      });
+    } finally {
+      setIsPasswordChanging(false);
+      passwordForm.reset();
+    }
+  };
+
 
   if (isUserLoading || isProfileLoading || !user) {
     return (
@@ -59,7 +129,7 @@ export default function ProfilePage() {
                              </AvatarFallback>
                         )}
                     </Avatar>
-                    <Button variant="outline" className="w-full bg-white/5 hover:bg-white/10">Change Picture</Button>
+                    <Button variant="outline" className="w-full bg-white/5 hover:bg-white/10" disabled>Change Picture</Button>
                 </div>
                 <div className="flex-1 w-full">
                     <ProfileForm userProfile={userProfile} />
@@ -68,14 +138,54 @@ export default function ProfilePage() {
         </div>
 
         <div className="glass-panel p-8 rounded-xl">
-            <h2 className="text-2xl font-bold text-white mb-6">Change Password</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Change Password</h2>
             <p className="text-slate-400 mb-6">For security, you will be logged out after changing your password.</p>
-            <form className="space-y-6">
-                <Input type="password" placeholder="Current Password" className="bg-input/80 border-transparent" />
-                <Input type="password" placeholder="New Password" className="bg-input/80 border-transparent" />
-                <Input type="password" placeholder="Confirm New Password" className="bg-input/80 border-transparent" />
-                <Button>Update Password</Button>
-            </form>
+            <Form {...passwordForm}>
+              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+                <FormField
+                  control={passwordForm.control}
+                  name="currentPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="bg-input/80 border-transparent" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={passwordForm.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="bg-input/80 border-transparent" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={passwordForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm New Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="bg-input/80 border-transparent" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={isPasswordChanging}>
+                  {isPasswordChanging ? 'Updating...' : 'Update Password'}
+                </Button>
+              </form>
+            </Form>
         </div>
 
       </div>
