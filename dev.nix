@@ -1,9 +1,8 @@
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
-  # The dev environment packages
   packages = with pkgs; [
-    nodejs_20
-    openssh
+    openssh     # For SSH access to GitHub
+    nodejs-20_x # Required for your Next.js project
   ];
 }
