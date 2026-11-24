@@ -4,10 +4,37 @@ import { Toaster } from "@/components/ui/toaster";
 import Script from 'next/script';
 import { FirebaseClientProvider } from '@/firebase';
 import { plusJakartaSans, playfairDisplay } from './fonts';
+import JsonLd from '@/components/site/json-ld';
+import { FULL_NAME, OG_IMAGE, SITE_NAME, SITE_URL, organizationSchema, websiteSchema } from '@/lib/seo';
+
+const title = "Voice of Salvation Evangelical Ministries | VOSEM";
+const description = "VOSEM INT'L — Voice of Salvation Evangelical Ministries in Lagos, Nigeria. Join our church family for worship, teaching, prayer and community.";
 
 export const metadata: Metadata = {
-  title: "Voice of Salvation Evangelical Ministries | VOSEM INT'L",
-  description: "VOSEM INT'L — Voice of Salvation Evangelical Ministries in Lagos, Nigeria. Where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: title, template: `%s | ${SITE_NAME}` },
+  description,
+  applicationName: SITE_NAME,
+  authors: [{ name: FULL_NAME }],
+  keywords: ["Voice of Salvation Evangelical Ministries", "VOSEM", "church in Lagos", "Alapere church", "Christian ministry Lagos", "J Olu Ayeni"],
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_NG",
+    url: SITE_URL,
+    title,
+    description,
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "VOSEM worshippers gathered in praise" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [OG_IMAGE],
+  },
+  category: "Religion",
 };
 
 export default function RootLayout({
@@ -24,6 +51,7 @@ export default function RootLayout({
         className="font-sans bg-background text-white selection:bg-accent selection:text-white"
         suppressHydrationWarning
       >
+        <JsonLd data={[organizationSchema, websiteSchema]} />
         <FirebaseClientProvider>
           {children}
         </FirebaseClientProvider>

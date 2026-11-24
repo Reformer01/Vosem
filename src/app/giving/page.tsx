@@ -3,6 +3,13 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import GivingSection from "@/components/site/giving-section";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Giving & Stewardship at VOSEM",
+  description: "Support the vision of Voice of Salvation Evangelical Ministries. Give securely online via Paystack to tithes, offerings or kingdom projects, with a receipt for every gift.",
+  path: "/giving",
+});
 
 export default function GivingPage() {
   return (
@@ -12,6 +19,7 @@ export default function GivingPage() {
         title="Supporting the vision"
         description="Every gift helps us reach more lives with the love of Christ — in Lagos and beyond."
         image="/images/church-building.jpg"
+        path="/giving"
       />
 
       <GivingSection />

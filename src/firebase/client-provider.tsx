@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, type ReactNode } from 'react';
+import React, { useMemo, type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
 import type { FirebaseApp } from 'firebase/app';
@@ -79,32 +79,18 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 );
 
 export function FirebaseClientProvider({ children }: { children: ReactNode }) {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
-  const [initError, setInitError] = useState<Error | null>(null);
-
-  useEffect(() => {
+  // Initialize synchronously so page content and JSON-LD are in the initial HTML
+  // for search engines and AI crawlers (which do not execute JavaScript).
+  const { services, error } = useMemo((): { services: FirebaseServices | null; error: Error | null } => {
     try {
-      const firebaseServices = initializeFirebase();
-      setServices(firebaseServices as FirebaseServices);
+      return { services: initializeFirebase() as FirebaseServices, error: null };
     } catch (e) {
-      if (e instanceof Error) {
-        setInitError(e);
-      } else {
-        setInitError(new Error('An unknown error occurred during Firebase initialization.'));
-      }
+      return { services: null, error: e instanceof Error ? e : new Error('Firebase initialization failed.') };
     }
   }, []);
 
-  if (initError) {
-    return <MissingConfigError error={initError} />;
-  }
-
-  if (!services) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
-      </div>
-    );
+  if (error || !services) {
+    return <MissingConfigError error={error ?? new Error('Firebase services unavailable.')} />;
   }
 
   return (

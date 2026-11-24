@@ -3,6 +3,13 @@ import { ArrowRight, CalendarDays, Clock, MapPin } from "lucide-react";
 import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import EventsSection from "@/components/site/events-section";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Events & Service Times in Alapere, Lagos",
+  description: "See upcoming VOSEM events in Alapere, Lagos: Sunday services, Word & Wonders, Youth Impact Rally and Love In Action community outreach. Plan your visit.",
+  path: "/events",
+});
 
 const services = [
   { title: "Sunday Service", time: "9:00 AM & 11:00 AM", place: "Main Sanctuary & Online" },
@@ -18,6 +25,7 @@ export default function EventsPage() {
         title="Come and be part of it"
         description="From Sunday gatherings to impactful outreaches, there is always something happening in the life of VOSEM."
         image="/images/events-youth.jpg"
+        path="/events"
       />
 
       <div className="bg-card py-16 sm:py-20">

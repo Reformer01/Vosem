@@ -3,6 +3,30 @@ import Link from "next/link";
 import { ArrowRight, Clock, Mail, MapPin } from "lucide-react";
 import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
+import JsonLd from "@/components/site/json-ld";
+import { FULL_NAME, SITE_URL, pageMetadata } from "@/lib/seo";
+
+const churchSchema = {
+  "@context": "https://schema.org",
+  "@type": "Church",
+  "@id": `${SITE_URL}/contact#church`,
+  name: FULL_NAME,
+  alternateName: "VOSEM International Headquarters",
+  url: SITE_URL,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "12/14 Ademola Adefuye Street, off Davies Street, Alapere",
+    addressLocality: "Agboyi/Ketu, Lagos State",
+    addressCountry: "NG",
+  },
+  sameAs: ["https://www.youtube.com/@JOluAyeni1"],
+};
+
+export const metadata = pageMetadata({
+  title: "Contact VOSEM in Alapere, Lagos",
+  description: "Find the VOSEM International Headquarters in Alapere, Lagos. Get our exact address, Sunday and midweek service times, and plan your visit this week.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
@@ -12,8 +36,10 @@ export default function ContactPage() {
         title="Come and visit us"
         description="Find us in Alapere, Ketu — or join us online. We would love to meet you."
         image="/images/church-building.jpg"
+        path="/contact"
       />
 
+      <JsonLd data={churchSchema} />
       <section className="bg-card py-20 sm:py-28">
         <div className="site-wrap site-curved grid gap-10 bg-[#e5e0da] p-6 sm:p-12 lg:grid-cols-2 lg:p-16">
           <div>

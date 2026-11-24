@@ -4,6 +4,13 @@ import { ArrowRight, Globe, HeartHandshake, School, Users } from "lucide-react";
 import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import ContentSplit from "@/components/site/content-split";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "About Voice of Salvation Ministries",
+  description: "Meet Voice of Salvation Evangelical Ministries (VOSEM INT'L): our vision, leadership, connect groups and life in Lagos. Plan your visit today.",
+  path: "/about",
+});
 
 const values = [
   { icon: Users, title: "Connect Groups", text: "Find your tribe in Lagos and grow together in faith." },
@@ -20,6 +27,7 @@ export default function AboutPage() {
         title="More than a church, a royal family"
         description="Every individual carries a divine mandate. At VOSEM INT'L we nurture that potential in an atmosphere of radical love and excellence."
         image="/images/banner-celebration.jpg"
+        path="/about"
         cta={{ label: "Plan your visit", href: "/contact" }}
       />
 
