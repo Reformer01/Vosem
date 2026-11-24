@@ -78,7 +78,36 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="app-table overflow-x-auto bg-card border border-border rounded-[2rem]">
+          {/* Mobile: stacked transaction records, no sideways scrolling */}
+          <div className="md:hidden flex flex-col gap-3">
+            {donations && donations.length > 0 ? donations.map(donation => (
+              <article key={donation.id} className="site-curved border border-border bg-card p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</p>
+                    <p className="mt-1 text-xl font-bold text-foreground">₦{(donation.amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
+                  </div>
+                  <span className={`app-status shrink-0 ${donation.status === 'succeeded' ? 'bg-green-500/10 text-green-700 border border-green-500/20' : donation.status === 'pending' ? 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>{donation.status}</span>
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground">{donation.purpose}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {donation.createdAt ? new Date(donation.createdAt.seconds * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '...'}
+                    </p>
+                  </div>
+                  <Link href={`/receipt/${donation.id}`} className="shrink-0 text-sm font-bold text-primary underline underline-offset-4">Receipt</Link>
+                </div>
+              </article>
+            )) : (
+              <div className="site-curved border border-border bg-card p-8 text-center text-muted-foreground">
+                You have no donation history yet. Your seeds will appear here.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: full table */}
+          <div className="hidden md:block bg-card border border-border rounded-[2rem]">
             <table className="app-table">
               <thead>
                 <tr className="bg-muted/40 text-muted-foreground uppercase tracking-wider text-xs">
