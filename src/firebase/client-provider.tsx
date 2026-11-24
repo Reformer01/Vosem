@@ -3,6 +3,10 @@
 import React, { useMemo, type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
+import { getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
@@ -84,8 +88,25 @@ export function FirebaseClientProvider({ children }: { children: ReactNode }) {
   const { services, error } = useMemo((): { services: FirebaseServices | null; error: Error | null } => {
     try {
       return { services: initializeFirebase() as FirebaseServices, error: null };
-    } catch (e) {
-      return { services: null, error: e instanceof Error ? e : new Error('Firebase initialization failed.') };
+    } catch {
+      // shortcut: public pages must still render when Firebase env vars are absent;
+      // a local placeholder app lets auth-dependent components mount with no signed-in user.
+      try {
+        const app = getApps().length
+          ? getApps()[0]
+          : initializeApp({
+              apiKey: "local-placeholder",
+              authDomain: "localhost",
+              projectId: "vosem-local",
+              appId: "1:000000000000:web:0000000000000000000000",
+            });
+        return {
+          services: { firebaseApp: app, auth: getAuth(app), firestore: getFirestore(app), storage: getStorage(app) } as FirebaseServices,
+          error: null,
+        };
+      } catch (e) {
+        return { services: null, error: e instanceof Error ? e : new Error('Firebase initialization failed.') };
+      }
     }
   }, []);
 
