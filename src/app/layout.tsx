@@ -6,8 +6,8 @@ import { FirebaseClientProvider } from '@/firebase';
 import { plusJakartaSans, playfairDisplay } from './fonts';
 
 export const metadata: Metadata = {
-  title: "VOSEM INT'L 2026 Official Site",
-  description: "Where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat.",
+  title: "Voice of Salvation Evangelical Ministries | VOSEM INT'L",
+  description: "VOSEM INT'L — Voice of Salvation Evangelical Ministries in Lagos, Nigeria. Where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat.",
 };
 
 export default function RootLayout({

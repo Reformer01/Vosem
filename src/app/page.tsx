@@ -28,7 +28,7 @@ export default function Home() {
             Gather together<br />with us
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/85 sm:text-2xl">
-            Where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat in the city of Lagos and beyond.
+            Welcome to Voice of Salvation Evangelical Ministries (VOSEM INT&apos;L) — where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat in Lagos and beyond.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link href="/contact" className="site-btn site-btn-solid">Come and visit us <ArrowRight className="size-4" /></Link>

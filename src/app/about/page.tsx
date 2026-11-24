@@ -26,7 +26,7 @@ export default function AboutPage() {
       <ContentSplit
         eyebrow="Belong to VOSEM"
         title="This is VOSEM"
-        body="VOSEM INTERNATIONAL is a community of believers passionate about God's presence and people's purpose. We are a family where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat — in Lagos and beyond."
+        body="Voice of Salvation Evangelical Ministries International (VOSEM INT'L) is a community of believers passionate about God's presence and people's purpose. Led by General Overseer Prophet J. Olu Ayeni, we are a family where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat — in Lagos and beyond."
         image="/images/about-family.jpg"
         href="/contact"
         cta="Come and visit us"

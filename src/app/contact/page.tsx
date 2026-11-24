@@ -25,7 +25,7 @@ export default function ContactPage() {
             <div className="mt-10 space-y-6">
               <p className="flex items-start gap-4 text-lg font-semibold">
                 <MapPin className="mt-1 size-6 shrink-0 text-primary" />
-                <span>12/14, Ademolu Adefuye, Off Davies Street,<br />Alapere, Ketu, Lagos State, Nigeria.</span>
+                <span>VOSEM International Headquarters Auditorium,<br />12/14 Ademola Adefuye Street, off Davies Street,<br />Alapere, Agboyi/Ketu LGA, Lagos State, Nigeria.</span>
               </p>
               <p className="flex items-start gap-4 text-lg font-semibold">
                 <Clock className="mt-1 size-6 shrink-0 text-primary" />

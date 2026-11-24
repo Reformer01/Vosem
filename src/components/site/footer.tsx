@@ -37,7 +37,7 @@ export default function SiteFooter() {
               <div className="space-y-4 text-sm font-semibold">
                 <p className="flex items-start gap-3">
                   <MapPin className="mt-0.5 size-5 shrink-0" />
-                  <span>12/14, Ademolu Adefuye, Off Davies Street,<br />Alapere, Ketu, Lagos State, Nigeria.</span>
+                  <span>VOSEM International Headquarters Auditorium,<br />12/14 Ademola Adefuye Street, off Davies Street,<br />Alapere, Agboyi/Ketu LGA, Lagos State, Nigeria.</span>
                 </p>
                 {/* shortcut: placeholder inbox, replace with the church's real address */}
                 <p className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export default function SiteFooter() {
             <div>
               <h4 className="mb-6 text-xl font-black tracking-tight">Follow us</h4>
               <p className="mb-6 text-sm font-medium leading-relaxed">
-                A global community of believers passionate about God&apos;s presence and people&apos;s purpose.
+                Voice of Salvation Evangelical Ministries — a global community of believers passionate about God&apos;s presence and people&apos;s purpose.
               </p>
               <div className="flex gap-3">
                 <Link href="https://www.youtube.com" target="_blank" aria-label="YouTube" className="flex size-11 items-center justify-center rounded-full bg-foreground text-[#e5e0da] transition-colors hover:bg-primary">
@@ -81,7 +81,7 @@ export default function SiteFooter() {
           </div>
 
           <div className="mt-12 flex flex-col gap-4 border-t border-foreground/20 pt-8 text-xs font-bold uppercase tracking-widest sm:flex-row sm:items-center sm:justify-between">
-            <p>&copy; 2026 VOSEM International. All rights reserved.</p>
+            <p>&copy; 2026 Voice of Salvation Evangelical Ministries. All rights reserved.</p>
             <div className="flex gap-8">
               <Link href="/contact" className="hover:text-primary">Privacy</Link>
               <Link href="/contact" className="hover:text-primary">Terms</Link>

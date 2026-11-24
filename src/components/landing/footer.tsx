@@ -61,9 +61,9 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              12/14, Ademolu Adefuye,<br />
-              Off Davies Street,<br />
-              Alapere, Ketu, Lagos State, Nigeria.
+              VOSEM International Headquarters Auditorium,<br />
+              12/14 Ademola Adefuye Street, off Davies Street,<br />
+              Alapere, Agboyi/Ketu LGA, Lagos State, Nigeria.
             </p>
           </div>
         </div>

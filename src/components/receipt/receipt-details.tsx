@@ -59,7 +59,7 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                                     <p className="text-slate-400">Official Donation Receipt</p>
                                 </div>
                             </div>
-                            <p className="text-sm text-slate-500">12/14, Ademolu Adefuye, Alapere, Ketu, Lagos</p>
+                            <p className="text-sm text-slate-500">12/14 Ademola Adefuye Street, Alapere, Agboyi/Ketu, Lagos</p>
                         </div>
                         <div className="text-left sm:text-right mt-6 sm:mt-0">
                             <h3 className="text-2xl font-bold text-white uppercase tracking-wider">Receipt</h3>
