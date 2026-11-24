@@ -41,6 +41,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const [customAmount, setCustomAmount] = useState("");
   const [isPaying, setIsPaying] = useState(false);
   const [frequency, setFrequency] = useState('one-time');
+  const [gateway, setGateway] = useState<'paystack' | 'flutterwave'>('paystack');
 
   useEffect(() => {
     if (isOpen) {
@@ -48,6 +49,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       setAmount("10000");
       setCustomAmount("");
       setFrequency('one-time');
+      setGateway('paystack');
       setIsPaying(false);
     }
   }, [isOpen, defaultPurpose]);
@@ -60,6 +62,10 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     amount: finalAmount * 100, // Amount in Kobo
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
     channels: ['card', 'bank', 'ussd'],
+    // A recurring gift uses the church's Paystack plan; a plan code is required.
+    ...(frequency === 'recurring' && process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE
+      ? { plan: process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE }
+      : {}),
     metadata: {
       name: user?.displayName || "Anonymous Giver",
       userId: user?.uid,
@@ -98,16 +104,46 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       return;
     }
     
-    if (!process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY) {
-      console.error("Paystack Public Key is not configured.");
-      toast({
-        variant: "destructive",
-        title: "Payment Error",
-        description: "Could not initialize the payment gateway. Please contact support.",
+    if (gateway === 'flutterwave') {
+      const key = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY;
+      if (!key) {
+        toast({ variant: 'destructive', title: 'Payment Error', description: 'Flutterwave is not configured for this site.' });
+        return;
+      }
+      const txRef = `VOSEM-FW-${Date.now()}`;
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://checkout.flutterwave.com/v3/hosted/pay';
+      const fields: Record<string, string> = {
+        public_key: key,
+        tx_ref: txRef,
+        amount: String(finalAmount),
+        currency: 'NGN',
+        email: user.email || '',
+        name: user.displayName || 'VOSEM Giver',
+        redirect_url: `${window.location.origin}/payment-processing?gateway=flutterwave&amount=${finalAmount}&reference=${txRef}`,
+        meta: JSON.stringify({ userId: user.uid, purpose, name: user.displayName || 'VOSEM Giver', recurring: frequency === 'recurring' }),
+      };
+      if (frequency === 'recurring' && process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID) {
+        fields.payment_plan = process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID;
+      }
+      Object.entries(fields).forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
       });
+      document.body.appendChild(form);
+      form.submit();
       return;
     }
-    
+
+    if (!process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY) {
+      toast({ variant: 'destructive', title: 'Payment Error', description: 'Paystack is not configured for this site.' });
+      return;
+    }
+
     setIsPaying(true);
     initializePayment({ onSuccess, onClose });
   };
@@ -139,9 +175,21 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                 </RadioGroup>
                 {frequency === 'recurring' && (
                   <p className="mt-2 text-center text-xs text-amber-700">
-                    Recurring gifts need a Paystack plan from the church office. This gift will be processed as a single payment.
+                    Recurring gifts use the church&apos;s plan code. If none is configured, this gift is processed as a single payment.
                   </p>
                 )}
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  {(['paystack', 'flutterwave'] as const).map(option => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setGateway(option)}
+                      className={`rounded-full px-4 py-2 text-xs font-bold capitalize transition-colors ${gateway === option ? 'bg-accent text-white' : 'border border-border text-muted-foreground'}`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-6">

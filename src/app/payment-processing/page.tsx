@@ -9,6 +9,7 @@ function PaymentProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
+  const gateway = searchParams.get('gateway') || 'paystack';
 
   useEffect(() => {
     const reference = searchParams.get('reference');
@@ -27,7 +28,7 @@ function PaymentProcessingContent() {
           router.replace('/payment-failed?reason=Please_sign_in_to_verify_your_gift');
           return;
         }
-        const response = await fetch('/api/verify-donation', {
+        const response = await fetch(gateway === 'flutterwave' ? '/api/verify-flutterwave' : '/api/verify-donation', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ function PaymentProcessingContent() {
     };
 
     verifyPayment();
-  }, [router, searchParams, auth]);
+  }, [router, searchParams, auth, gateway]);
 
 
   return (

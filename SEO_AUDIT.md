@@ -61,7 +61,9 @@ Note: `/about` and `/voice-of-salvation` share the same primary phrase but have 
 - `/events` — Firestore-backed event calendar with RSVP buttons; RSVP subcollection rules added.
 - `/admin` — role-gated moderation (testimonies, prayer requests) and sermon/event publishing via `/admins/{uid}`.
 
-Remaining product blockers: true Paystack recurring subscriptions need a plan code; Flutterwave needs merchant keys; AI summaries need `GEMINI_API_KEY` in Vercel env. Firestore rules were not emulator-validated (Java unavailable in this environment).
+Also implemented: dashboard "My events" RSVP list (`/dashboard/events`), giving streak and milestone badges, CSV export with filters/pagination, persisted notification preferences and avatar styles.
+
+Remaining product blockers: recurring giving is wired to `NEXT_PUBLIC_PAYSTACK_PLAN_CODE` / `NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID` but needs real plan IDs from the church; Flutterwave checkout and `/api/verify-flutterwave` are wired behind `NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY` / `FLUTTERWAVE_SECRET_KEY`; AI summaries need `GEMINI_API_KEY`. Firestore rules were not emulator-validated (Java unavailable) and have not been deployed — `firebase deploy --only firestore:rules` requires Firebase credentials.
 
 ## 6. Strategies requiring external credentials or tools (blocked, not implemented)
 

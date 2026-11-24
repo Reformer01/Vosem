@@ -6,7 +6,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Check, Download, Search } from 'lucide-react';
+import { ArrowRight, Check, Download, Flame, Search, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserProfile {
@@ -63,6 +63,26 @@ export default function DashboardPage() {
     });
   }, [donations, search, fromDate, toDate]);
 
+  const totalSown = donations?.reduce((acc, donation) => acc + donation.amount, 0) || 0;
+
+  const givingMonths = useMemo(() => {
+    const set = new Set((donations ?? []).map(d => new Date(d.createdAt.seconds * 1000).toISOString().slice(0, 7)));
+    let streak = 0;
+    const cursor = new Date();
+    while (set.has(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`)) {
+      streak++;
+      cursor.setMonth(cursor.getMonth() - 1);
+    }
+    return { streak, months: set.size, count: donations?.length ?? 0, total: totalSown / 100 };
+  }, [donations, totalSown]);
+
+  const milestones = [
+    { label: 'First seed sown', reached: givingMonths.count >= 1 },
+    { label: '3 gifts given', reached: givingMonths.count >= 3 },
+    { label: '₦10,000 sown', reached: givingMonths.total >= 10000 },
+    { label: '₦50,000 sown', reached: givingMonths.total >= 50000 },
+  ];
+
   const pagedDonations = filteredDonations.slice(page * pageSize, (page + 1) * pageSize);
   const totalPages = Math.max(1, Math.ceil(filteredDonations.length / pageSize));
 
@@ -98,7 +118,6 @@ export default function DashboardPage() {
   }
 
   const displayName = userProfile?.name || user.displayName || user.email;
-  const totalSown = donations?.reduce((acc, donation) => acc + donation.amount, 0) || 0;
 
   return (
     <main className="flex-grow px-5 py-12 sm:px-10 md:px-40">
@@ -131,6 +150,27 @@ export default function DashboardPage() {
               <Link key={step.label} href={step.href} className={`flex items-center justify-between gap-3 rounded-2xl border p-4 text-sm font-semibold transition-colors ${step.done ? 'border-primary/30 bg-primary/5 text-primary' : 'border-border bg-card hover:bg-muted'}`}>
                 {step.label} {step.done ? <Check className="size-4" /> : <ArrowRight className="size-4" />}
               </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Giving milestones and streak */}
+        <section className="app-card">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="flex items-center gap-2 text-xl font-bold"><Trophy className="size-5 text-primary" /> Giving milestones</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Celebrate every step of your generosity journey.</p>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-bold text-primary">
+              <Flame className="size-4" /> {givingMonths.streak}-month streak · {givingMonths.months} months giving
+            </div>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {milestones.map(m => (
+              <div key={m.label} className={`flex items-center gap-3 rounded-2xl border p-4 text-sm font-semibold ${m.reached ? 'border-primary/30 bg-primary/5 text-primary' : 'border-border text-muted-foreground'}`}>
+                {m.reached ? <Check className="size-4" /> : <span className="size-4 rounded-full border border-current" />}
+                {m.label}
+              </div>
             ))}
           </div>
         </section>

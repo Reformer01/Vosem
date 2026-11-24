@@ -224,6 +224,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Own RSVPs across all events (used by the dashboard "My events" list).
+    match /{document=**}/rsvps/{rsvpId} {
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
     /**
      * Admin roles. Only admins manage these records; no client writes.
      */
