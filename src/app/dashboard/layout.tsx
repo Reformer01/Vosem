@@ -8,6 +8,7 @@ import { useUser, useAuth } from '@/firebase';
 import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { LogOut, Menu } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
 
@@ -23,6 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleSignOut = () => {
     auth.signOut();
@@ -60,7 +62,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <LogOut className="size-5" />
               </Button>
             </div>
-            <Button variant="ghost" className="md:hidden rounded-full" aria-label="Mobile menu"><Menu className="size-6" /></Button>
+            <div className="md:hidden">
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" className="rounded-full" aria-label="Open menu">
+                    <Menu className="size-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="flex flex-col bg-card">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center gap-2.5">
+                      <VosemLogoIcon className="size-7 text-primary" />
+                      <span className="text-lg font-black tracking-tighter">VOSEM <span className="text-primary">INT&apos;L</span></span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <nav className="mt-8 flex flex-col gap-1" aria-label="Mobile navigation">
+                    {navLinks.map((link) => (
+                      <SheetClose key={link.href} asChild>
+                        <Link href={link.href} className={navLinkClasses(link.href)} onClick={() => setIsSheetOpen(false)}>
+                          {link.label}
+                        </Link>
+                      </SheetClose>
+                    ))}
+                    <button
+                      onClick={() => { setIsModalOpen(true); setIsSheetOpen(false); }}
+                      className="mt-2 text-left text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Give
+                    </button>
+                  </nav>
+                  <div className="mt-auto border-t border-border pt-6">
+                    <Button variant="outline" className="w-full rounded-full" onClick={() => { handleSignOut(); setIsSheetOpen(false); }}>
+                      <LogOut className="size-4" /> Log out
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </header>
 

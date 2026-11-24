@@ -76,43 +76,43 @@ export default function SettingsPage() {
     <div className="w-full flex justify-center py-8 md:py-12 px-6 md:px-10 lg:px-40">
       <div className="w-full max-w-4xl flex flex-col gap-12">
         <div>
-          <h1 className="text-4xl font-bold text-white">Settings</h1>
-          <p className="text-slate-400 mt-2">Manage your account and notification preferences.</p>
+          <h1 className="text-4xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-2">Manage your account and notification preferences.</p>
         </div>
 
         <section className="flex flex-col gap-8">
-            <h2 className="text-2xl font-bold text-white border-b border-[#331133] pb-4">Notifications</h2>
-            <div className="glass-panel p-8 rounded-xl flex flex-col gap-6">
+            <h2 className="text-2xl font-bold text-foreground border-b border-border pb-4">Notifications</h2>
+            <div className="site-curved border border-border bg-card p-8 shadow-sm flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <Label htmlFor="event-notifications" className="font-semibold text-lg text-white">Event Reminders</Label>
-                        <p className="text-sm text-slate-400">Receive email notifications for upcoming events.</p>
+                        <Label htmlFor="event-notifications" className="font-semibold text-lg text-foreground">Event Reminders</Label>
+                        <p className="text-sm text-muted-foreground">Receive email notifications for upcoming events.</p>
                     </div>
                     <Switch id="event-notifications" defaultChecked />
                 </div>
                  <div className="flex items-center justify-between">
                     <div>
-                        <Label htmlFor="newsletter" className="font-semibold text-lg text-white">Weekly Newsletter</Label>
-                        <p className="text-sm text-slate-400">Stay up to date with the latest news and sermons.</p>
+                        <Label htmlFor="newsletter" className="font-semibold text-lg text-foreground">Weekly Newsletter</Label>
+                        <p className="text-sm text-muted-foreground">Stay up to date with the latest news and sermons.</p>
                     </div>
                     <Switch id="newsletter" defaultChecked />
                 </div>
                  <div className="flex items-center justify-between">
                     <div>
-                        <Label htmlFor="giving-updates" className="font-semibold text-lg text-white">Giving Updates</Label>
-                        <p className="text-sm text-slate-400">Get summaries and reports on your contributions.</p>
+                        <Label htmlFor="giving-updates" className="font-semibold text-lg text-foreground">Giving Updates</Label>
+                        <p className="text-sm text-muted-foreground">Get summaries and reports on your contributions.</p>
                     </div>
                     <Switch id="giving-updates" />
                 </div>
             </div>
         </section>
 
-        <section className="flex flex-col gap-4 border-t border-red-500/20 pt-8 mt-4">
-            <h2 className="text-2xl font-bold text-red-400 flex items-center gap-3">
+        <section className="flex flex-col gap-4 border-t border-red-600/30 pt-8 mt-4">
+            <h2 className="text-2xl font-bold text-red-700 flex items-center gap-3">
                 <span className="material-symbols-outlined">warning</span>
                 Danger Zone
             </h2>
-            <p className="text-slate-400 mt-2 max-w-2xl">
+            <p className="text-muted-foreground mt-2 max-w-2xl">
                 This action is permanent and cannot be undone. Please proceed with caution.
             </p>
             <div className="mt-4">

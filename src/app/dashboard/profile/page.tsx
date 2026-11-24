@@ -169,18 +169,18 @@ export default function ProfilePage() {
     <div className="w-full flex justify-center py-8 md:py-12 px-6 md:px-10 lg:px-40">
       <div className="w-full max-w-4xl flex flex-col gap-10">
         <div>
-          <h1 className="text-4xl font-bold text-white">Your Profile</h1>
-          <p className="text-slate-400 mt-2">Manage your personal information and account settings.</p>
+          <h1 className="text-4xl font-bold text-foreground">Your Profile</h1>
+          <p className="text-muted-foreground mt-2">Manage your personal information and account settings.</p>
         </div>
         
-        <div className="glass-panel p-8 rounded-xl">
+        <div className="site-curved border border-border bg-card p-8 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start gap-8">
                 <div className="flex flex-col items-center gap-4 w-full sm:w-48">
                     <Avatar className="w-32 h-32 text-4xl border-4 border-primary/30">
                         {user.photoURL ? (
                             <AvatarImage src={user.photoURL} alt={userProfile.name} key={user.photoURL} />
                         ) : (
-                             <AvatarFallback className="bg-input text-slate-400">
+                             <AvatarFallback className="bg-muted text-foreground">
                                 {userProfile.name?.charAt(0).toUpperCase()}
                              </AvatarFallback>
                         )}
@@ -194,7 +194,7 @@ export default function ProfilePage() {
                     />
                     <Button 
                       variant="outline" 
-                      className="w-full bg-white/5 hover:bg-white/10" 
+                      className="w-full rounded-full" 
                       onClick={handlePictureChangeClick}
                       disabled={isPictureUploading}
                     >
@@ -207,9 +207,9 @@ export default function ProfilePage() {
             </div>
         </div>
 
-        <div className="glass-panel p-8 rounded-xl">
-            <h2 className="text-2xl font-bold text-white mb-2">Change Password</h2>
-            <p className="text-slate-400 mb-6">For security, you will be logged out after changing your password.</p>
+        <div className="site-curved border border-border bg-card p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Change Password</h2>
+            <p className="text-muted-foreground mb-6">For security, you will be logged out after changing your password.</p>
             <Form {...passwordForm}>
               <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
                 <FormField
@@ -219,7 +219,7 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Current Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} className="bg-input/80 border-transparent" />
+                        <Input type="password" {...field} className="site-curved" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>New Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} className="bg-input/80 border-transparent" />
+                        <Input type="password" {...field} className="site-curved" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Confirm New Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} className="bg-input/80 border-transparent" />
+                        <Input type="password" {...field} className="site-curved" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

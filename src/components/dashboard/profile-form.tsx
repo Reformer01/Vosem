@@ -99,7 +99,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Your full name" {...field} className="bg-input/80 border-transparent" />
+                <Input placeholder="Your full name" {...field} className="site-curved" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -112,7 +112,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
             <FormItem>
               <FormLabel>Email Address</FormLabel>
               <FormControl>
-                <Input placeholder="Your email" {...field} disabled className="bg-input/80 border-transparent cursor-not-allowed"/>
+                <Input placeholder="Your email" {...field} disabled className="site-curved cursor-not-allowed"/>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -125,7 +125,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
             <FormItem>
               <FormLabel>WhatsApp Number</FormLabel>
               <FormControl>
-                <Input placeholder="Your WhatsApp number" {...field} className="bg-input/80 border-transparent" />
+                <Input placeholder="Your WhatsApp number" {...field} className="site-curved" />
               </FormControl>
               <FormMessage />
             </FormItem>

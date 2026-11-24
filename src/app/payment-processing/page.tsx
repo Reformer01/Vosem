@@ -3,10 +3,12 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { VosemLogoIcon } from '@/components/icons';
+import { useAuth } from '@/firebase';
 
 function PaymentProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const auth = useAuth();
 
   useEffect(() => {
     const reference = searchParams.get('reference');
@@ -19,10 +21,17 @@ function PaymentProcessingContent() {
 
     const verifyPayment = async () => {
       try {
+        await auth.authStateReady();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) {
+          router.replace('/payment-failed?reason=Please_sign_in_to_verify_your_gift');
+          return;
+        }
         const response = await fetch('/api/verify-donation', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reference }),
         });
@@ -48,7 +57,7 @@ function PaymentProcessingContent() {
     };
 
     verifyPayment();
-  }, [router, searchParams]);
+  }, [router, searchParams, auth]);
 
 
   return (

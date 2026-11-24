@@ -27,7 +27,7 @@ const db = admin.firestore();
 
 export async function POST(req: NextRequest) {
   // Simple IP-based rate limiting to prevent abuse
-  const ip = req.headers.get('x-forwarded-for') ?? req.ip ?? '127.0.0.1';
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1';
   const now = Date.now();
 
   const record = ipRequestCounts.get(ip);
@@ -50,10 +50,25 @@ export async function POST(req: NextRequest) {
     ipRequestCounts.set(ip, { count: 1, windowStart: now });
   }
   
+  // Only the signed-in giver may verify their own transaction. Without this,
+  // a caller could post any reference and have it recorded against any uid
+  // supplied in the client-controlled Paystack metadata.
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
+  }
+  let uid: string;
+  try {
+    const decoded = await admin.auth().verifyIdToken(authHeader.slice(7));
+    uid = decoded.uid;
+  } catch {
+    return NextResponse.json({ message: 'Invalid authentication token' }, { status: 401 });
+  }
+
   const { reference } = await req.json();
 
-  if (!reference) {
-    return NextResponse.json({ message: 'Transaction reference is required' }, { status: 400 });
+  if (!reference || typeof reference !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(reference)) {
+    return NextResponse.json({ message: 'Invalid transaction reference' }, { status: 400 });
   }
 
   // Critical check: The API cannot function without the Paystack secret key.
@@ -82,7 +97,17 @@ export async function POST(req: NextRequest) {
       const donorEmail = data.customer.email;
       const currency = data.currency;
       const userId = data.metadata?.userId;
-      
+
+      // The reference must belong to the authenticated giver.
+      if (!userId || userId !== uid) {
+        return NextResponse.json({ message: 'This transaction does not belong to you' }, { status: 403 });
+      }
+
+      // Paystack-supplied values go into an HTML email; escape them.
+      const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!
+      ));
+
       let donorName = 'Valued Giver'; // Default name
 
       // If a user ID is present, fetch their name from Firestore as the source of truth.
@@ -90,15 +115,15 @@ export async function POST(req: NextRequest) {
         try {
             const userDoc = await db.collection('users').doc(userId).get();
             if (userDoc.exists && userDoc.data()?.name) {
-                donorName = userDoc.data()!.name;
+                donorName = escapeHtml(String(userDoc.data()!.name));
             } else {
                 // Fallback to Paystack metadata if Firestore profile is incomplete
-                donorName = data.metadata?.name || data.customer?.first_name || 'Valued Giver';
+                donorName = escapeHtml(String(data.metadata?.name || data.customer?.first_name || 'Valued Giver'));
             }
         } catch (e) {
             console.error(`Failed to fetch user profile for ${userId}, falling back to metadata name.`, e);
             // Fallback on error
-            donorName = data.metadata?.name || data.customer?.first_name || 'Valued Giver';
+            donorName = escapeHtml(String(data.metadata?.name || data.customer?.first_name || 'Valued Giver'));
         }
       }
 

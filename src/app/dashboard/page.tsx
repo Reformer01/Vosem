@@ -58,7 +58,7 @@ export default function DashboardPage() {
     <main className="flex-grow px-5 py-12 sm:px-10 md:px-40">
       <div className="w-full max-w-6xl flex flex-col gap-8">
         {/* Welcome */}
-        <div className="app-card flex flex-col justify-between gap-6 sm:flex-row sm:items-center sm:gap-10 border-t-4 border-t-primary">
+        <div className="app-card flex flex-col justify-between gap-6 sm:flex-row sm:items-center sm:gap-10">
           <div>
             <h1 className="text-foreground text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">Welcome back, {displayName}</h1>
             <p className="mt-2 text-muted-foreground text-lg font-medium max-w-2xl">Your generosity is making a global impact. Thank you for partnering with us.</p>
