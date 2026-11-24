@@ -64,6 +64,28 @@ export const keywordMap: Record<string, KeywordPage> = {
       { href: "/contact", label: "Contact the church office" },
     ],
   },
+  "/sermons": {
+    primary: "VOSEM sermon library",
+    secondary: ["J Olu Ayeni sermons", "AI sermon summary", "VOSEM teaching Lagos"],
+    intent: "informational",
+    hub: "Teaching",
+    related: [
+      { href: "/voice-of-salvation", label: "About the ministry" },
+      { href: "/events", label: "Upcoming services" },
+      { href: "/giving", label: "Support the teaching" },
+    ],
+  },
+  "/prayer": {
+    primary: "VOSEM prayer wall",
+    secondary: ["submit a prayer request Lagos", "church prayer requests", "pray with VOSEM"],
+    intent: "informational",
+    hub: "Prayer",
+    related: [
+      { href: "/contact", label: "Contact the church" },
+      { href: "/events", label: "Join a prayer service" },
+      { href: "/about", label: "Meet VOSEM" },
+    ],
+  },
   "/contact": {
     primary: "VOSEM International Headquarters address",
     secondary: ["church in Alapere Lagos", "Davies Street Alapere church", "VOSEM service times"],

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { deleteUser } from 'firebase/auth';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -27,6 +27,28 @@ export default function SettingsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [prefs, setPrefs] = useState({ eventReminders: true, weeklyNewsletter: true, givingUpdates: false });
+  const [avatarStyle, setAvatarStyle] = useState('primary');
+
+  const profileRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
+  const { data: profile } = useDoc<{ notificationPreferences?: typeof prefs; avatarStyle?: string }>(profileRef);
+
+  useEffect(() => {
+    if (profile?.notificationPreferences) setPrefs(profile.notificationPreferences);
+    if (profile?.avatarStyle) setAvatarStyle(profile.avatarStyle);
+  }, [profile]);
+
+  const savePrefs = async (next: typeof prefs) => {
+    if (!user) return;
+    setPrefs(next);
+    await updateDoc(doc(firestore, 'users', user.uid), { notificationPreferences: next });
+  };
+
+  const saveAvatarStyle = async (style: string) => {
+    if (!user) return;
+    setAvatarStyle(style);
+    await updateDoc(doc(firestore, 'users', user.uid), { avatarStyle: style });
+  };
 
   const handleDeleteAccount = async () => {
     if (!user || !firestore) {
@@ -88,23 +110,39 @@ export default function SettingsPage() {
                         <Label htmlFor="event-notifications" className="font-semibold text-lg text-foreground">Event Reminders</Label>
                         <p className="text-sm text-muted-foreground">Receive email notifications for upcoming events.</p>
                     </div>
-                    <Switch id="event-notifications" defaultChecked />
+                    <Switch id="event-notifications" checked={prefs.eventReminders} onCheckedChange={checked => savePrefs({ ...prefs, eventReminders: checked })} />
                 </div>
                  <div className="flex items-center justify-between">
                     <div>
                         <Label htmlFor="newsletter" className="font-semibold text-lg text-foreground">Weekly Newsletter</Label>
                         <p className="text-sm text-muted-foreground">Stay up to date with the latest news and sermons.</p>
                     </div>
-                    <Switch id="newsletter" defaultChecked />
+                    <Switch id="newsletter" checked={prefs.weeklyNewsletter} onCheckedChange={checked => savePrefs({ ...prefs, weeklyNewsletter: checked })} />
                 </div>
                  <div className="flex items-center justify-between">
                     <div>
                         <Label htmlFor="giving-updates" className="font-semibold text-lg text-foreground">Giving Updates</Label>
                         <p className="text-sm text-muted-foreground">Get summaries and reports on your contributions.</p>
                     </div>
-                    <Switch id="giving-updates" />
+                    <Switch id="giving-updates" checked={prefs.givingUpdates} onCheckedChange={checked => savePrefs({ ...prefs, givingUpdates: checked })} />
                 </div>
             </div>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-2xl font-bold text-foreground">Avatar style</h2>
+          <p className="text-sm text-muted-foreground">Choose an avatar — no photo upload needed.</p>
+          <div className="flex flex-wrap gap-3">
+            {['primary', 'sage', 'ink', 'sand'].map(style => (
+              <button
+                key={style}
+                onClick={() => saveAvatarStyle(style)}
+                className={`rounded-full border px-5 py-2.5 text-sm font-bold capitalize transition-colors ${avatarStyle === style ? 'border-primary bg-primary/10 text-primary' : 'border-border text-foreground hover:bg-muted'}`}
+              >
+                {style}
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="flex flex-col gap-4 border-t border-red-600/30 pt-8 mt-4">

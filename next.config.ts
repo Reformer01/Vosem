@@ -60,6 +60,10 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
       {
+        source: '/admin',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
         source: '/payment-processing',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },

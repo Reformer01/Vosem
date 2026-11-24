@@ -5,6 +5,7 @@ import PageHero from "@/components/site/page-hero";
 import EventsSection from "@/components/site/events-section";
 import { pageMetadata } from "@/lib/seo";
 import RelatedLinks from "@/components/site/related-links";
+import EventCalendar from "@/components/events/event-calendar";
 
 export const metadata = pageMetadata({
   title: "Events & Service Times in Alapere, Lagos",
@@ -43,6 +44,7 @@ export default function EventsPage() {
       </div>
 
       <EventsSection withHeading={false} />
+      <EventCalendar />
 
       <section className="bg-card py-16 text-center sm:py-20">
         <div className="site-wrap">

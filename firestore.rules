@@ -47,6 +47,11 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+
     // --- User Profile Validation Functions ---
     function isCreatingUserProfile(data) {
       // Core fields that are always required
@@ -74,7 +79,7 @@ service cloud.firestore {
       let existingData = resource.data;
       
       // The only fields that can be changed are 'name', 'whatsappNumber', and 'photoURL'
-      let mutableFields = ['name', 'whatsappNumber', 'photoURL'];
+      let mutableFields = ['name', 'whatsappNumber', 'photoURL', 'notificationPreferences', 'avatarStyle'];
       
       // Ensure that the set of fields being changed is a subset of the mutable fields.
       let changedKeys = incomingData.diff(existingData).affectedKeys();
@@ -84,13 +89,16 @@ service cloud.firestore {
       let nameIsValid = !changedKeys.has('name') || (incomingData.name is string && incomingData.name.size() >= 2);
       let whatsappIsValid = !changedKeys.has('whatsappNumber') || incomingData.whatsappNumber is string;
       let photoURLIsValid = !changedKeys.has('photoURL') || (incomingData.photoURL is string && incomingData.photoURL.matches('^https?://.*'));
+      let preferencesAreValid = !changedKeys.has('notificationPreferences') || incomingData.notificationPreferences is map;
+      let avatarStyleIsValid = !changedKeys.has('avatarStyle') || (incomingData.avatarStyle is string && incomingData.avatarStyle.size() <= 30);
       
       // Immutable fields must not change
       let immutableFieldsUnchanged = incomingData.uid == existingData.uid
           && incomingData.email == existingData.email
           && incomingData.createdAt == existingData.createdAt;
 
-      return areChangesAllowed && nameIsValid && whatsappIsValid && photoURLIsValid && immutableFieldsUnchanged;
+      return areChangesAllowed && nameIsValid && whatsappIsValid && photoURLIsValid
+        && preferencesAreValid && avatarStyleIsValid && immutableFieldsUnchanged;
     }
     
     // --- Testimony Validation Functions ---
@@ -106,12 +114,31 @@ service cloud.firestore {
     
     // --- Prayer Request Validation Functions ---
     function isCreatingPrayerRequest(data) {
-        return data.keys().hasAll(['author', 'content', 'date', 'isAnonymous'])
-            && data.keys().size() == 4
+        return data.keys().hasAll(['author', 'authorId', 'content', 'date', 'isAnonymous', 'approved'])
+            && data.keys().size() == 6
             && data.author is string
-            && data.content is string && data.content.size() > 0
+            && data.authorId == request.auth.uid
+            && data.content is string && data.content.size() >= 5 && data.content.size() <= 1000
             && data.date == request.time
-            && data.isAnonymous is bool;
+            && data.isAnonymous is bool
+            && data.approved == false;
+    }
+
+    function isApprovingTestimony(data, resource) {
+        return data.diff(resource).affectedKeys().hasOnly(['approved'])
+            && data.approved is bool
+            && data.author == resource.data.author
+            && data.authorId == resource.data.authorId
+            && data.content == resource.data.content;
+    }
+
+    function isCreatingRsvp(data, eventId) {
+        return data.keys().hasAll(['userId', 'eventId', 'createdAt', 'status'])
+            && data.keys().size() == 4
+            && data.userId == request.auth.uid
+            && data.eventId == eventId
+            && data.createdAt == request.time
+            && data.status == 'going';
     }
 
     /**
@@ -137,7 +164,16 @@ service cloud.firestore {
     match /events/{eventId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create, update, delete: if false; // Writes are disabled until an admin/personnel role system is implemented.
+      allow create, update, delete: if isAdmin();
+
+      // Members can RSVP to an event; only their own RSVP is readable/deletable.
+      match /rsvps/{userId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isSignedIn() && isOwner(userId) && isCreatingRsvp(request.resource.data, eventId);
+        allow delete: if isOwner(userId);
+        allow update: if false;
+      }
     }
 
     /**
@@ -150,7 +186,7 @@ service cloud.firestore {
     match /sermons/{sermonId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create, update, delete: if false; // Writes are disabled until an admin/personnel role system is implemented.
+      allow create, update, delete: if isAdmin();
     }
 
     /**
@@ -166,7 +202,7 @@ service cloud.firestore {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isSignedIn() && isCreatingTestimony(request.resource.data);
-      allow update: if false; // Disallowed until a proper update flow is designed.
+      allow update: if isAdmin() && isApprovingTestimony(request.resource.data, resource);
       allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
@@ -179,7 +215,22 @@ service cloud.firestore {
      */
     match /prayer_requests/{prayerRequestId} {
       allow create: if isSignedIn() && isCreatingPrayerRequest(request.resource.data);
-      allow get, list, update, delete: if false;
+      // Approved requests form the public prayer wall; authors can see their own pending requests.
+      allow get: if (isSignedIn() && resource.data.authorId == request.auth.uid) || resource.data.approved == true;
+      allow list: if isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.approved == true);
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
+        && request.resource.data.approved is bool;
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * Admin roles. Only admins manage these records; no client writes.
+     */
+    match /admins/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create, update, delete: if false;
     }
 
     /**

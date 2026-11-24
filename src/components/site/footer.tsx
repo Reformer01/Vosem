@@ -8,7 +8,8 @@ const columns = [
     links: [
       { href: "/about", label: "About VOSEM" },
       { href: "/events", label: "Events" },
-      { href: "/#sermons", label: "Teaching" },
+      { href: "/sermons", label: "Sermon Library" },
+      { href: "/prayer", label: "Prayer Wall" },
       { href: "/voice-of-salvation", label: "Voice of Salvation" },
       { href: "/#testimonies", label: "Testimonies" },
       { href: "/giving", label: "Give" },

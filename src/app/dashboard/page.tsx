@@ -1,15 +1,19 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, Check, Download, Search } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserProfile {
   name: string;
   email: string;
+  whatsappNumber?: string;
+  avatarStyle?: string;
 }
 
 interface Donation {
@@ -18,6 +22,7 @@ interface Donation {
   currency: string;
   purpose: string;
   status: string;
+  reference?: string;
   createdAt: { seconds: number; nanoseconds: number };
 }
 
@@ -32,10 +37,51 @@ export default function DashboardPage() {
   const donationsQuery = useMemoFirebase(() => user ? query(collection(firestore, 'donations'), where('userId', '==', user.uid)) : null, [user, firestore]);
   const { data: unsortedDonations, isLoading: isDonationsLoading } = useCollection<Donation>(donationsQuery);
 
+  const testimoniesQuery = useMemoFirebase(() => user ? query(collection(firestore, 'testimonies'), where('authorId', '==', user.uid)) : null, [user, firestore]);
+  const { data: myTestimonies } = useCollection(testimoniesQuery);
+
+  const [search, setSearch] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [page, setPage] = useState(0);
+  const pageSize = 5;
+
   const donations = useMemo(() => {
     if (!unsortedDonations) return null;
     return [...unsortedDonations].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   }, [unsortedDonations]);
+
+  const filteredDonations = useMemo(() => {
+    if (!donations) return [];
+    const term = search.trim().toLowerCase();
+    return donations.filter(d => {
+      const date = d.createdAt ? new Date(d.createdAt.seconds * 1000) : null;
+      const matchesTerm = !term || d.purpose.toLowerCase().includes(term) || d.reference?.toLowerCase().includes(term);
+      const matchesFrom = !fromDate || (date && date >= new Date(fromDate));
+      const matchesTo = !toDate || (date && date <= new Date(`${toDate}T23:59:59`));
+      return matchesTerm && matchesFrom && matchesTo;
+    });
+  }, [donations, search, fromDate, toDate]);
+
+  const pagedDonations = filteredDonations.slice(page * pageSize, (page + 1) * pageSize);
+  const totalPages = Math.max(1, Math.ceil(filteredDonations.length / pageSize));
+
+  const exportCsv = () => {
+    const rows = [['Date', 'Purpose', 'Amount (NGN)', 'Status', 'Reference'], ...filteredDonations.map(d => [
+      d.createdAt ? new Date(d.createdAt.seconds * 1000).toISOString().slice(0, 10) : '',
+      d.purpose,
+      String(d.amount / 100),
+      d.status,
+      d.reference || d.id,
+    ])];
+    const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'vosem-giving-history.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     if (!isAuthLoading && !user) router.push('/login');
@@ -69,18 +115,48 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Onboarding / progress */}
+        <section className="app-card flex flex-col gap-6">
+          <div>
+            <h2 className="text-xl font-bold">Your next steps</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Small steps help you feel at home in the VOSEM family.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: 'Complete your profile', done: !!userProfile?.name && !!userProfile?.whatsappNumber, href: '/dashboard/profile' },
+              { label: 'Sow your first seed', done: (donations?.length ?? 0) > 0, href: '/giving' },
+              { label: 'Share a testimony', done: (myTestimonies?.length ?? 0) > 0, href: '/#testimonies' },
+              { label: 'Join a prayer group', done: false, href: '/prayer' },
+            ].map(step => (
+              <Link key={step.label} href={step.href} className={`flex items-center justify-between gap-3 rounded-2xl border p-4 text-sm font-semibold transition-colors ${step.done ? 'border-primary/30 bg-primary/5 text-primary' : 'border-border bg-card hover:bg-muted'}`}>
+                {step.label} {step.done ? <Check className="size-4" /> : <ArrowRight className="size-4" />}
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* Seed history */}
         <section className="flex flex-col gap-4">
-          <div className="flex items-end justify-between">
-            <h2 className="text-foreground text-2xl font-bold">Seed History</h2>
-            <div className="flex gap-2">
-              <Button variant="outline" className="site-curved border-border text-foreground">Export</Button>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-foreground text-2xl font-bold">Seed History</h2>
+              <Button variant="outline" className="site-curved border-border text-foreground" onClick={exportCsv}>
+                <Download className="size-4" /> Export CSV
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <div className="relative flex-1 min-w-48">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Search purpose or reference" className="site-curved pl-9" />
+              </div>
+              <Input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setPage(0); }} className="site-curved w-auto" aria-label="From date" />
+              <Input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setPage(0); }} className="site-curved w-auto" aria-label="To date" />
             </div>
           </div>
 
           {/* Mobile: stacked transaction records, no sideways scrolling */}
           <div className="md:hidden flex flex-col gap-3">
-            {donations && donations.length > 0 ? donations.map(donation => (
+            {pagedDonations.length > 0 ? pagedDonations.map(donation => (
               <article key={donation.id} className="site-curved border border-border bg-card p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -143,6 +219,14 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 py-2 text-sm font-semibold">
+              <Button variant="outline" className="rounded-full" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</Button>
+              <span className="text-muted-foreground">Page {page + 1} of {totalPages}</span>
+              <Button variant="outline" className="rounded-full" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</Button>
+            </div>
+          )}
         </section>
       </div>
     </main>

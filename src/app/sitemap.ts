@@ -7,6 +7,8 @@ const pages = [
   { path: "/about", last: "2026-11-24", freq: "monthly" as const, priority: 0.9, image: "/images/about-family.jpg" },
   { path: "/voice-of-salvation", last: "2026-11-24", freq: "monthly" as const, priority: 0.9, image: "/images/banner-celebration.jpg" },
   { path: "/events", last: "2026-11-24", freq: "weekly" as const, priority: 0.8, image: "/images/events-youth.jpg" },
+  { path: "/sermons", last: "2026-11-24", freq: "weekly" as const, priority: 0.8, image: "/images/sermon-pastor.jpg" },
+  { path: "/prayer", last: "2026-11-24", freq: "monthly" as const, priority: 0.7, image: "/images/next-steps-prayer.jpg" },
   { path: "/giving", last: "2026-11-24", freq: "monthly" as const, priority: 0.8, image: "/images/church-building.jpg" },
   { path: "/contact", last: "2026-11-24", freq: "monthly" as const, priority: 0.7, image: "/images/congregation-worship.jpg" },
 ];

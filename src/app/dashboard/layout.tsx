@@ -9,13 +9,15 @@ import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, UserRound } from 'lucide-react';
+import { FileText, HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: UserRound },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
+  { href: '/dashboard/testimonies', label: 'My Testimonies', icon: FileText },
+  { href: '/admin', label: 'Admin', icon: ShieldCheck },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

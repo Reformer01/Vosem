@@ -11,7 +11,8 @@ import { VosemLogoIcon } from "@/components/icons";
 const links = [
   { href: "/about", label: "About" },
   { href: "/events", label: "Events" },
-  { href: "/#sermons", label: "Teaching" },
+  { href: "/sermons", label: "Sermons" },
+  { href: "/prayer", label: "Prayer" },
   { href: "/voice-of-salvation", label: "Voice of Salvation" },
   { href: "/giving", label: "Giving" },
   { href: "/contact", label: "Contact" },

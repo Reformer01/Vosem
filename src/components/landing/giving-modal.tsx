@@ -40,12 +40,14 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const [amount, setAmount] = useState("10000");
   const [customAmount, setCustomAmount] = useState("");
   const [isPaying, setIsPaying] = useState(false);
+  const [frequency, setFrequency] = useState('one-time');
 
   useEffect(() => {
     if (isOpen) {
       setPurpose(defaultPurpose);
       setAmount("10000");
       setCustomAmount("");
+      setFrequency('one-time');
       setIsPaying(false);
     }
   }, [isOpen, defaultPurpose]);
@@ -62,6 +64,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       name: user?.displayName || "Anonymous Giver",
       userId: user?.uid,
       purpose: purpose,
+      recurring: frequency === 'recurring',
       custom_fields: [
         {
           display_name: "Giving Purpose",
@@ -124,7 +127,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
             <div className="px-6 sm:px-10 pb-10">
               <div className="mb-8 flex justify-center">
-                <RadioGroup defaultValue="one-time" className="flex h-12 w-full max-w-[320px] items-center justify-center rounded-xl bg-gray-200/50 dark:bg-white/5 p-1">
+                <RadioGroup value={frequency} onValueChange={setFrequency} className="flex h-12 w-full max-w-[320px] items-center justify-center rounded-xl bg-gray-200/50 dark:bg-white/5 p-1">
                   <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-accent dark:has-[:checked]:text-white has-[:checked]:shadow-sm">
                     <RadioGroupItem value="one-time" id="one-time" className="sr-only" />
                     <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 peer-data-[state=checked]:text-accent dark:text-gray-400 dark:group-hover:text-gray-200 dark:peer-data-[state=checked]:text-white">One-time</span>
@@ -134,6 +137,11 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                     <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 peer-data-[state=checked]:text-accent dark:text-gray-400 dark:group-hover:text-gray-200 dark:peer-data-[state=checked]:text-white">Recurring</span>
                   </Label>
                 </RadioGroup>
+                {frequency === 'recurring' && (
+                  <p className="mt-2 text-center text-xs text-amber-700">
+                    Recurring gifts need a Paystack plan from the church office. This gift will be processed as a single payment.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-6">
