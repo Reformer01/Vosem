@@ -39,7 +39,7 @@ Note: `/about` and `/voice-of-salvation` share the same primary phrase but have 
 - Hub: `/` links to About, Events, Giving (header, footer, image cards, RelatedLinks).
 - Spokes: each inner page links back to hub-related pages via contextual body links, header/footer, breadcrumb, and `RelatedLinks`.
 - All public URLs are ≤1 click from the homepage; no orphan pages among the six public routes.
-- `crawl.py` + `linkgraph.py` over the live site: `pages: 8, orphans: 0, deep_pages: 0, max_depth: 1, total_internal_links: 43` (Verified). The crawler also sees the bare-domain root as a separate node; the homepage canonical/hreflang now use `https://vosem.vercel.app/` so it consolidates with the linked `/` URL.
+- `crawl.py` + `linkgraph.py` over the live site: `pages: 8, orphans: 0, deep_pages: 0, max_depth: 1, total_internal_links: 43` (Verified). The crawler also lists the bare-domain root as a separate node (`in: 0, out: 7`): internal links use `/` while Next.js normalises the canonical to `https://vosem.vercel.app` (no trailing slash) — **Verified** in live HTML. Canonical consolidation handles the variant; a server-level 301 is not available inside Next.js App Router.
 
 ## 4. GEO self-check (Estimated — no AI-citation telemetry available)
 
