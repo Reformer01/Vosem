@@ -99,6 +99,71 @@
   }
 }
 
+/* Public site: the template's light palette, scoped so the app/dashboard keeps its dark theme. */
+.site-theme {
+  --background: 40 33% 96%;
+  --foreground: 240 7% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 7% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 7% 14%;
+  --primary: 330 96% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 96 22% 84%;
+  --secondary-foreground: 240 7% 14%;
+  --muted: 40 20% 90%;
+  --muted-foreground: 240 5% 42%;
+  --accent: 330 96% 36%;
+  --accent-foreground: 0 0% 100%;
+  --border: 40 15% 84%;
+  --input: 40 15% 84%;
+  --ring: 330 96% 36%;
+  --radius: 1.5rem;
+}
+
+@layer components {
+  .app-shell {
+    @apply site-theme min-h-screen bg-background font-sans text-foreground;
+  }
+  .app-card {
+    @apply site-curved border border-border bg-card px-8 py-10 shadow-sm sm:px-12;
+  }
+  .app-table {
+    @apply w-full border-collapse text-left;
+  }
+  .app-table th,
+  .app-table td {
+    @apply px-6 py-4 text-sm;
+  }
+  .app-status {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide capitalize;
+  }
+  .site-shell {
+    @apply min-h-screen bg-background font-sans text-foreground;
+  }
+  .site-wrap {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+  .site-curved {
+    @apply rounded-[1.75rem] sm:rounded-[2.5rem];
+  }
+  .site-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold uppercase tracking-wide transition-all duration-200;
+  }
+  .site-btn-solid {
+    @apply bg-primary text-primary-foreground hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25;
+  }
+  .site-btn-outline {
+    @apply border-2 border-foreground/70 text-foreground hover:-translate-y-0.5 hover:bg-foreground hover:text-white;
+  }
+  .site-btn-light {
+    @apply border-2 border-white/70 bg-white/10 text-white backdrop-blur hover:bg-white hover:text-primary;
+  }
+  .site-eyebrow {
+    @apply mb-3 text-xs font-black uppercase tracking-[0.25em] text-primary;
+  }
+}
+
 @layer components {
   .glass-card {
     background: rgba(30, 30, 30, 0.3);
