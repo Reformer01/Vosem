@@ -4,6 +4,7 @@ import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import JsonLd from "@/components/site/json-ld";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
+import RelatedLinks from "@/components/site/related-links";
 
 export const metadata = pageMetadata({
   title: "Voice of Salvation Evangelical Ministries | VOSEM INT'L",
@@ -160,6 +161,7 @@ export default function VoiceOfSalvationPage() {
           </div>
         </div>
       </section>
+      <RelatedLinks path="/voice-of-salvation" />
     </SiteShell>
   );
 }

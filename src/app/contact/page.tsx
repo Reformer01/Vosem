@@ -5,6 +5,7 @@ import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import JsonLd from "@/components/site/json-ld";
 import { FULL_NAME, SITE_URL, pageMetadata } from "@/lib/seo";
+import RelatedLinks from "@/components/site/related-links";
 
 const churchSchema = {
   "@context": "https://schema.org",
@@ -70,6 +71,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      <RelatedLinks path="/contact" />
     </SiteShell>
   );
 }

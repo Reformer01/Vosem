@@ -5,6 +5,7 @@ import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import ContentSplit from "@/components/site/content-split";
 import { pageMetadata } from "@/lib/seo";
+import RelatedLinks from "@/components/site/related-links";
 
 export const metadata = pageMetadata({
   title: "About Voice of Salvation Ministries",
@@ -85,6 +86,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      <RelatedLinks path="/about" />
     </SiteShell>
   );
 }

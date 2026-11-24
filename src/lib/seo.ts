@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { keywordsFor } from "./seo-keywords";
 
 export const SITE_URL = "https://vosem.vercel.app";
 export const SITE_NAME = "VOSEM INT'L";
@@ -38,7 +39,12 @@ export function pageMetadata({
   return {
     title: absolute ? { absolute: title } : title,
     description,
-    alternates: { canonical: path },
+    keywords: keywordsFor(path),
+    // Single-language site: self-referencing en + x-default, aligned with canonical.
+    alternates: {
+      canonical: path,
+      languages: { en: path, "x-default": path },
+    },
     openGraph: {
       type: "website",
       title: absolute ? title : `${title} | ${SITE_NAME}`,

@@ -6,6 +6,7 @@ import ContentSplit from "@/components/site/content-split";
 import EventsSection from "@/components/site/events-section";
 import TestimoniesSection from "@/components/site/testimonies-section";
 import GivingSection from "@/components/site/giving-section";
+import RelatedLinks from "@/components/site/related-links";
 
 const cards = [
   { title: "Connect Groups", href: "/about#connect", image: "/images/groups-fellowship.jpg" },
@@ -138,6 +139,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <RelatedLinks path="/" />
     </SiteShell>
   );
 }

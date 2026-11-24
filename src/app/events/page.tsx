@@ -4,6 +4,7 @@ import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import EventsSection from "@/components/site/events-section";
 import { pageMetadata } from "@/lib/seo";
+import RelatedLinks from "@/components/site/related-links";
 
 export const metadata = pageMetadata({
   title: "Events & Service Times in Alapere, Lagos",
@@ -50,6 +51,7 @@ export default function EventsPage() {
           <Link href="/contact" className="site-btn site-btn-solid mt-8">Plan your visit <ArrowRight className="size-4" /></Link>
         </div>
       </section>
+      <RelatedLinks path="/events" />
     </SiteShell>
   );
 }

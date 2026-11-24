@@ -4,6 +4,7 @@ import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import GivingSection from "@/components/site/giving-section";
 import { pageMetadata } from "@/lib/seo";
+import RelatedLinks from "@/components/site/related-links";
 
 export const metadata = pageMetadata({
   title: "Giving & Stewardship at VOSEM",
@@ -36,6 +37,7 @@ export default function GivingPage() {
           <Link href="/signup" className="site-btn site-btn-solid shrink-0">Join Us <ArrowRight className="size-4" /></Link>
         </div>
       </section>
+      <RelatedLinks path="/giving" />
     </SiteShell>
   );
 }

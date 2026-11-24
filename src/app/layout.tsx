@@ -6,6 +6,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { plusJakartaSans, playfairDisplay } from './fonts';
 import JsonLd from '@/components/site/json-ld';
 import { FULL_NAME, OG_IMAGE, SITE_NAME, SITE_URL, organizationSchema, websiteSchema } from '@/lib/seo';
+import { keywordsFor } from '@/lib/seo-keywords';
 
 const title = "Voice of Salvation Evangelical Ministries | VOSEM";
 const description = "VOSEM INT'L — Voice of Salvation Evangelical Ministries in Lagos, Nigeria. Join our church family for worship, teaching, prayer and community.";
@@ -16,8 +17,8 @@ export const metadata: Metadata = {
   description,
   applicationName: SITE_NAME,
   authors: [{ name: FULL_NAME }],
-  keywords: ["Voice of Salvation Evangelical Ministries", "VOSEM", "church in Lagos", "Alapere church", "Christian ministry Lagos", "J Olu Ayeni"],
-  alternates: { canonical: "/" },
+  keywords: keywordsFor("/"),
+  alternates: { canonical: "/", languages: { en: "/", "x-default": "/" } },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
