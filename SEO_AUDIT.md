@@ -53,15 +53,15 @@ Note: `/about` and `/voice-of-salvation` share the same primary phrase but have 
 | AI Query Coverage | N/A | Cannot measure without an AI monitor connector |
 | Citation rate | N/A | Requires Search Console / AI referral data |
 
-## 5. Content gaps found on-site (from `docs/blueprint.md` vs implemented routes)
+## 5. Content gaps (from `docs/blueprint.md`) — now implemented
 
-- Sermon library / AI sermon summaries — no page or dashboard UI (`/sermons` is readable in Firestore but writes disabled).
-- Prayer wall — no UI; `prayer_requests` rules are write-only.
-- Testimony management UI — public submission exists, no member-facing status/delete screen.
-- Events management/RSVP — public `/events` is static; no dashboard section.
-- Admin/moderator roles — Firestore rules disable events/sermons writes until a role system exists.
+- `/sermons` — sermon library with search, displayed summaries and an AI-summary action (`src/app/sermons/actions.ts`).
+- `/prayer` — prayer wall with submit form, anonymous option and member status list; rules updated to expose approved requests.
+- `/dashboard/testimonies` — member testimony list with approval status and delete.
+- `/events` — Firestore-backed event calendar with RSVP buttons; RSVP subcollection rules added.
+- `/admin` — role-gated moderation (testimonies, prayer requests) and sermon/event publishing via `/admins/{uid}`.
 
-These are product gaps, not metadata gaps; they limit pages available to rank.
+Remaining product blockers: true Paystack recurring subscriptions need a plan code; Flutterwave needs merchant keys; AI summaries need `GEMINI_API_KEY` in Vercel env. Firestore rules were not emulator-validated (Java unavailable in this environment).
 
 ## 6. Strategies requiring external credentials or tools (blocked, not implemented)
 
