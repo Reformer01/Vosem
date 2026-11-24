@@ -9,13 +9,13 @@ import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, Menu } from 'lucide-react';
+import { HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, UserRound } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
 
 const navLinks = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dashboard/profile', label: 'Profile' },
-  { href: '/dashboard/settings', label: 'Settings' },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/profile', label: 'Profile', icon: UserRound },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -69,29 +69,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <Menu className="size-6" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="flex flex-col bg-card">
-                  <SheetHeader>
+                <SheetContent side="left" className="flex flex-col bg-card p-0">
+                  <SheetHeader className="border-b border-border px-6 py-5 text-left">
                     <SheetTitle className="flex items-center gap-2.5">
                       <VosemLogoIcon className="size-7 text-primary" />
                       <span className="text-lg font-black tracking-tighter">VOSEM <span className="text-primary">INT&apos;L</span></span>
                     </SheetTitle>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Member portal</p>
                   </SheetHeader>
-                  <nav className="mt-8 flex flex-col gap-1" aria-label="Mobile navigation">
-                    {navLinks.map((link) => (
-                      <SheetClose key={link.href} asChild>
-                        <Link href={link.href} className={navLinkClasses(link.href)} onClick={() => setIsSheetOpen(false)}>
-                          {link.label}
+
+                  <nav className="flex flex-col gap-2 px-4 py-6" aria-label="Mobile navigation">
+                    {navLinks.map(({ href, label, icon: Icon }) => (
+                      <SheetClose key={href} asChild>
+                        <Link
+                          href={href}
+                          onClick={() => setIsSheetOpen(false)}
+                          className={`flex items-center gap-4 rounded-2xl px-4 py-3.5 text-base font-bold transition-colors ${pathname === href ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'}`}
+                        >
+                          <Icon className="size-5" aria-hidden="true" />
+                          {label}
                         </Link>
                       </SheetClose>
                     ))}
                     <button
                       onClick={() => { setIsModalOpen(true); setIsSheetOpen(false); }}
-                      className="mt-2 text-left text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+                      className="mt-2 flex items-center gap-4 rounded-2xl px-4 py-3.5 text-base font-bold text-foreground transition-colors hover:bg-muted"
                     >
+                      <HeartHandshake className="size-5" aria-hidden="true" />
                       Give
                     </button>
                   </nav>
-                  <div className="mt-auto border-t border-border pt-6">
+
+                  <div className="mt-auto border-t border-border px-6 py-6">
+                    <p className="mb-4 text-sm font-semibold text-muted-foreground">{user.displayName || user.email}</p>
                     <Button variant="outline" className="w-full rounded-full" onClick={() => { handleSignOut(); setIsSheetOpen(false); }}>
                       <LogOut className="size-4" /> Log out
                     </Button>
