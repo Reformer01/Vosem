@@ -18,7 +18,10 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   authors: [{ name: FULL_NAME }],
   keywords: keywordsFor("/"),
-  alternates: { canonical: "/", languages: { en: "/", "x-default": "/" } },
+  alternates: {
+    canonical: `${SITE_URL}/`,
+    languages: { en: `${SITE_URL}/`, "x-default": `${SITE_URL}/` },
+  },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

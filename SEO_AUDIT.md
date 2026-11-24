@@ -39,6 +39,7 @@ Note: `/about` and `/voice-of-salvation` share the same primary phrase but have 
 - Hub: `/` links to About, Events, Giving (header, footer, image cards, RelatedLinks).
 - Spokes: each inner page links back to hub-related pages via contextual body links, header/footer, breadcrumb, and `RelatedLinks`.
 - All public URLs are ≤1 click from the homepage; no orphan pages among the six public routes.
+- `crawl.py` + `linkgraph.py` over the live site: `pages: 8, orphans: 0, deep_pages: 0, max_depth: 1, total_internal_links: 43` (Verified). The crawler also sees the bare-domain root as a separate node; the homepage canonical/hreflang now use `https://vosem.vercel.app/` so it consolidates with the linked `/` URL.
 
 ## 4. GEO self-check (Estimated — no AI-citation telemetry available)
 
