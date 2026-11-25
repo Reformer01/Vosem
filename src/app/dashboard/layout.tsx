@@ -18,7 +18,7 @@ const baseLinks = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserRound },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
   { href: '/dashboard/events', label: 'My Events', icon: CalendarDays },
-  { href: '/dashboard/giving', label: 'Give', icon: HeartHandshake },
+  { href: '/giving', label: 'Give', icon: HeartHandshake },
   { href: '/dashboard/prayer', label: 'Prayer', icon: Flame },
   { href: '/dashboard/testimonies', label: 'My Testimonies', icon: FileText },
 ];
