@@ -145,7 +145,8 @@ service cloud.firestore {
      * @allow Create and update operations are validated against a schema.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
       allow create: if isOwner(userId) && isCreatingUserProfile(request.resource.data);
       allow update: if isOwner(userId) && canUpdateUserProfile(request, resource);
       allow delete: if isOwner(userId);
@@ -200,7 +201,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isSignedIn() && isCreatingTestimony(request.resource.data);
       allow update: if isAdmin() && isApprovingTestimony(request.resource.data, resource);
-      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid || isAdmin();
     }
 
     /**
@@ -230,9 +231,18 @@ service cloud.firestore {
      * Admin roles. Only admins manage these records; no client writes.
      */
     match /admins/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create, update, delete: if false;
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Append-only activity log for admin actions.
+    match /audit_logs/{logId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.actorId == request.auth.uid
+        && request.resource.data.action is string;
+      allow update, delete: if false;
     }
 
     /**
@@ -245,7 +255,7 @@ service cloud.firestore {
       // A user can read (get or list) their own donation records.
       // For list operations, the query MUST include `where('userId', '==', request.auth.uid)`.
       // The rule now implicitly trusts the query to filter correctly.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       // The client records its own verified gift; the webhook may also write it.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
