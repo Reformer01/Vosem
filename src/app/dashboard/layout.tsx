@@ -18,7 +18,6 @@ const baseLinks = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserRound },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
   { href: '/dashboard/events', label: 'My Events', icon: CalendarDays },
-  { href: '/giving', label: 'Give', icon: HeartHandshake },
   { href: '/dashboard/prayer', label: 'Prayer', icon: Flame },
   { href: '/dashboard/testimonies', label: 'My Testimonies', icon: FileText },
 ];
@@ -103,6 +102,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </Link>
                       </SheetClose>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => { setIsSheetOpen(false); setIsModalOpen(true); }}
+                      className="flex items-center gap-4 rounded-2xl px-4 py-3.5 text-base font-bold text-foreground transition-colors hover:bg-muted"
+                    >
+                      <HeartHandshake className="size-5" aria-hidden="true" />
+                      Give
+                    </button>
                   </nav>
 
                   <div className="mt-auto border-t border-border px-6 py-6">
