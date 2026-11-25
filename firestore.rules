@@ -213,8 +213,8 @@ service cloud.firestore {
     match /prayer_requests/{prayerRequestId} {
       allow create: if isSignedIn() && isCreatingPrayerRequest(request.resource.data);
       // Approved requests form the public prayer wall; authors can see their own pending requests.
-      allow get: if (isSignedIn() && resource.data.authorId == request.auth.uid) || resource.data.approved == true;
-      allow list: if isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.approved == true);
+      allow get: if (isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin())) || resource.data.approved == true;
+      allow list: if isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.approved == true || isAdmin());
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
         && request.resource.data.approved is bool;
