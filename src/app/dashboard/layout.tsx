@@ -125,8 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="flex-grow">{children}</main>
 
         <footer className="border-t border-border py-4">
-          <div className="site-wrap flex flex-col md:flex-row items-center justify-between gap-2 text-xs font-semibold text-muted-foreground">
-            <p>© 2026 VOSEM INT&apos;L. All rights reserved.</p>
+          <div className="site-wrap flex items-center justify-end gap-2 text-xs font-semibold text-muted-foreground">
             <div className="flex gap-6">
               <Link className="hover:text-primary transition-colors" href="/contact">Privacy Policy</Link>
               <Link className="hover:text-primary transition-colors" href="/contact">Terms of Service</Link>
