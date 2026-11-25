@@ -4,7 +4,8 @@ import { useState } from "react";
 import { collection, deleteDoc, doc, orderBy, query, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking, useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import ScriptureQuote from "@/components/site/scripture-quote";
 
 interface Event {
   title: string;
@@ -19,6 +20,7 @@ export default function EventCalendar() {
   const firestore = useFirestore();
   const { user } = useUser();
   const [busy, setBusy] = useState<string | null>(null);
+  const [monthOffset, setMonthOffset] = useState(0);
 
   const eventsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, "events"), orderBy("startTime", "asc")) : null, [firestore]);
   const { data: events, isLoading } = useCollection<Event>(eventsQuery);
@@ -34,11 +36,52 @@ export default function EventCalendar() {
     setBusy(null);
   };
 
+  const view = new Date();
+  view.setDate(1);
+  view.setMonth(view.getMonth() + monthOffset);
+  const monthName = view.toLocaleDateString("en-NG", { month: "long", year: "numeric" });
+  const dayCount = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+  const leadingBlanks = new Date(view.getFullYear(), view.getMonth(), 1).getDay();
+  const eventDays = new Set((events ?? []).map(e => new Date(e.startTime).toDateString()));
+
   return (
     <section className="bg-card py-20 sm:py-28">
       <div className="site-wrap">
-        <h2 className="font-display text-4xl italic sm:text-5xl">Church calendar</h2>
-        <p className="mt-3 text-muted-foreground">See what&apos;s coming up and let us know you&apos;re going.</p>
+        <ScriptureQuote
+          text="For where two or three gather in my name, there am I with them."
+          reference="Matthew 18:20"
+        />
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-4xl italic sm:text-5xl">Church calendar</h2>
+            <p className="mt-3 text-muted-foreground">See what&apos;s coming up and let us know you&apos;re going.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="rounded-xl" aria-label="Previous month" onClick={() => setMonthOffset(m => m - 1)}><ChevronLeft className="size-4" /></Button>
+            <span className="min-w-36 text-center text-sm font-bold">{monthName}</span>
+            <Button variant="outline" size="icon" className="rounded-xl" aria-label="Next month" onClick={() => setMonthOffset(m => m + 1)}><ChevronRight className="size-4" /></Button>
+          </div>
+        </div>
+
+        <div className="mb-10 rounded-[1.5rem] border border-border bg-card p-4 sm:p-6">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-black uppercase tracking-wider text-muted-foreground">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => <span key={day} className="py-2">{day}</span>)}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: leadingBlanks }, (_, i) => <div key={`blank-${i}`} />)}
+            {Array.from({ length: dayCount }, (_, i) => i + 1).map(day => {
+              const date = new Date(view.getFullYear(), view.getMonth(), day);
+              const hasEvent = eventDays.has(date.toDateString());
+              return (
+                <div key={day} className={`flex aspect-square items-center justify-center rounded-xl text-sm font-semibold ${hasEvent ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+                  {day}
+                  {hasEvent && <span className="sr-only">event</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {isLoading && <p className="mt-8 text-muted-foreground">Loading events…</p>}
         {!isLoading && (!events || events.length === 0) && <p className="mt-8 text-muted-foreground">No events scheduled yet — check back soon.</p>}
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">

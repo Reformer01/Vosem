@@ -10,6 +10,7 @@ import * as z from "zod";
 import { addDocumentNonBlocking, useFirestore, useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import ScriptureQuote from "./scripture-quote";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -40,7 +41,7 @@ export default function TestimoniesSection() {
       date: serverTimestamp(),
       approved: false,
     });
-    toast({ title: "Testimony submitted!", description: "Thank you for sharing. Our team will review it shortly." });
+    toast({ title: "Testimony submitted!", description: "Your testimony has been received." });
     form.reset();
     setOpen(false);
   };
@@ -48,6 +49,10 @@ export default function TestimoniesSection() {
   return (
     <section className="bg-card py-20 sm:py-28" id="testimonies">
       <div className="site-wrap">
+        <ScriptureQuote
+          text="They overcame him by the blood of the Lamb and by the word of their testimony."
+          reference="Revelation 12:11"
+        />
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <span className="site-eyebrow">Voices of VOSEM</span>
           <h2 className="font-display text-4xl italic sm:text-6xl">Testimonies of Grace</h2>

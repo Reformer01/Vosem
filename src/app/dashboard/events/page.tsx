@@ -1,16 +1,12 @@
 "use client";
 
-import { collection, collectionGroup, deleteDoc, doc, query, where } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { collection, deleteDoc, doc, getDoc, query } from "firebase/firestore";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
-
-interface Rsvp {
-  eventId: string;
-  userId: string;
-  status: string;
-}
+import EventCalendar from "@/components/events/event-calendar";
 
 interface Event {
   title: string;
@@ -21,51 +17,64 @@ interface Event {
 export default function MyEventsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const [goingIds, setGoingIds] = useState<string[]>([]);
 
-  const rsvpsQuery = useMemoFirebase(
-    () => (user && firestore) ? query(collectionGroup(firestore, "rsvps"), where("userId", "==", user.uid)) : null,
-    [user, firestore]
-  );
   const eventsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, "events")) : null, [firestore]);
+  const { data: events, isLoading } = useCollection<Event>(eventsQuery);
 
-  const { data: rsvps, isLoading } = useCollection<Rsvp>(rsvpsQuery);
-  const { data: events } = useCollection<Event>(eventsQuery);
+  useEffect(() => {
+    if (!user || !firestore || !events?.length) return;
+    let active = true;
+    Promise.all(events.map(async event => {
+      const snap = await getDoc(doc(firestore, "events", event.id, "rsvps", user.uid));
+      return snap.exists() ? event.id : null;
+    })).then(ids => {
+      if (active) setGoingIds(ids.filter(Boolean) as string[]);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [user, firestore, events]);
 
-  const eventById = new Map((events ?? []).map(e => [e.id, e]));
+  const going = events?.filter(event => goingIds.includes(event.id)) ?? [];
 
   return (
     <main className="flex-grow px-5 py-12 sm:px-10 md:px-40">
-      <div className="w-full max-w-4xl">
+      <div className="mx-auto w-full max-w-4xl">
         <h1 className="text-3xl font-bold sm:text-4xl">My events</h1>
-        <p className="mt-2 text-muted-foreground">Events you have RSVP&apos;d to. Cancel anytime from here.</p>
+        <p className="mt-2 text-muted-foreground">Your upcoming gatherings and event calendar.</p>
 
         <div className="mt-10 flex flex-col gap-4">
           {isLoading && <p className="text-muted-foreground">Loading…</p>}
-          {!isLoading && (!rsvps || rsvps.length === 0) && (
+          {!isLoading && going.length === 0 && (
             <div className="site-curved border border-border bg-card p-8 text-center text-muted-foreground">
               You haven&apos;t RSVP&apos;d to an event yet. <Link href="/events" className="font-bold text-primary underline">Browse the calendar</Link>.
             </div>
           )}
-          {rsvps?.map(rsvp => {
-            const event = eventById.get(rsvp.eventId);
-            return (
-              <article key={rsvp.eventId} className="site-curved flex flex-col gap-4 border border-border bg-card p-7 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <span className="app-status bg-primary/10 text-primary">{rsvp.status}</span>
-                  <h2 className="mt-3 text-xl font-bold">{event?.title || "Event"}</h2>
-                  <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDays className="size-4" />
-                    {event?.startTime ? new Date(event.startTime).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }) : "Date TBA"}
-                  </p>
-                </div>
-                <Button variant="outline" className="rounded-full" onClick={() => firestore && deleteDoc(doc(firestore, "events", rsvp.eventId, "rsvps", user!.uid))}>
-                  Cancel RSVP
-                </Button>
-              </article>
-            );
-          })}
+          {going.map(event => (
+            <article key={event.id} className="site-curved flex flex-col gap-4 border border-border bg-card p-7 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <span className="app-status bg-primary/10 text-primary">Going</span>
+                <h2 className="mt-3 text-xl font-bold">{event.title}</h2>
+                <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarDays className="size-4" />
+                  {new Date(event.startTime).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={async () => {
+                  if (!user || !firestore) return;
+                  await deleteDoc(doc(firestore, "events", event.id, "rsvps", user.uid));
+                  setGoingIds(ids => ids.filter(id => id !== event.id));
+                }}
+              >
+                Cancel RSVP
+              </Button>
+            </article>
+          ))}
         </div>
       </div>
+      <EventCalendar />
     </main>
   );
 }

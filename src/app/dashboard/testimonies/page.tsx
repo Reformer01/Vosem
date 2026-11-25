@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
+import ScriptureQuote from "@/components/site/scripture-quote";
 
 interface Testimony {
   author: string;
@@ -49,7 +50,7 @@ export default function MyTestimoniesPage() {
       date: serverTimestamp(),
       approved: false,
     });
-    toast({ title: "Testimony submitted", description: "Thank you for sharing. Our team will review it shortly." });
+    toast({ title: "Testimony submitted", description: "Your testimony has been received." });
     form.reset();
     setOpen(false);
   };
@@ -61,11 +62,15 @@ export default function MyTestimoniesPage() {
 
   return (
     <main className="flex-grow px-5 py-12 sm:px-10 md:px-40">
-      <div className="w-full max-w-4xl">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="mx-auto w-full max-w-2xl text-center">
+        <ScriptureQuote
+          text="They overcame him by the blood of the Lamb and by the word of their testimony."
+          reference="Revelation 12:11"
+        />
+        <div className="flex flex-col items-center justify-center gap-5 text-center">
           <div>
             <h1 className="text-3xl font-bold sm:text-4xl">My testimonies</h1>
-            <p className="mt-2 text-muted-foreground">Stories you have shared with the VOSEM family and their review status.</p>
+            <p className="mt-2 text-muted-foreground">Stories you have shared with the VOSEM family.</p>
           </div>
           <Button className="site-btn site-btn-solid" onClick={() => setOpen(true)}>
             <Plus className="size-4" /> Share a testimony
@@ -78,16 +83,16 @@ export default function MyTestimoniesPage() {
             <div className="site-curved flex flex-col items-center gap-4 border border-border bg-card p-10 text-center">
               <p className="font-semibold">You haven&apos;t shared a story yet.</p>
               <p className="max-w-md text-sm text-muted-foreground">
-                Tell the church family what God has done for you. Your story will be reviewed before it appears publicly.
+                Tell the church family what God has done for you.
               </p>
               <Button className="site-btn site-btn-outline" onClick={() => setOpen(true)}>Share your story</Button>
             </div>
           )}
           {testimonies?.map((testimony) => (
-            <article key={(testimony as any).id} className="site-curved flex flex-col gap-4 border border-border bg-card p-7 sm:flex-row sm:items-start sm:justify-between">
+            <article key={(testimony as any).id} className="site-curved flex flex-col gap-4 border border-border bg-card p-7 text-left sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <span className={`app-status ${testimony.approved ? "bg-green-500/10 text-green-700" : "bg-primary/10 text-primary"}`}>
-                  {testimony.approved ? "Approved" : "Pending review"}
+                  {testimony.approved ? "Approved" : "Received"}
                 </span>
                 <p className="mt-4 leading-relaxed">{testimony.content}</p>
               </div>
@@ -103,7 +108,7 @@ export default function MyTestimoniesPage() {
         <DialogContent aria-describedby="my-testimony-dialog-description">
           <DialogHeader>
             <DialogTitle>Share your testimony</DialogTitle>
-            <DialogDescription id="my-testimony-dialog-description">Let your story of faith inspire others. Our team reviews every submission.</DialogDescription>
+            <DialogDescription id="my-testimony-dialog-description">Let your story of faith inspire others.</DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
             <Textarea {...form.register("content")} placeholder="Tell us what God has done for you..." className="min-h-36" />

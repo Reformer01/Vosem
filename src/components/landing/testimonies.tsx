@@ -86,7 +86,7 @@ export default function Testimonies() {
 
     toast({
       title: "Testimony Submitted!",
-      description: "Thank you for sharing your story. It will be reviewed by our team.",
+      description: "Your testimony has been received.",
     });
 
     form.reset();

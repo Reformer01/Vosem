@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "VOSEM Prayer Wall and Requests",
-  description: "Share a prayer request with VOSEM and pray with the church family. Requests are reviewed before appearing on the public prayer wall.",
+  description: "Share a prayer request with VOSEM and pray with the church family. Bring your needs before God with the church family.",
   path: "/prayer",
 });
 

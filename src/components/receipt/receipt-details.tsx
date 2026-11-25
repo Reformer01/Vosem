@@ -44,7 +44,6 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                                 <VosemLogoIcon className="size-10 text-primary" />
                                 <div>
                                     <h2 className="text-2xl font-black">VOSEM INT&apos;L</h2>
-                                    <p className="text-sm text-muted-foreground">Official Donation Receipt</p>
                                 </div>
                             </div>
                             <p className="text-sm text-muted-foreground">12/14 Ademola Adefuye Street, Alapere, Agboyi/Ketu, Lagos</p>

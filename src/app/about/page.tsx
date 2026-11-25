@@ -6,6 +6,7 @@ import PageHero from "@/components/site/page-hero";
 import ContentSplit from "@/components/site/content-split";
 import { pageMetadata } from "@/lib/seo";
 import RelatedLinks from "@/components/site/related-links";
+import ScriptureQuote from "@/components/site/scripture-quote";
 
 export const metadata = pageMetadata({
   title: "About Voice of Salvation Ministries",
@@ -55,6 +56,10 @@ export default function AboutPage() {
 
       <section id="connect" className="bg-card py-20 sm:py-28">
         <div className="site-wrap">
+          <ScriptureQuote
+            text="Let us consider how we may spur one another on toward love and good deeds, not giving up meeting together."
+            reference="Hebrews 10:24-25"
+          />
           <div className="mx-auto mb-14 max-w-3xl text-center">
             <span className="site-eyebrow">Life at VOSEM</span>
             <h2 className="font-display text-4xl italic sm:text-6xl">There&apos;s a place for you</h2>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Building, HeartHandshake, PiggyBank } from "lucide-react";
 import { useUser } from "@/firebase";
 import { GivingModal } from "@/components/landing/giving-modal";
+import ScriptureQuote from "./scripture-quote";
 
 const options = [
   {
@@ -42,6 +43,10 @@ export default function GivingSection() {
   return (
     <section className="bg-[#e5e0da] py-20 sm:py-28" id="giving">
       <div className="site-wrap">
+        <ScriptureQuote
+          text="Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
+          reference="2 Corinthians 9:7"
+        />
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <span className="site-eyebrow">Giving &amp; Stewardship</span>
           <h2 className="font-display text-4xl italic sm:text-6xl">Supporting the Vision</h2>

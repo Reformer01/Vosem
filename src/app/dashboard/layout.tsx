@@ -103,13 +103,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </Link>
                       </SheetClose>
                     ))}
-                    <button
-                      onClick={() => { setIsModalOpen(true); setIsSheetOpen(false); }}
-                      className="mt-2 flex items-center gap-4 rounded-2xl px-4 py-3.5 text-base font-bold text-foreground transition-colors hover:bg-muted"
-                    >
-                      <HeartHandshake className="size-5" aria-hidden="true" />
-                      Give
-                    </button>
                   </nav>
 
                   <div className="mt-auto border-t border-border px-6 py-6">

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Send } from "lucide-react";
+import ScriptureQuote from "@/components/site/scripture-quote";
 
 interface Prayer {
   author: string;
@@ -53,10 +54,16 @@ export default function PrayerWall() {
 
   return (
     <section className="bg-card py-20 sm:py-28">
+      <div className="site-wrap">
+        <ScriptureQuote
+          text="Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God."
+          reference="Philippians 4:6"
+        />
+      </div>
       <div className="site-wrap grid gap-10 lg:grid-cols-2">
         <div className="site-curved border border-border bg-[#e5e0da] p-8 sm:p-10">
           <h2 className="text-2xl font-bold">Share a prayer request</h2>
-          <p className="mt-2 text-muted-foreground">Our team reviews requests before they appear on the wall.</p>
+          <p className="mt-2 text-muted-foreground">Pray with the church family — every request matters to God.</p>
           {user ? (
             <form onSubmit={submit} className="mt-8 space-y-5">
               <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Tell us what you would like the church to pray about…" className="min-h-36" />
@@ -64,7 +71,7 @@ export default function PrayerWall() {
                 <Checkbox checked={isAnonymous} onCheckedChange={checked => setIsAnonymous(checked === true)} /> Post anonymously
               </label>
               <Button type="submit" className="site-btn site-btn-solid" disabled={content.trim().length < 5}><Send className="size-4" /> Send request</Button>
-              {sent && <p className="text-sm font-semibold text-primary">Thank you — your request is awaiting review.</p>}
+              {sent && <p className="text-sm font-semibold text-primary">Your prayer request has been received.</p>}
             </form>
           ) : (
             <p className="mt-8 text-muted-foreground">Please <a href="/login" className="font-semibold text-primary underline">log in</a> to share a request.</p>
@@ -76,7 +83,7 @@ export default function PrayerWall() {
               <ul className="space-y-3 text-sm">
                 {mine.map((p, i) => (
                   <li key={i} className="rounded-2xl bg-card p-4">
-                    <span className={`mr-2 font-bold ${p.approved ? "text-primary" : "text-muted-foreground"}`}>{p.approved ? "On the wall" : "Pending"}</span>
+                    <span className={`mr-2 font-bold ${p.approved ? "text-primary" : "text-muted-foreground"}`}>{p.approved ? "On the wall" : "Received"}</span>
                     {p.content.slice(0, 90)}
                   </li>
                 ))}
