@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       status: "succeeded",
       gateway: "flutterwave",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      donorName: data.meta?.name || "Valued Giver",
+      donorName: data.meta?.name || data.customer?.name || "Valued Giver",
       donorEmail: data.customer?.email || "",
     });
 

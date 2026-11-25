@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/select";
 import { HeartHandshake, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useUser } from "@/firebase";
+import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 interface GivingModalProps {
@@ -59,6 +60,11 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useUser();
+  const firestore = useFirestore();
+  const profileRef = useMemoFirebase(() => (user ? doc(firestore, "users", user.uid) : null), [user, firestore]);
+  const { data: profile } = useDoc<{ name?: string }>(profileRef);
+  const fullName = (profile?.name || user?.displayName || "").trim() || "Valued Giver";
+  const [firstName, ...nameRest] = fullName.split(/\s+/);
   const [purpose, setPurpose] = useState(defaultPurpose);
   const [amount, setAmount] = useState("10000");
   const [customAmount, setCustomAmount] = useState("");
@@ -90,6 +96,8 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     const args: Record<string, unknown> = {
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
       email: user?.email || "",
+      firstname: firstName,
+      lastname: nameRest.join(" "),
       amount: finalAmount * 100, // kobo
       ref: reference,
       currency: "NGN",
@@ -97,7 +105,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       callback: onSuccess,
       onClose,
       metadata: {
-        name: user?.displayName || "Anonymous Giver",
+        name: fullName,
         userId: user?.uid,
         purpose,
         recurring: frequency === "recurring",
@@ -149,9 +157,9 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
         amount: String(finalAmount),
         currency: 'NGN',
         email: user.email || '',
-        name: user.displayName || 'VOSEM Giver',
+        name: fullName,
         redirect_url: `${window.location.origin}/payment-processing?gateway=flutterwave&amount=${finalAmount}&reference=${txRef}`,
-        meta: JSON.stringify({ userId: user.uid, purpose, name: user.displayName || 'VOSEM Giver', recurring: frequency === 'recurring' }),
+        meta: JSON.stringify({ userId: user.uid, purpose, name: fullName, recurring: frequency === 'recurring' }),
       };
       if (frequency === 'recurring' && process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID) {
         fields.payment_plan = process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID;

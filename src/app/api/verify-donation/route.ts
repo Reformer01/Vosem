@@ -34,6 +34,40 @@ try {
   console.error('Firestore admin unavailable; donations will not be persisted:', error);
 }
 
+const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => (
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!
+));
+
+function nameFromEmail(email?: string): string | null {
+  if (!email) return null;
+  const local = email.split('@')[0];
+  const parts = local.split(/[._-]+/).filter(Boolean);
+  if (!parts.length) return null;
+  return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+}
+
+type DonorTx = {
+  metadata?: { name?: string; userId?: string };
+  customer?: { email?: string; first_name?: string; last_name?: string };
+};
+
+/** Full name for receipts — never fall back to a raw email address. */
+async function resolveDonorName(tx: DonorTx, userId?: string): Promise<string> {
+  let name = '';
+  if (userId && db) {
+    try {
+      const userDoc = await db.collection('users').doc(userId).get();
+      name = String(userDoc.data()?.name || '').trim();
+    } catch { /* fall through to transaction metadata */ }
+  }
+  if (!name) name = String(tx.metadata?.name || '').trim();
+  if (!name && tx.customer?.first_name) {
+    name = [tx.customer.first_name, tx.customer.last_name].filter(Boolean).join(' ').trim();
+  }
+  if (!name) name = nameFromEmail(tx.customer?.email) || '';
+  return escapeHtml(name || 'Valued Giver');
+}
+
 export async function POST(req: NextRequest) {
   // Simple IP-based rate limiting to prevent abuse
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1';
@@ -75,6 +109,7 @@ export async function POST(req: NextRequest) {
     if (payload.event === 'charge.success') {
       const tx = payload.data;
       const userId = tx?.metadata?.userId;
+      const donorName = await resolveDonorName(tx, userId);
       if (userId && db) {
         try {
           await db.collection('donations').doc(tx.reference).set({
@@ -85,7 +120,7 @@ export async function POST(req: NextRequest) {
             reference: tx.reference,
             status: 'success',
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            donorName: tx.metadata?.name || 'Valued Giver',
+            donorName,
             donorEmail: tx.customer?.email || '',
           });
         } catch (e) {
@@ -152,29 +187,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'This transaction does not belong to you' }, { status: 403 });
       }
 
-      // Paystack-supplied values go into an HTML email; escape them.
-      const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => (
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!
-      ));
-
-      let donorName = 'Valued Giver'; // Default name
-
-      // If a user ID is present, fetch their name from Firestore as the source of truth.
-      if (userId && db) {
-        try {
-            const userDoc = await db.collection('users').doc(userId).get();
-            if (userDoc.exists && userDoc.data()?.name) {
-                donorName = escapeHtml(String(userDoc.data()!.name));
-            } else {
-                // Fallback to Paystack metadata if Firestore profile is incomplete
-                donorName = escapeHtml(String(data.metadata?.name || data.customer?.first_name || 'Valued Giver'));
-            }
-        } catch (e) {
-            console.error(`Failed to fetch user profile for ${userId}, falling back to metadata name.`, e);
-            // Fallback on error
-            donorName = escapeHtml(String(data.metadata?.name || data.customer?.first_name || 'Valued Giver'));
-        }
-      }
+      // Always use the member's full name in the receipt, never the raw email.
+      const donorName = await resolveDonorName(data, userId);
 
       // Step 3: Save the successful transaction to Firestore if a user ID is present
       if (userId && db) {
