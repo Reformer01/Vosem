@@ -4,6 +4,7 @@ import axios from 'axios';
 import nodemailer from 'nodemailer';
 import * as admin from 'firebase-admin';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { verifyIdToken } from '@/lib/verify-id-token';
 
 // In-memory store for rate limiting.
 // Note: This is a simple in-memory solution suitable for a single server instance.
@@ -24,7 +25,14 @@ if (!admin.apps.length) {
   }
 }
 
-const db = admin.firestore();
+// Firestore persistence is optional: if Admin credentials are missing we still
+// verify the payment and return success, but skip the write.
+let db: admin.firestore.Firestore | null = null;
+try {
+  db = admin.firestore();
+} catch (error) {
+  console.error('Firestore admin unavailable; donations will not be persisted:', error);
+}
 
 export async function POST(req: NextRequest) {
   // Simple IP-based rate limiting to prevent abuse
@@ -67,7 +75,7 @@ export async function POST(req: NextRequest) {
     if (payload.event === 'charge.success') {
       const tx = payload.data;
       const userId = tx?.metadata?.userId;
-      if (userId) {
+      if (userId && db) {
         try {
           await db.collection('donations').doc(tx.reference).set({
             userId,
@@ -98,7 +106,7 @@ export async function POST(req: NextRequest) {
   }
   let uid: string;
   try {
-    const decoded = await admin.auth().verifyIdToken(authHeader.slice(7));
+    const decoded = await verifyIdToken(authHeader.slice(7));
     uid = decoded.uid;
   } catch {
     return NextResponse.json({ message: 'Invalid authentication token' }, { status: 401 });
@@ -152,7 +160,7 @@ export async function POST(req: NextRequest) {
       let donorName = 'Valued Giver'; // Default name
 
       // If a user ID is present, fetch their name from Firestore as the source of truth.
-      if (userId) {
+      if (userId && db) {
         try {
             const userDoc = await db.collection('users').doc(userId).get();
             if (userDoc.exists && userDoc.data()?.name) {
@@ -169,7 +177,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Step 3: Save the successful transaction to Firestore if a user ID is present
-      if (userId) {
+      if (userId && db) {
         try {
           const donationData = {
             userId: userId,

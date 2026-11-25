@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import * as admin from "firebase-admin";
+import { verifyIdToken } from "@/lib/verify-id-token";
 
 if (!admin.apps.length) {
   try { admin.initializeApp(); } catch (error) { console.error("Firebase admin init error", error); }
 }
-const db = admin.firestore();
+let db: admin.firestore.Firestore | null = null;
+try {
+  db = admin.firestore();
+} catch (error) {
+  console.error("Firestore admin unavailable; donations will not be persisted:", error);
+}
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -14,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
   let uid: string;
   try {
-    uid = (await admin.auth().verifyIdToken(authHeader.slice(7))).uid;
+    uid = (await verifyIdToken(authHeader.slice(7))).uid;
   } catch {
     return NextResponse.json({ message: "Invalid authentication token" }, { status: 401 });
   }
@@ -43,7 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     const amountInKobo = Math.round(Number(data.amount) * 100);
-    await db.collection("donations").doc(data.tx_ref).set({
+    if (db) await db.collection("donations").doc(data.tx_ref).set({
       userId: uid,
       amount: amountInKobo,
       currency: data.currency || "NGN",
