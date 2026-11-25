@@ -1,6 +1,6 @@
 # VOSEM State Machine & Navigation Audit
 
-Status: **report only — no code changed**. Date: 2026-11-25.
+Status: **audit + explicit machines implemented** (see §7). Date: 2026-11-25.
 Method: static inspection of `src/app`, `src/components`, `firestore.rules`, `next.config.ts`; route list from `next build`; navigation graph from `crawl.py` + `linkgraph.py` against `https://vosem.vercel.app`.
 
 ## 1. Navigation map (audited in/out)
@@ -188,3 +188,24 @@ grep -rnE "status: ['\"][a-z_]+|approved: (true|false)" src firestore.rules
 crawl.py + linkgraph.py over https://vosem.vercel.app
   -> pages 11, orphans 0, total_internal_links 74
 ```
+
+## 7. Explicit machines now in code
+
+All 13 domain machines (the 14 audit entries, with overlays treated as one family) plus 5 concrete overlay machines — 18 total — are declared as typed, pure transition tables under `src/machines/`:
+
+| File | Machines |
+|---|---|
+| `src/machines/auth.machine.ts` | `authSessionMachine`, `loginMachine`, `signupMachine` |
+| `src/machines/payment.machine.ts` | `givingMachine`, `paymentVerificationMachine`, `donationMachine`, `paymentResultMachine` |
+| `src/machines/content.machine.ts` | `testimonyMachine`, `prayerMachine`, `rsvpMachine` |
+| `src/machines/app.machine.ts` | `adminMachine`, `dashboardDataMachine`, `formMachine`, `headerMenuMachine`, `dashboardMenuMachine`, `givingDialogMachine`, `deleteAccountDialogMachine`, `testimonyDialogMachine` |
+| `src/machines/index.ts` | `machineRegistry`, re-exports, `normalizeDonationStatus`, `paymentResultForReason` |
+
+`createMachine()` gives safe-by-default transitions (unknown events are no-ops); `useMachine()` is a thin `useReducer` binding for client components. No dependency was added.
+
+Wired into the UI without changing flows:
+- Donation badges now use `normalizeDonationStatus()` — Paystack's `success` and Flutterwave's `succeeded` both render as a confirmed gift (fixes finding #1).
+- Payment-failed copy is owned by `paymentResultMachine` via `paymentResultForReason()` (finding #6 copy path).
+- Forgot-password and dashboard privacy/terms dead links now route to `/contact` (findings #2 and #11).
+
+Remaining machines are declared and discoverable but not yet bound component-by-component; that is deliberate to avoid breaking working flows. Their event tables document the target semantics for future work.

@@ -125,7 +125,7 @@ export default function LoginPage() {
             />
 
             <div className="flex justify-end">
-              <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Forgot Password?</Link>
+              <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">Need help signing in?</Link>
             </div>
 
             {authError && <p className="text-sm text-red-500">{authError}</p>}

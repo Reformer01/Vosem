@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Check, Download, Flame, Search, Trophy } from 'lucide-react';
 import Link from 'next/link';
+import { normalizeDonationStatus } from '@/machines/payment.machine';
 
 interface UserProfile {
   name: string;
@@ -203,7 +204,7 @@ export default function DashboardPage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</p>
                     <p className="mt-1 text-xl font-bold text-foreground">₦{(donation.amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
                   </div>
-                  <span className={`app-status shrink-0 ${donation.status === 'succeeded' ? 'bg-green-500/10 text-green-700 border border-green-500/20' : donation.status === 'pending' ? 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>{donation.status}</span>
+                  <span className={`app-status shrink-0 ${normalizeDonationStatus(donation.status) === 'succeeded' ? 'bg-green-500/10 text-green-700 border border-green-500/20' : normalizeDonationStatus(donation.status) === 'pending' ? 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>{normalizeDonationStatus(donation.status)}</span>
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
                   <div className="min-w-0">
@@ -244,7 +245,7 @@ export default function DashboardPage() {
                       <td className="font-medium text-foreground">{donation.purpose}</td>
                       <td className="font-mono">₦{(donation.amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
                       <td className="text-center">
-                        <span className={`app-status ${donation.status === 'succeeded' ? 'bg-green-500/10 text-green-700 border-green-500/20' : donation.status === 'pending' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>{donation.status}</span>
+                        <span className={`app-status ${normalizeDonationStatus(donation.status) === 'succeeded' ? 'bg-green-500/10 text-green-700 border-green-500/20' : normalizeDonationStatus(donation.status) === 'pending' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>{normalizeDonationStatus(donation.status)}</span>
                       </td>
                       <td className="text-right">
                         <Link href={`/receipt/${donation.id}`} className="text-primary hover:underline">View</Link>

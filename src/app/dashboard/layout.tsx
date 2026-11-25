@@ -121,8 +121,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="site-wrap flex flex-col md:flex-row items-center justify-between gap-2 text-xs font-semibold text-muted-foreground">
             <p>© 2026 VOSEM INT&apos;L. All rights reserved.</p>
             <div className="flex gap-6">
-              <Link className="hover:text-primary transition-colors" href="#">Privacy Policy</Link>
-              <Link className="hover:text-primary transition-colors" href="#">Terms of Service</Link>
+              <Link className="hover:text-primary transition-colors" href="/contact">Privacy Policy</Link>
+              <Link className="hover:text-primary transition-colors" href="/contact">Terms of Service</Link>
             </div>
           </div>
         </footer>
