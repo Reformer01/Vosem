@@ -90,7 +90,9 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   };
 
   const onClose = () => {
+    // Paystack was cancelled — bring our giving form back.
     setIsPaying(false);
+    onOpenChange(true);
   };
 
   const handleProceed = () => {
@@ -135,6 +137,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
         form.appendChild(input);
       });
       document.body.appendChild(form);
+      onOpenChange(false);
       form.submit();
       return;
     }
@@ -144,8 +147,11 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       return;
     }
 
+    // Close our Radix dialog first: its modal layer blocks clicks inside the
+    // Paystack iframe (which is portalled outside this dialog).
     setIsPaying(true);
-    initializePayment({ onSuccess, onClose });
+    onOpenChange(false);
+    window.setTimeout(() => initializePayment({ onSuccess, onClose }), 150);
   };
 
   return (
