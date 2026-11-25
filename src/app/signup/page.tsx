@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
+import { useToast } from '@/hooks/use-toast';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -30,6 +31,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -42,7 +44,9 @@ export default function SignupPage() {
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     if (!isFirebaseConfigured()) {
-      setAuthError('Registration is not configured on this deployment. Please contact the church office.');
+      const message = 'Registration is not configured on this deployment. Please contact the church office.';
+      setAuthError(message);
+      toast({ variant: 'destructive', title: 'Unable to create your account', description: message });
       return;
     }
     setAuthError(null);
@@ -64,11 +68,11 @@ export default function SignupPage() {
       await setDoc(doc(firestore, 'users', newUser.uid), userProfile);
       router.push('/dashboard');
     } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-        setAuthError('This email address is already in use.');
-      } else {
-        setAuthError('An error occurred during signup. Please try again.');
-      }
+      const message = error.code === 'auth/email-already-in-use'
+        ? 'This email already has an account. Try signing in instead.'
+        : 'We could not create your account just now. Please try again shortly.';
+      setAuthError(message);
+      toast({ variant: 'destructive', title: 'Registration failed', description: message });
     } finally {
       setIsSubmitting(false);
     }

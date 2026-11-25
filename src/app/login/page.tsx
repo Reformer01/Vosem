@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
+import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -39,7 +41,9 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     if (!isFirebaseConfigured()) {
-      setAuthError('Sign-in is not configured on this deployment. Please contact the church office.');
+      const message = 'Sign-in is not configured on this deployment. Please contact the church office.';
+      setAuthError(message);
+      toast({ variant: 'destructive', title: 'Unable to sign in', description: message });
       return;
     }
     setAuthError(null);
@@ -48,11 +52,11 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
     } catch (error: any) {
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-        setAuthError('Invalid credentials. Please check your email and password.');
-      } else {
-        setAuthError('An unexpected error occurred. Please try again.');
-      }
+      const message = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found'
+        ? 'That email and password do not match. Please try again.'
+        : 'We could not sign you in just now. Please try again shortly.';
+      setAuthError(message);
+      toast({ variant: 'destructive', title: 'Sign-in failed', description: message });
     } finally {
       setIsSubmitting(false);
     }

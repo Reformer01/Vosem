@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { friendlyPaymentError } from '@/lib/error-messages';
 
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
-  const reason = searchParams.get('reason');
+  const status = friendlyPaymentError(searchParams.get('reason'));
 
   return (
     <div className="app-shell flex min-h-screen flex-col">
@@ -25,10 +26,8 @@ function PaymentFailedContent() {
           <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-red-500/10 text-red-600">
             <AlertTriangle className="size-8" />
           </div>
-          <h1 className="text-3xl font-black sm:text-4xl">Payment unsuccessful</h1>
-          <p className="mt-4 text-muted-foreground">
-            {reason?.replaceAll('_', ' ') || 'Your transaction could not be completed. Please check your details or try a different payment method.'}
-          </p>
+          <h1 className="text-3xl font-black sm:text-4xl">{status.title}</h1>
+          <p className="mt-4 text-muted-foreground">{status.description}</p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/#giving" className="site-btn site-btn-solid"><RefreshCw className="size-4" /> Try again</Link>
             <Link href="/contact" className="site-btn site-btn-outline">Contact support <ArrowRight className="size-4" /></Link>

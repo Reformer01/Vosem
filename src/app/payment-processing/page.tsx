@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { Lock } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
+import { paymentErrorCode } from '@/lib/error-messages';
 
 function PaymentProcessingContent() {
   const router = useRouter();
@@ -40,13 +41,13 @@ function PaymentProcessingContent() {
             const currency = result.data?.currency || 'NGN';
             router.replace(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
           } else {
-            router.replace(`/payment-failed?reason=${encodeURIComponent(result.message || 'Payment verification failed.')}`);
+            router.replace(`/payment-failed?reason=${paymentErrorCode(result.message)}`);
           }
         } else {
-          router.replace(`/payment-failed?reason=${encodeURIComponent(`Server error: ${response.statusText}`)}`);
+          router.replace('/payment-failed?reason=Verification_unavailable');
         }
       } catch {
-        router.replace('/payment-failed?reason=Could_not_connect_to_the_verification_service');
+        router.replace('/payment-failed?reason=Verification_unavailable');
       }
     };
 

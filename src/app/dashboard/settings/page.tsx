@@ -86,7 +86,7 @@ export default function SettingsPage() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: `Failed to delete your account. ${error.message}`,
+          description: 'We could not delete your account. Please try again or contact the church office.',
         });
       }
     } finally {
