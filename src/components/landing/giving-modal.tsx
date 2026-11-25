@@ -24,12 +24,35 @@ import { HeartHandshake, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { usePaystackPayment } from "react-paystack";
 
 interface GivingModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   defaultPurpose: string;
+}
+
+type PaystackHandler = { openIframe: () => void };
+declare global {
+  interface Window {
+    PaystackPop?: { setup: (args: Record<string, unknown>) => PaystackHandler };
+  }
+}
+
+let paystackScriptPromise: Promise<void> | null = null;
+
+function loadPaystack(): Promise<void> {
+  if (window.PaystackPop) return Promise.resolve();
+  if (!paystackScriptPromise) {
+    paystackScriptPromise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://js.paystack.co/v1/inline.js";
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => { paystackScriptPromise = null; reject(new Error("Could not load Paystack")); };
+      document.body.appendChild(script);
+    });
+  }
+  return paystackScriptPromise;
 }
 
 export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModalProps) {
@@ -56,32 +79,36 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
   const finalAmount = Number(customAmount) || Number(amount);
 
-  const config = {
-    reference: ("VOSEM-" + Date.now()).toString(),
-    email: user?.email || "",
-    amount: finalAmount * 100, // Amount in Kobo
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
-    channels: ['card', 'bank', 'ussd'],
-    // A recurring gift uses the church's Paystack plan; a plan code is required.
-    ...(frequency === 'recurring' && process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE
-      ? { plan: process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE }
-      : {}),
-    metadata: {
-      name: user?.displayName || "Anonymous Giver",
-      userId: user?.uid,
-      purpose: purpose,
-      recurring: frequency === 'recurring',
-      custom_fields: [
-        {
-          display_name: "Giving Purpose",
-          variable_name: "giving_purpose",
-          value: purpose,
-        }
-      ]
-    },
-  };
+  // Setup Paystack directly with only the fields we actually use. The
+  // react-paystack hook sends empty strings for plan/quantity/label, which the
+  // Paystack checkout reads as present values and then crashes on.
+  const openPaystack = async () => {
+    await loadPaystack();
+    if (!window.PaystackPop) throw new Error("Paystack could not be loaded");
 
-  const initializePayment = usePaystackPayment(config);
+    const reference = `VOSEM-${Date.now()}`;
+    const args: Record<string, unknown> = {
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+      email: user?.email || "",
+      amount: finalAmount * 100, // kobo
+      ref: reference,
+      currency: "NGN",
+      channels: ["card", "bank", "ussd"],
+      callback: onSuccess,
+      onClose,
+      metadata: {
+        name: user?.displayName || "Anonymous Giver",
+        userId: user?.uid,
+        purpose,
+        recurring: frequency === "recurring",
+        custom_fields: [{ display_name: "Giving Purpose", variable_name: "giving_purpose", value: purpose }],
+      },
+    };
+    const planCode = process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE;
+    if (frequency === "recurring" && planCode) args.plan = planCode;
+
+    window.PaystackPop.setup(args).openIframe();
+  };
 
   const onSuccess = (reference: { reference: string }) => {
     setIsPaying(false);
@@ -151,7 +178,12 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     // Paystack iframe (which is portalled outside this dialog).
     setIsPaying(true);
     onOpenChange(false);
-    window.setTimeout(() => initializePayment({ onSuccess, onClose }), 150);
+    window.setTimeout(() => {
+      openPaystack().catch(() => {
+        toast({ variant: "destructive", title: "Payment Error", description: "We could not open the payment window. Please try again." });
+        onOpenChange(true);
+      });
+    }, 150);
   };
 
   return (
