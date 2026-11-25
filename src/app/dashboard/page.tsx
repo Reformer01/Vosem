@@ -6,6 +6,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, Check, Download, Flame, Search, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { normalizeDonationStatus } from '@/machines/payment.machine';
@@ -41,8 +42,7 @@ export default function DashboardPage() {
   const { data: myTestimonies } = useCollection(testimoniesQuery);
 
   const [search, setSearch] = useState('');
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [range, setRange] = useState('all');
   const [page, setPage] = useState(0);
   const pageSize = 5;
 
@@ -54,14 +54,18 @@ export default function DashboardPage() {
   const filteredDonations = useMemo(() => {
     if (!donations) return [];
     const term = search.trim().toLowerCase();
+    const now = new Date();
+    const from = range === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1)
+      : range === '30days' ? new Date(now.getTime() - 30 * 86400000)
+      : range === 'year' ? new Date(now.getFullYear(), 0, 1)
+      : null;
     return donations.filter(d => {
       const date = d.createdAt ? new Date(d.createdAt.seconds * 1000) : null;
       const matchesTerm = !term || d.purpose.toLowerCase().includes(term) || d.reference?.toLowerCase().includes(term);
-      const matchesFrom = !fromDate || (date && date >= new Date(fromDate));
-      const matchesTo = !toDate || (date && date <= new Date(`${toDate}T23:59:59`));
-      return matchesTerm && matchesFrom && matchesTo;
+      const matchesRange = !from || (date && date >= from);
+      return matchesTerm && matchesRange;
     });
-  }, [donations, search, fromDate, toDate]);
+  }, [donations, search, range]);
 
   const totalSown = donations?.reduce((acc, donation) => acc + donation.amount, 0) || 0;
 
@@ -143,9 +147,9 @@ export default function DashboardPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Complete your profile', done: !!userProfile?.name && !!userProfile?.whatsappNumber, href: '/dashboard/profile' },
-              { label: 'Sow your first seed', done: (donations?.length ?? 0) > 0, href: '/giving' },
-              { label: 'Share a testimony', done: (myTestimonies?.length ?? 0) > 0, href: '/#testimonies' },
-              { label: 'Join a prayer group', done: false, href: '/prayer' },
+              { label: 'Sow your first seed', done: (donations?.length ?? 0) > 0, href: '/dashboard/giving' },
+              { label: 'Share a testimony', done: (myTestimonies?.length ?? 0) > 0, href: '/dashboard/testimonies' },
+              { label: 'Join a prayer group', done: false, href: '/dashboard/prayer' },
             ].map(step => (
               <Link key={step.label} href={step.href} className={`flex items-center justify-between gap-3 rounded-2xl border p-4 text-sm font-semibold transition-colors ${step.done ? 'border-primary/30 bg-primary/5 text-primary' : 'border-border bg-card hover:bg-muted'}`}>
                 {step.label} {step.done ? <Check className="size-4" /> : <ArrowRight className="size-4" />}
@@ -187,10 +191,19 @@ export default function DashboardPage() {
             <div className="flex flex-wrap gap-3">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Search purpose or reference" className="site-curved pl-9" />
+                <Input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Search purpose or reference" className="site-btn site-btn-outline !py-2 pl-9" />
               </div>
-              <Input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setPage(0); }} className="site-curved w-auto" aria-label="From date" />
-              <Input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setPage(0); }} className="site-curved w-auto" aria-label="To date" />
+              <Select value={range} onValueChange={value => { setRange(value); setPage(0); }}>
+                <SelectTrigger className="site-btn site-btn-outline !py-2 whitespace-nowrap">
+                  <SelectValue placeholder="All time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All time</SelectItem>
+                  <SelectItem value="month">This month</SelectItem>
+                  <SelectItem value="30days">Last 30 days</SelectItem>
+                  <SelectItem value="year">This year</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

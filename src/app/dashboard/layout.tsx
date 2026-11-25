@@ -10,7 +10,7 @@ import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { CalendarDays, FileText, HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, ShieldCheck, UserRound } from 'lucide-react';
+import { CalendarDays, FileText, Flame, HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
 
 const baseLinks = [
@@ -18,6 +18,8 @@ const baseLinks = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserRound },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
   { href: '/dashboard/events', label: 'My Events', icon: CalendarDays },
+  { href: '/dashboard/giving', label: 'Give', icon: HeartHandshake },
+  { href: '/dashboard/prayer', label: 'Prayer', icon: Flame },
   { href: '/dashboard/testimonies', label: 'My Testimonies', icon: FileText },
 ];
 const adminLink = { href: '/admin', label: 'Admin', icon: ShieldCheck };

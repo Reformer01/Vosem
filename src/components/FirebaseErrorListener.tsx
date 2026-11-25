@@ -15,7 +15,14 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handleError = (error: FirestorePermissionError) => {
-      const key = `${error.request.path}:${error.request.method}`;
+      const path = error.request.path;
+      // Expected while rules are not deployed / role docs are absent — don't
+      // interrupt members with a red toast for data they simply can't access.
+      if (/\/admins\/|\/rsvps\b|\/documents\/$/.test(path)) {
+        console.warn('Skipped expected Firestore permission error:', path);
+        return;
+      }
+      const key = `${path}:${error.request.method}`;
       if (seen.current.has(key)) return; // avoid toast spam from repeated listeners
       seen.current.add(key);
       toast({

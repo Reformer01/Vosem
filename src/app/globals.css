@@ -148,7 +148,7 @@
     @apply rounded-[1.75rem] sm:rounded-[2.5rem];
   }
   .site-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold uppercase tracking-wide transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200;
   }
   .site-btn-solid {
     @apply bg-primary text-primary-foreground hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25;
