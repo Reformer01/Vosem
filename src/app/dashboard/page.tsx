@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowRight, Check, Download, Flame, Search, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { normalizeDonationStatus } from '@/machines/payment.machine';
+import { GivingModal } from '@/components/landing/giving-modal';
 
 interface UserProfile {
   name: string;
@@ -44,6 +45,7 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('');
   const [range, setRange] = useState('all');
   const [page, setPage] = useState(0);
+  const [givingOpen, setGivingOpen] = useState(false);
   const pageSize = 5;
 
   const donations = useMemo(() => {
@@ -147,14 +149,24 @@ export default function DashboardPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Complete your profile', done: !!userProfile?.name && !!userProfile?.whatsappNumber, href: '/dashboard/profile' },
-              { label: 'Sow your first seed', done: (donations?.length ?? 0) > 0, href: '/dashboard/giving' },
+              { label: 'Sow your first seed', done: (donations?.length ?? 0) > 0, openGiving: true },
               { label: 'Share a testimony', done: (myTestimonies?.length ?? 0) > 0, href: '/dashboard/testimonies' },
               { label: 'Join a prayer group', done: false, href: '/dashboard/prayer' },
-            ].map(step => (
-              <Link key={step.label} href={step.href} className={`flex items-center justify-between gap-3 rounded-2xl border p-4 text-sm font-semibold transition-colors ${step.done ? 'border-primary/30 bg-primary/5 text-primary' : 'border-border bg-card hover:bg-muted'}`}>
-                {step.label} {step.done ? <Check className="size-4" /> : <ArrowRight className="size-4" />}
-              </Link>
-            ))}
+            ].map(step => {
+              const classes = `flex items-center justify-between gap-3 rounded-2xl border p-4 text-sm font-semibold transition-colors ${step.done ? 'border-primary/30 bg-primary/5 text-primary' : 'border-border bg-card hover:bg-muted'}`;
+              if ('openGiving' in step && step.openGiving) {
+                return (
+                  <button key={step.label} type="button" onClick={() => setGivingOpen(true)} className={classes}>
+                    {step.label} {step.done ? <Check className="size-4" /> : <ArrowRight className="size-4" />}
+                  </button>
+                );
+              }
+              return (
+                <Link key={step.label} href={('href' in step && step.href) || '/dashboard'} className={classes}>
+                  {step.label} {step.done ? <Check className="size-4" /> : <ArrowRight className="size-4" />}
+                </Link>
+              );
+            })}
           </div>
         </section>
 
@@ -282,6 +294,7 @@ export default function DashboardPage() {
           )}
         </section>
       </div>
+      <GivingModal isOpen={givingOpen} onOpenChange={setGivingOpen} defaultPurpose="Offerings" />
     </main>
   );
 }
