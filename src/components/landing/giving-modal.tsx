@@ -150,11 +150,11 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-[520px] rounded-2xl overflow-hidden glass-panel border-white/10 dark:bg-[#141414]/80">
+      <DialogContent className="p-0 max-w-[520px] rounded-[2rem] overflow-hidden border border-border bg-card text-foreground shadow-xl">
         {!isPaying ? (
           <>
             <DialogHeader className="relative items-center justify-center pt-8 pb-4 px-8 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/10 text-accent ring-4 ring-white/10">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <HeartHandshake className="h-8 w-8" />
               </div>
               <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Make Your Contribution</DialogTitle>
@@ -163,14 +163,14 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
             <div className="px-6 sm:px-10 pb-10">
               <div className="mb-8 flex justify-center">
-                <RadioGroup value={frequency} onValueChange={setFrequency} className="flex h-12 w-full max-w-[320px] items-center justify-center rounded-xl bg-gray-200/50 dark:bg-white/5 p-1">
-                  <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-accent dark:has-[:checked]:text-white has-[:checked]:shadow-sm">
+                <RadioGroup value={frequency} onValueChange={setFrequency} className="flex h-12 w-full max-w-[320px] items-center justify-center rounded-xl bg-muted p-1">
+                  <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-semibold text-muted-foreground transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
                     <RadioGroupItem value="one-time" id="one-time" className="sr-only" />
-                    <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 peer-data-[state=checked]:text-accent dark:text-gray-400 dark:group-hover:text-gray-200 dark:peer-data-[state=checked]:text-white">One-time</span>
+                    One-time
                   </Label>
-                  <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-accent dark:has-[:checked]:text-white has-[:checked]:shadow-sm">
+                  <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-semibold text-muted-foreground transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
                     <RadioGroupItem value="recurring" id="recurring" className="sr-only" />
-                    <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 peer-data-[state=checked]:text-accent dark:text-gray-400 dark:group-hover:text-gray-200 dark:peer-data-[state=checked]:text-white">Recurring</span>
+                    Recurring
                   </Label>
                 </RadioGroup>
                 {frequency === 'recurring' && (
@@ -194,7 +194,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <Label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Select Amount (NGN)</Label>
+                  <Label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Select Amount (NGN)</Label>
                   <RadioGroup
                     value={customAmount ? '' : amount}
                     onValueChange={(value) => {
@@ -207,7 +207,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                     {['5000', '10000', '20000'].map(val => (
                       <Label key={val} className="cursor-pointer">
                         <RadioGroupItem value={val} id={`amount-${val}`} className="peer sr-only" />
-                        <div className="flex h-12 w-full items-center justify-center rounded-xl border border-accent/30 bg-white/50 text-gray-700 transition-all hover:border-accent hover:bg-accent/5 peer-data-[state=checked]:border-accent peer-data-[state=checked]:bg-accent peer-data-[state=checked]:text-white peer-data-[state=checked]:shadow-md dark:bg-white/5 dark:text-gray-200 dark:peer-data-[state=checked]:text-white">
+                        <div className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-card text-foreground transition-all hover:border-primary hover:bg-primary/5 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-white">
                           <span className="font-bold">₦{parseInt(val).toLocaleString()}</span>
                         </div>
                       </Label>
@@ -219,16 +219,16 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                   <Label htmlFor="custom-amount" className="block text-sm font-medium text-foreground">Or Enter Custom Amount</Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                      <span className="text-gray-500 dark:text-gray-400">₦</span>
+                      <span className="text-muted-foreground">₦</span>
                     </div>
-                    <Input id="custom-amount" placeholder="0.00" type="number" value={customAmount} onChange={(e) => setCustomAmount(e.target.value)} className="block w-full rounded-xl border-gray-200 bg-white/60 py-3.5 pl-10 pr-4 text-gray-900 placeholder:text-gray-400 focus:border-accent focus:ring-1 focus:ring-accent dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 h-auto" />
+                    <Input id="custom-amount" placeholder="0.00" type="number" value={customAmount} onChange={(e) => setCustomAmount(e.target.value)} className="site-curved py-3.5 pl-10 h-auto" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="purpose" className="block text-sm font-medium text-foreground">Giving Purpose</Label>
                   <Select value={purpose} onValueChange={setPurpose}>
-                    <SelectTrigger className="w-full rounded-xl border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5 dark:text-white h-12 text-sm text-left justify-start px-4">
+                    <SelectTrigger className="site-curved h-12 text-sm text-left justify-start px-4">
                       <SelectValue placeholder="Select purpose" />
                     </SelectTrigger>
                     <SelectContent>
@@ -247,7 +247,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                     type="button"
                     onClick={handleProceed}
                     disabled={!user || (!amount && !customAmount)}
-                    className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-accent px-6 py-4 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:bg-accent/90 hover:shadow-accent/50 h-auto disabled:bg-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
+                    className="site-btn site-btn-solid w-full py-4 disabled:opacity-50">
                     <span className="relative z-10 flex items-center gap-2">
                       Proceed to Payment
                       <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />

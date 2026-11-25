@@ -16,109 +16,86 @@ interface Donation {
 }
 
 export function ReceiptDetails({ donation }: { donation: Donation }) {
-
-    const handlePrint = () => {
-        window.print();
-    };
-
     const formattedDate = new Date(donation.createdAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+        year: 'numeric', month: 'long', day: 'numeric',
     });
-
     const amountInMajorUnit = donation.amount / 100;
-    
     const formattedAmount = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: donation.currency || 'NGN',
+        style: 'currency', currency: donation.currency || 'NGN',
     }).format(amountInMajorUnit);
 
-
     return (
-        <div className="bg-background-dark text-slate-200 min-h-screen font-sans p-4 sm:p-8 md:p-12">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex justify-between items-start mb-8 no-print">
-                    <div className="flex items-center gap-4">
-                        <VosemLogoIcon className="size-10 text-primary"/>
-                        <h1 className="text-2xl font-bold text-white">VOSEM INT'L</h1>
+        <div className="app-shell min-h-screen p-4 sm:p-8 md:p-12">
+            <div className="mx-auto max-w-4xl">
+                <div className="mb-8 flex items-start justify-between no-print">
+                    <div className="flex items-center gap-3">
+                        <VosemLogoIcon className="size-9 text-primary" />
+                        <span className="text-xl font-black tracking-tighter">VOSEM <span className="text-primary">INT&apos;L</span></span>
                     </div>
-                    <Button onClick={handlePrint} className="flex items-center gap-2">
-                        <Download size={18}/>
-                        Print / Download
+                    <Button onClick={() => window.print()} className="site-btn site-btn-solid">
+                        <Download className="size-4" /> Print / Download
                     </Button>
                 </div>
-                
-                <div className="bg-[#1a101a] border border-[#331133] rounded-2xl p-8 sm:p-12 printable-area">
-                    <header className="flex flex-col sm:flex-row justify-between items-start pb-8 border-b border-[#331133]">
+
+                <div className="printable-area site-curved border border-border bg-card p-8 shadow-sm sm:p-12">
+                    <header className="flex flex-col justify-between gap-6 border-b border-border pb-8 sm:flex-row">
                         <div>
-                            <div className="flex items-center gap-4 mb-4">
-                                <VosemLogoIcon className="size-12 text-primary"/>
+                            <div className="mb-4 flex items-center gap-3">
+                                <VosemLogoIcon className="size-10 text-primary" />
                                 <div>
-                                    <h2 className="text-3xl font-extrabold text-white">VOSEM INT'L</h2>
-                                    <p className="text-slate-400">Official Donation Receipt</p>
+                                    <h2 className="text-2xl font-black">VOSEM INT&apos;L</h2>
+                                    <p className="text-sm text-muted-foreground">Official Donation Receipt</p>
                                 </div>
                             </div>
-                            <p className="text-sm text-slate-500">12/14 Ademola Adefuye Street, Alapere, Agboyi/Ketu, Lagos</p>
+                            <p className="text-sm text-muted-foreground">12/14 Ademola Adefuye Street, Alapere, Agboyi/Ketu, Lagos</p>
                         </div>
-                        <div className="text-left sm:text-right mt-6 sm:mt-0">
-                            <h3 className="text-2xl font-bold text-white uppercase tracking-wider">Receipt</h3>
-                            <p className="text-sm text-slate-400 mt-1"># <span className="font-mono">{donation.id}</span></p>
+                        <div className="sm:text-right">
+                            <h3 className="text-2xl font-black uppercase tracking-wider">Receipt</h3>
+                            <p className="mt-1 font-mono text-sm text-muted-foreground"># {donation.id}</p>
                         </div>
                     </header>
 
-                    <section className="grid grid-cols-1 sm:grid-cols-2 gap-8 py-8">
+                    <section className="grid gap-8 py-8 sm:grid-cols-2">
                         <div>
-                            <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Billed To</h4>
-                            <p className="font-bold text-white text-lg">{donation.donorName}</p>
-                            <p className="text-slate-300">{donation.donorEmail}</p>
+                            <h4 className="mb-3 text-xs font-black uppercase tracking-widest text-primary">Billed to</h4>
+                            <p className="text-lg font-bold">{donation.donorName}</p>
+                            <p className="text-muted-foreground">{donation.donorEmail}</p>
                         </div>
                         <div className="sm:text-right">
-                             <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Payment Details</h4>
-                            <p className="text-slate-300">Date: <span className="font-semibold text-white">{formattedDate}</span></p>
-                            <p className="text-slate-300">Status: <span className="font-semibold capitalize text-green-400">{donation.status}</span></p>
+                            <h4 className="mb-3 text-xs font-black uppercase tracking-widest text-primary">Payment details</h4>
+                            <p className="text-muted-foreground">Date: <span className="font-semibold text-foreground">{formattedDate}</span></p>
+                            <p className="text-muted-foreground">Status: <span className="font-semibold capitalize text-green-700">{donation.status}</span></p>
                         </div>
                     </section>
 
-                    <section>
-                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="bg-[#120a12]/50 text-slate-400 text-xs uppercase tracking-wider border-b border-t border-[#331133]">
-                                        <th className="px-6 py-4 font-semibold">Description</th>
-                                        <th className="px-6 py-4 font-semibold text-right">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border-b border-[#331133]">
-                                        <td className="px-6 py-5 text-white font-medium">{donation.purpose}</td>
-                                        <td className="px-6 py-5 text-white font-mono text-right">{formattedAmount}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <section className="overflow-x-auto">
+                        <table className="app-table">
+                            <thead>
+                                <tr className="border-y border-border bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                                    <th className="px-4">Description</th>
+                                    <th className="px-4 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="border-b border-border">
+                                    <td className="px-4 font-semibold">{donation.purpose}</td>
+                                    <td className="px-4 text-right font-mono">{formattedAmount}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </section>
 
                     <section className="flex justify-end py-8">
                         <div className="w-full max-w-xs">
-                             <div className="flex justify-between items-center py-3 text-slate-300">
-                                <span>Subtotal</span>
-                                <span>{formattedAmount}</span>
-                             </div>
-                              <div className="flex justify-between items-center py-3 text-slate-300 border-b border-[#331133]">
-                                <span>Fees</span>
-                                <span>{new Intl.NumberFormat('en-US', { style: 'currency', currency: donation.currency || 'NGN' }).format(0)}</span>
-                             </div>
-                             <div className="flex justify-between items-center pt-4 text-white font-bold text-xl">
-                                <span>Total Paid</span>
-                                <span>{formattedAmount}</span>
-                             </div>
+                            <div className="flex justify-between py-3 text-muted-foreground"><span>Subtotal</span><span>{formattedAmount}</span></div>
+                            <div className="flex justify-between border-b border-border py-3 text-muted-foreground"><span>Fees</span><span>{formattedAmount.replace(/[\d,.]+/, '0')}</span></div>
+                            <div className="flex justify-between pt-4 text-xl font-bold"><span>Total paid</span><span>{formattedAmount}</span></div>
                         </div>
                     </section>
-                    
-                    <footer className="border-t border-[#331133] pt-8 text-center text-slate-400">
+
+                    <footer className="border-t border-border pt-8 text-center text-muted-foreground">
                         <p className="text-lg font-semibold">Thank you for your generous contribution!</p>
-                        <p className="text-sm mt-2">Your support helps us continue our mission. May God bless you abundantly.</p>
+                        <p className="mt-2 text-sm">Your support helps us continue our mission. May God bless you abundantly.</p>
                     </footer>
                 </div>
             </div>

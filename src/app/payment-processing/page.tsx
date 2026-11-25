@@ -2,8 +2,9 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { VosemLogoIcon } from '@/components/icons';
 import { useAuth } from '@/firebase';
+import { Lock } from 'lucide-react';
+import { VosemLogoIcon } from '@/components/icons';
 
 function PaymentProcessingContent() {
   const router = useRouter();
@@ -14,7 +15,6 @@ function PaymentProcessingContent() {
   useEffect(() => {
     const reference = searchParams.get('reference');
     const amount = searchParams.get('amount');
-
     if (!reference) {
       router.replace('/payment-failed?reason=No_transaction_reference_found');
       return;
@@ -30,10 +30,7 @@ function PaymentProcessingContent() {
         }
         const response = await fetch(gateway === 'flutterwave' ? '/api/verify-flutterwave' : '/api/verify-donation', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ reference }),
         });
 
@@ -43,68 +40,51 @@ function PaymentProcessingContent() {
             const currency = result.data?.currency || 'NGN';
             router.replace(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
           } else {
-            const reason = result.message || 'Payment verification failed.';
-            router.replace(`/payment-failed?reason=${encodeURIComponent(reason)}`);
+            router.replace(`/payment-failed?reason=${encodeURIComponent(result.message || 'Payment verification failed.')}`);
           }
         } else {
-           const reason = `Server error: ${response.statusText} (${response.status})`;
-           router.replace(`/payment-failed?reason=${encodeURIComponent(reason)}`);
+          router.replace(`/payment-failed?reason=${encodeURIComponent(`Server error: ${response.statusText}`)}`);
         }
-      } catch (error) {
-        console.error('Verification request failed:', error);
-        const reason = 'Could not connect to the verification service.';
-        router.replace(`/payment-failed?reason=${encodeURIComponent(reason)}`);
+      } catch {
+        router.replace('/payment-failed?reason=Could_not_connect_to_the_verification_service');
       }
     };
 
     verifyPayment();
   }, [router, searchParams, auth, gateway]);
 
-
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#0f0510] group/design-root font-sans text-white">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/20 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
-
-      <div className="w-full flex justify-center py-8 z-20">
-        <div className="flex items-center gap-3 opacity-80">
-          <VosemLogoIcon className="w-8 h-8 text-accent" />
-          <span className="font-bold tracking-widest text-sm uppercase">VOSEM INT'L</span>
+    <div className="app-shell flex min-h-screen flex-col">
+      <header className="border-b border-border bg-card">
+        <div className="site-wrap flex h-16 items-center justify-center gap-3">
+          <VosemLogoIcon className="size-7 text-primary" />
+          <span className="font-black tracking-widest text-sm uppercase">VOSEM INT&apos;L</span>
         </div>
-      </div>
-
-      <div className="flex flex-1 items-center justify-center px-4 py-5">
-        <div className="flex flex-col items-center max-w-[960px] flex-1">
-          <div className="relative flex flex-col items-center justify-center w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] rounded-full bg-background-dark/30 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] text-center p-8 ring-1 ring-white/5">
-            <div className="relative flex items-center justify-center mb-10">
-              <div className="absolute h-20 w-20 origin-center rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] bg-accent opacity-75"></div>
-              <div className="absolute h-20 w-20 origin-center rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] bg-accent opacity-40 delay-300"></div>
-              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border-4 border-[#2d1220] bg-accent shadow-[0_0_50px_rgba(181,4,80,0.5)]">
-                <span className="material-symbols-outlined animate-pulse text-4xl text-white">ecg_heart</span>
-              </div>
-            </div>
-
-            <div className="z-10 flex max-w-[280px] flex-col items-center gap-3">
-              <h2 className="text-center text-xl font-semibold leading-tight tracking-tight text-white">Verifying your seed...</h2>
-              <p className="text-center text-sm font-normal leading-normal text-white/60">Please do not close this window.</p>
-            </div>
+      </header>
+      <main className="flex flex-grow items-center justify-center px-5 py-16">
+        <div className="app-card max-w-md text-center">
+          <div className="relative mx-auto mb-8 flex size-20 items-center justify-center">
+            <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
+            <span className="absolute inset-2 animate-ping rounded-full bg-primary/10" />
+            <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-primary text-white">₦</span>
           </div>
+          <h1 className="text-2xl font-bold">Verifying your seed…</h1>
+          <p className="mt-2 text-muted-foreground">Please do not close this window.</p>
         </div>
-      </div>
-
-      <div className="z-20 flex w-full justify-center py-6">
-        <div className="flex items-center gap-2 rounded-full border border-white/5 bg-black/20 px-4 py-2 backdrop-blur-sm">
-          <span className="material-symbols-outlined text-sm text-accent/60">lock</span>
-          <p className="text-xs font-medium tracking-wide text-accent/60">256-bit SSL Secure Payment</p>
+      </main>
+      <footer className="border-t border-border py-5">
+        <div className="site-wrap flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
+          <Lock className="size-4" /> Secure payment processing
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
 
 export default function PaymentProcessingPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <PaymentProcessingContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div className="app-shell flex min-h-screen items-center justify-center"><div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" /></div>}>
+      <PaymentProcessingContent />
+    </Suspense>
+  );
 }

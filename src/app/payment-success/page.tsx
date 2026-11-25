@@ -2,116 +2,79 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { WhatsAppIcon } from '@/components/icons';
-import { CheckCircle, Download, LayoutDashboard } from 'lucide-react';
-import Header from '@/components/landing/header';
+import { CheckCircle2, Download, LayoutDashboard } from 'lucide-react';
 import { Suspense } from 'react';
 import { useUser } from '@/firebase';
+import SiteShell from '@/components/site/site-shell';
+import { WhatsAppIcon } from '@/components/icons';
 
 function PaymentSuccessContent() {
-    const searchParams = useSearchParams();
-    const { user } = useUser();
-    const amount = searchParams.get('amount');
-    const reference = searchParams.get('reference');
-    const currency = searchParams.get('currency') || 'NGN';
-    const date = new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
+  const searchParams = useSearchParams();
+  const { user } = useUser();
+  const amount = searchParams.get('amount');
+  const reference = searchParams.get('reference');
+  const currency = searchParams.get('currency') || 'NGN';
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const formattedAmount = amount 
-        ? new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency,
-          }).format(Number(amount))
-        : 'an incredible gift';
-    
-    const whatsAppMessage = `I just sowed a seed of ${formattedAmount} at VOSEM INT'L! Join us in experiencing God's grace. https://vosem.org/giving`;
-    const whatsAppLink = `https://wa.me/?text=${encodeURIComponent(whatsAppMessage)}`;
+  const formattedAmount = amount
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount))
+    : 'your gift';
 
+  const whatsAppMessage = `I just sowed a seed of ${formattedAmount} at VOSEM INT'L! Join us in experiencing God's grace.`;
+  const whatsAppLink = `https://wa.me/?text=${encodeURIComponent(whatsAppMessage)}`;
 
-    return (
-        <div className="bg-[#0f0510] text-white font-sans relative selection:bg-accent/30">
-            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-accent/10 rounded-full blur-[120px] mix-blend-screen opacity-40"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[150px] mix-blend-screen opacity-30"></div>
+  return (
+    <SiteShell>
+      <main className="flex-grow px-5 py-16 sm:py-24">
+        <div className="mx-auto max-w-3xl">
+          <div className="app-card text-center">
+            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-green-500/10 text-green-600">
+              <CheckCircle2 className="size-9" />
+            </div>
+            <h1 className="font-display text-4xl italic sm:text-5xl">Payment successful</h1>
+            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+              Thank you for your seed. Your gift has been received and a receipt has been recorded.
+            </p>
+
+            <div className="mt-10 grid gap-6 border-y border-border py-8 text-left sm:grid-cols-3">
+              <div>
+                <span className="text-xs font-black uppercase tracking-widest text-primary">Amount</span>
+                <p className="mt-2 text-2xl font-bold">{formattedAmount}</p>
+              </div>
+              <div>
+                <span className="text-xs font-black uppercase tracking-widest text-primary">Date</span>
+                <p className="mt-2 text-lg font-semibold">{date}</p>
+              </div>
+              <div>
+                <span className="text-xs font-black uppercase tracking-widest text-primary">Reference</span>
+                <p className="mt-2 truncate font-mono text-sm">{reference || '—'}</p>
+              </div>
             </div>
 
-            <div className="relative z-10 flex flex-col min-h-screen">
-                <Header />
-                <main className="flex-grow flex flex-col items-center justify-center p-6 py-12 lg:py-20">
-                    <div className="w-full max-w-4xl flex flex-col items-center text-center">
-                        <div className="mb-8 text-accent animate-pulse">
-                            <CheckCircle className="h-[100px] w-[100px] md:h-[120px] md:w-[120px]" strokeWidth={1} />
-                        </div>
-                        <h1 className="text-white text-5xl md:text-7xl lg:text-8xl font-light font-display leading-tight tracking-tight mb-6">
-                            Payment<br className="md:hidden" /> Successful
-                        </h1>
-                        <p className="text-white/60 text-lg md:text-xl font-sans max-w-xl font-light leading-relaxed mb-16">
-                            Thank you for your seed. We have successfully processed your donation to VOSEM INT'L.
-                        </p>
-                        <div className="w-full flex flex-col md:flex-row items-center justify-center border-t border-b border-accent/40 py-10 mb-16 gap-8 md:gap-0">
-                            <div className="flex-1 px-4 flex flex-col gap-2">
-                                <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-sans">Amount</span>
-                                <span className="text-white text-4xl md:text-5xl font-display">
-                                    {formattedAmount}
-                                </span>
-                            </div>
-                            <div className="hidden md:block w-px h-16 bg-accent/40"></div>
-                            <div className="md:hidden w-16 h-px bg-accent/40"></div>
-                            <div className="flex-1 px-4 flex flex-col gap-2">
-                                <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-sans">Date</span>
-                                <span className="text-white/90 text-xl md:text-2xl font-display">{date}</span>
-                            </div>
-                            <div className="hidden md:block w-px h-16 bg-accent/40"></div>
-                            <div className="md:hidden w-16 h-px bg-accent/40"></div>
-                            <div className="flex-1 px-4 flex flex-col gap-2">
-                                <span className="text-accent text-xs uppercase tracking-[0.2em] font-bold font-sans">Reference</span>
-                                <span className="text-white/80 text-lg md:text-xl font-mono">{reference || '...'}</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col items-center w-full gap-5">
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 w-full">
-                                {user ? (
-                                    <Button asChild className="group relative w-full sm:w-auto min-w-[200px] h-14 rounded-full bg-accent text-white text-base font-semibold tracking-wide font-sans z-10 hover:bg-white hover:text-accent transition-all duration-300">
-                                        <Link href="/dashboard" className="flex items-center gap-2">
-                                            <LayoutDashboard size={20} />
-                                            Go to Dashboard
-                                        </Link>
-                                    </Button>
-                                ) : (
-                                    <Button asChild variant="outline" className="group relative w-full sm:w-auto min-w-[200px] h-14 rounded-full bg-accent/20 backdrop-blur-xl border-accent/50 hover:bg-accent/30 transition-all duration-300 text-white text-base font-semibold tracking-wide font-sans z-10">
-                                        <Link href="/">Return to Home</Link>
-                                    </Button>
-                                )}
-                                {reference && (
-                                    <Button asChild variant="ghost" className="w-full sm:w-auto min-w-[200px] h-14 rounded-full text-white/70 hover:text-white hover:bg-white/5 transition-all text-base font-medium font-sans gap-2 border border-transparent hover:border-white/10">
-                                        <Link href={`/receipt/${reference}`} target="_blank">
-                                            <Download size={20} />
-                                            <span>Download Receipt</span>
-                                        </Link>
-                                    </Button>
-                                )}
-                            </div>
-                            <a className="flex w-full sm:w-auto min-w-[240px] sm:min-w-[400px] h-14 cursor-pointer items-center justify-center rounded-xl bg-white/5 hover:bg-[#25D366]/10 border border-[#25D366]/40 backdrop-blur-md transition-all text-white gap-3 px-8 text-sm font-bold tracking-wide group mt-4 font-sans" href={whatsAppLink} target="_blank" rel="noopener noreferrer">
-                                <WhatsAppIcon className="w-6 h-6 text-[#25D366] transition-transform group-hover:scale-110" />
-                                <span className="truncate">Share Testimony on WhatsApp</span>
-                            </a>
-                        </div>
-                    </div>
-                </main>
-                <div className="h-10"></div>
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              {user ? (
+                <Link href="/dashboard" className="site-btn site-btn-solid"><LayoutDashboard className="size-4" /> Go to dashboard</Link>
+              ) : (
+                <Link href="/" className="site-btn site-btn-solid">Return home</Link>
+              )}
+              {reference && (
+                <Link href={`/receipt/${reference}`} target="_blank" className="site-btn site-btn-outline"><Download className="size-4" /> Download receipt</Link>
+              )}
             </div>
+            <a href={whatsAppLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#128C7E] hover:underline">
+              <WhatsAppIcon className="size-5" /> Share your testimony on WhatsApp
+            </a>
+          </div>
         </div>
-    );
+      </main>
+    </SiteShell>
+  );
 }
 
 export default function PaymentSuccessPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <PaymentSuccessContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div className="app-shell flex min-h-screen items-center justify-center"><div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" /></div>}>
+      <PaymentSuccessContent />
+    </Suspense>
+  );
 }

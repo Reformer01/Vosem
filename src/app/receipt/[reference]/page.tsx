@@ -53,15 +53,19 @@ export default async function ReceiptPage({ params }: { params: { reference: str
 
   if (!donation) {
     return (
-      <div className="flex flex-col min-h-screen items-center justify-center bg-background text-white p-6">
-         <div className="text-center">
-            <VosemLogoIcon className="size-16 text-primary mx-auto mb-6"/>
-            <h1 className="text-3xl font-bold mb-4">Receipt Not Found</h1>
-            <p className="text-slate-400 mb-8">The transaction reference may be invalid or the receipt is not available.</p>
-            <Link href="/dashboard" className="text-primary hover:underline">
-              Return to Dashboard
-            </Link>
-        </div>
+      <div className="app-shell flex min-h-screen flex-col">
+        <header className="border-b border-border bg-card">
+          <div className="site-wrap flex h-16 items-center gap-2.5 text-lg font-black tracking-tighter">
+            <VosemLogoIcon className="size-7 text-primary" /> VOSEM <span className="text-primary">INT&apos;L</span>
+          </div>
+        </header>
+        <main className="flex flex-grow items-center justify-center p-6">
+          <div className="app-card max-w-lg text-center">
+            <h1 className="text-3xl font-bold">Receipt not found</h1>
+            <p className="mt-3 text-muted-foreground">The transaction reference may be invalid or the receipt is not available.</p>
+            <Link href="/dashboard" className="site-btn site-btn-solid mt-8">Return to dashboard</Link>
+          </div>
+        </main>
       </div>
     );
   }
