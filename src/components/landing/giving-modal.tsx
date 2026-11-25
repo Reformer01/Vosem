@@ -150,7 +150,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-[520px] rounded-[2rem] overflow-hidden border border-border bg-card text-foreground shadow-xl">
+      <DialogContent aria-describedby="giving-dialog-description" className="p-0 max-w-[520px] rounded-[2rem] overflow-hidden border border-border bg-card text-foreground shadow-xl">
         {!isPaying ? (
           <>
             <DialogHeader className="relative items-center justify-center pt-8 pb-4 px-8 text-center">
@@ -158,7 +158,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                 <HeartHandshake className="h-8 w-8" />
               </div>
               <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Make Your Contribution</DialogTitle>
-              <DialogDescription className="text-sm font-medium text-accent">Give to VOSEM INT'L</DialogDescription>
+              <DialogDescription id="giving-dialog-description" className="text-sm font-medium text-accent">Give to VOSEM INT&apos;L</DialogDescription>
             </DialogHeader>
 
             <div className="px-6 sm:px-10 pb-10">

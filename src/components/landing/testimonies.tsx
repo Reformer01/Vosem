@@ -96,10 +96,10 @@ export default function Testimonies() {
   return (
     <section className="py-32 relative bg-primary overflow-hidden" id="testimonies">
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="glass-panel border-white/10 dark:bg-[#141414]/80 text-white">
+        <DialogContent aria-describedby="legacy-testimony-dialog-description" className="glass-panel border-white/10 dark:bg-[#141414]/80 text-white">
           <DialogHeader>
             <DialogTitle>Share Your Testimony</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="legacy-testimony-dialog-description">
               Let your story of faith inspire others.
             </DialogDescription>
           </DialogHeader>

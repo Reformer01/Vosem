@@ -78,10 +78,10 @@ export default function TestimoniesSection() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent aria-describedby="testimony-dialog-description">
           <DialogHeader>
             <DialogTitle>Share your testimony</DialogTitle>
-            <DialogDescription>Let your story of faith inspire others.</DialogDescription>
+            <DialogDescription id="testimony-dialog-description">Let your story of faith inspire others.</DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
             <Textarea {...form.register("content")} placeholder="Tell us what God has done for you..." className="min-h-36" />
