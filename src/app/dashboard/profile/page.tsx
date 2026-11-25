@@ -18,8 +18,7 @@ interface UserProfile {
   name: string;
   email: string;
   whatsappNumber?: string;
-  photoURL?: string;
-  avatarStyle?: string;
+
 }
 
 const passwordSchema = z.object({
@@ -122,7 +121,7 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row items-start gap-8">
                 <div className="flex flex-col items-center gap-3 w-full sm:w-48">
                     <Avatar className="size-28 text-3xl border-2 border-primary/30">
-                      <AvatarFallback className={`font-bold ${userProfile.avatarStyle === 'sage' ? 'bg-[#698747]/15 text-[#698747]' : userProfile.avatarStyle === 'ink' ? 'bg-foreground/10 text-foreground' : userProfile.avatarStyle === 'sand' ? 'bg-[#bcae96]/25 text-[#403f38]' : 'bg-primary/10 text-primary'}`}>
+                      <AvatarFallback className="bg-primary/10 font-bold text-primary">
                         {userProfile.name?.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase() || 'VO'}
                       </AvatarFallback>
                     </Avatar>

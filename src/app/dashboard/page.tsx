@@ -14,7 +14,6 @@ interface UserProfile {
   name: string;
   email: string;
   whatsappNumber?: string;
-  avatarStyle?: string;
 }
 
 interface Donation {
