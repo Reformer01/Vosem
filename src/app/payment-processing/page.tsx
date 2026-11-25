@@ -2,7 +2,8 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Lock } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
 import { paymentErrorCode } from '@/lib/error-messages';
@@ -11,6 +12,7 @@ function PaymentProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
+  const firestore = useFirestore();
   const gateway = searchParams.get('gateway') || 'paystack';
 
   useEffect(() => {
@@ -39,6 +41,27 @@ function PaymentProcessingContent() {
           const result = await response.json();
           if (result.status === 'success') {
             const currency = result.data?.currency || 'NGN';
+            // Persist the gift from the client: server-side writes need Admin
+            // credentials that aren't available on this deployment.
+            try {
+              const current = auth.currentUser;
+              if (current && firestore) {
+                await setDoc(doc(firestore, 'donations', reference), {
+                  userId: current.uid,
+                  amount: Number(result.data?.amount || Number(amount) * 100),
+                  currency,
+                  purpose: result.data?.metadata?.purpose || 'Giving',
+                  reference,
+                  status: 'succeeded',
+                  gateway,
+                  createdAt: serverTimestamp(),
+                  donorName: current.displayName || 'Valued Giver',
+                  donorEmail: current.email || '',
+                }, { merge: true });
+              }
+            } catch (error) {
+              console.error('Could not save donation record:', error);
+            }
             router.replace(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
           } else {
             router.replace(`/payment-failed?reason=${paymentErrorCode(result.message)}`);
@@ -52,7 +75,7 @@ function PaymentProcessingContent() {
     };
 
     verifyPayment();
-  }, [router, searchParams, auth, gateway]);
+  }, [router, searchParams, auth, firestore, gateway]);
 
   return (
     <div className="app-shell flex min-h-screen flex-col">

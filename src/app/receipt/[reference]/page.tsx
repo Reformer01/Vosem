@@ -1,55 +1,35 @@
+"use client";
 
-import * as admin from 'firebase-admin';
-import { ReceiptDetails } from '@/components/receipt/receipt-details';
-import { VosemLogoIcon } from '@/components/icons';
-import Link from 'next/link';
-
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp();
-  } catch (error) {
-    console.error('Firebase admin initialization error', error);
-  }
-}
-
-const db = admin.firestore();
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { doc } from "firebase/firestore";
+import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import { VosemLogoIcon } from "@/components/icons";
+import { ReceiptDetails } from "@/components/receipt/receipt-details";
 
 interface Donation {
-  id: string;
-  amount: number; // in kobo
+  amount: number;
   currency: string;
   purpose: string;
   status: string;
-  createdAt: admin.firestore.Timestamp;
+  createdAt: { toDate?: () => Date } | string;
   donorName: string;
   donorEmail: string;
 }
 
-async function getDonation(reference: string): Promise<any | null> {
-  if (!reference) return null;
-  try {
-    const docSnap = await db.collection('donations').doc(reference).get();
-    if (docSnap.exists) {
-      const data = docSnap.data();
-      // Ensure createdAt is a serializable object for the client component
-      const processedData = {
-        ...data,
-        id: docSnap.id,
-        createdAt: data?.createdAt.toDate().toISOString(),
-      }
-      return processedData;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching donation:", error);
-    return null;
+export default function ReceiptPage() {
+  const params = useParams<{ reference: string }>();
+  const firestore = useFirestore();
+  const ref = useMemoFirebase(() => (firestore ? doc(firestore, "donations", params.reference) : null), [firestore, params.reference]);
+  const { data: donation, isLoading } = useDoc<Donation>(ref);
+
+  if (isLoading) {
+    return (
+      <div className="app-shell flex min-h-screen items-center justify-center">
+        <div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" />
+      </div>
+    );
   }
-}
-
-
-export default async function ReceiptPage({ params }: { params: { reference: string } }) {
-  const donation = await getDonation(params.reference);
 
   if (!donation) {
     return (
@@ -62,7 +42,7 @@ export default async function ReceiptPage({ params }: { params: { reference: str
         <main className="flex flex-grow items-center justify-center p-6">
           <div className="app-card max-w-lg text-center">
             <h1 className="text-3xl font-bold">Receipt not found</h1>
-            <p className="mt-3 text-muted-foreground">The transaction reference may be invalid or the receipt is not available.</p>
+            <p className="mt-3 text-muted-foreground">This reference may be invalid, or the record is still being saved. Check your giving history in the dashboard.</p>
             <Link href="/dashboard" className="site-btn site-btn-solid mt-8">Return to dashboard</Link>
           </div>
         </main>
@@ -70,5 +50,20 @@ export default async function ReceiptPage({ params }: { params: { reference: str
     );
   }
 
-  return <ReceiptDetails donation={donation} />;
+  const createdAt = typeof donation.createdAt === "string"
+    ? donation.createdAt
+    : donation.createdAt?.toDate?.().toISOString() ?? new Date().toISOString();
+
+  return (
+    <ReceiptDetails donation={{
+      id: params.reference,
+      amount: donation.amount,
+      currency: donation.currency,
+      purpose: donation.purpose,
+      status: donation.status,
+      createdAt,
+      donorName: donation.donorName || "Valued Giver",
+      donorEmail: donation.donorEmail || "",
+    }} />
+  );
 }

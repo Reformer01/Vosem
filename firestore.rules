@@ -249,7 +249,14 @@ service cloud.firestore {
       // For list operations, the query MUST include `where('userId', '==', request.auth.uid)`.
       // The rule now implicitly trusts the query to filter correctly.
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create, update, delete: if false; // Writes must be done by the backend.
+      // The client records its own verified gift; the webhook may also write it.
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.reference is string
+        && request.resource.data.status is string;
+      allow update, delete: if false;
     }
   }
 }
