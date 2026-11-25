@@ -13,6 +13,7 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -37,6 +38,10 @@ export default function LoginPage() {
   }, [user, isUserLoading, router]);
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    if (!isFirebaseConfigured()) {
+      setAuthError('Sign-in is not configured on this deployment. Please contact the church office.');
+      return;
+    }
     setAuthError(null);
     setIsSubmitting(true);
     try {

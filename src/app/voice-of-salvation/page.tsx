@@ -90,9 +90,6 @@ export default function VoiceOfSalvationPage() {
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-muted-foreground">
             Voice of Salvation Evangelical Ministries International — VOSEM INT'L — is a Christian church family in Alapere, Lagos, Nigeria, led by General Overseer Prophet J. Olu Ayeni. The church exists to help people encounter God through worship, Bible teaching, prayer and community.
           </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Last updated: 24 November 2026. Source: <a className="text-primary underline underline-offset-4" href="https://independent.ng/voice-of-salvation-evangelical-ministries-holds-special-programme/" target="_blank" rel="noreferrer">Independent Nigeria, 17 April 2022</a>.
-          </p>
         </div>
       </section>
 

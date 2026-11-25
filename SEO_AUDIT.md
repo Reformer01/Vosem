@@ -16,7 +16,7 @@ Last verified: 2026-11-24. Canonical host: `https://vosem.vercel.app`.
 | noindex for private/conversion pages | `next.config.ts` `X-Robots-Tag` | `curl -I /login` → `X-Robots-Tag: noindex, nofollow` |
 | Structured data | `JsonLd`: Organization + WebSite globally; BreadcrumbList, Church, Person, FAQPage per page | `schema_lint.py https://vosem.vercel.app/voice-of-salvation` → 5 blocks, `parse_errors: []`, required props present; live HTML h1 + JSON-LD present |
 | SSR/crawlability | `FirebaseClientProvider` no longer gates children behind `useEffect`; stub fallback when env vars missing | Live HTML contains real `<h1>` content on all public pages; no Firebase error screen |
-| GEO answer blocks | `/voice-of-salvation`: 40–60 word definition, dated source citation, visible FAQ | Live page: "What is VOSEM?", "Questions people ask", source link to Independent Nigeria |
+| GEO answer blocks | `/voice-of-salvation`: 40–60 word definition and visible FAQ | Live page: "What is VOSEM?", "Questions people ask" |
 | Keyword-to-page mapping | `src/lib/seo-keywords.ts` → page `keywords` meta + related links | Built HTML keywords present per URL (see table below) |
 | Content-cluster internal links | `RelatedLinks` on all six public pages | Built HTML contains "Explore more of VOSEM" on every public page |
 | IndexNow | `scripts/indexnow.mjs`, key verification file | `npm run indexnow` → `IndexNow: 202` |
@@ -48,8 +48,8 @@ Note: `/about` and `/voice-of-salvation` share the same primary phrase but have 
 | C02 direct answer | Pass | Definition block answers "What is VOSEM?" in 45 words |
 | O03 quotable statements | Pass | FAQ answers are self-contained and quotable |
 | O05 entity clarity | Pass | Full legal name, alternateName, stable `@id`, sameAs YouTube, leader Person schema |
-| E01 source signals | Pass | Dated Independent Nigeria citation on identity page; testimonials on homepage |
-| Freshness | Pass | Visible "Last updated" + accurate sitemap `lastmod` |
+| E01 source signals | Warn | No visible citation on the identity page after user request to remove it; testimonials remain on homepage |
+| Freshness | Pass | Accurate sitemap `lastmod` (no visible "Last updated" line by user request) |
 | AI Query Coverage | N/A | Cannot measure without an AI monitor connector |
 | Citation rate | N/A | Requires Search Console / AI referral data |
 

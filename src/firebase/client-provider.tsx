@@ -7,6 +7,7 @@ import { getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
@@ -82,31 +83,35 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
     </div>
 );
 
+function placeholderServices(): FirebaseServices | null {
+  // shortcut: lets public pages render without Firebase credentials; all auth/data actions
+  // are blocked by isFirebaseConfigured() in the UI until real env vars are set.
+  try {
+    const app = getApps().length
+      ? getApps()[0]
+      : initializeApp({
+          apiKey: "local-placeholder",
+          authDomain: "localhost",
+          projectId: "vosem-local",
+          appId: "1:000000000000:web:0000000000000000000000",
+        });
+    return { firebaseApp: app, auth: getAuth(app), firestore: getFirestore(app), storage: getStorage(app) };
+  } catch {
+    return null;
+  }
+}
+
 export function FirebaseClientProvider({ children }: { children: ReactNode }) {
   // Initialize synchronously so page content and JSON-LD are in the initial HTML
   // for search engines and AI crawlers (which do not execute JavaScript).
   const { services, error } = useMemo((): { services: FirebaseServices | null; error: Error | null } => {
+    // Without NEXT_PUBLIC_FIREBASE_* do not call initializeApp() at all — that
+    // produces the noisy "Need to provide options" warning and invalid auth calls.
+    if (!isFirebaseConfigured()) return { services: placeholderServices(), error: null };
     try {
       return { services: initializeFirebase() as FirebaseServices, error: null };
-    } catch {
-      // shortcut: public pages must still render when Firebase env vars are absent;
-      // a local placeholder app lets auth-dependent components mount with no signed-in user.
-      try {
-        const app = getApps().length
-          ? getApps()[0]
-          : initializeApp({
-              apiKey: "local-placeholder",
-              authDomain: "localhost",
-              projectId: "vosem-local",
-              appId: "1:000000000000:web:0000000000000000000000",
-            });
-        return {
-          services: { firebaseApp: app, auth: getAuth(app), firestore: getFirestore(app), storage: getStorage(app) } as FirebaseServices,
-          error: null,
-        };
-      } catch (e) {
-        return { services: null, error: e instanceof Error ? e : new Error('Firebase initialization failed.') };
-      }
+    } catch (e) {
+      return { services: null, error: e instanceof Error ? e : new Error('Firebase initialization failed.') };
     }
   }, []);
 

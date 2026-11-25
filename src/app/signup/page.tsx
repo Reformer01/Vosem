@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -40,6 +41,10 @@ export default function SignupPage() {
   }, [user, isUserLoading, router]);
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
+    if (!isFirebaseConfigured()) {
+      setAuthError('Registration is not configured on this deployment. Please contact the church office.');
+      return;
+    }
     setAuthError(null);
     setIsSubmitting(true);
     try {
