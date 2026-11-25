@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
 import * as admin from 'firebase-admin';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 // In-memory store for rate limiting.
 // Note: This is a simple in-memory solution suitable for a single server instance.
@@ -50,6 +51,44 @@ export async function POST(req: NextRequest) {
     ipRequestCounts.set(ip, { count: 1, windowStart: now });
   }
   
+  // Paystack webhook (signature-authenticated, no user token). This lets the
+  // configured webhook URL point at the same endpoint as client verification.
+  const signature = req.headers.get('x-paystack-signature');
+  const rawBody = await req.text();
+  if (signature) {
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    if (!secret) return NextResponse.json({ message: 'Missing payment key' }, { status: 500 });
+    const expected = createHmac('sha512', secret).update(rawBody).digest('hex');
+    const valid = signature.length === expected.length && timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    if (!valid) return NextResponse.json({ message: 'Invalid signature' }, { status: 400 });
+
+    let payload: any;
+    try { payload = JSON.parse(rawBody); } catch { return NextResponse.json({ message: 'Invalid payload' }, { status: 400 }); }
+    if (payload.event === 'charge.success') {
+      const tx = payload.data;
+      const userId = tx?.metadata?.userId;
+      if (userId) {
+        try {
+          await db.collection('donations').doc(tx.reference).set({
+            userId,
+            amount: tx.amount,
+            currency: tx.currency || 'NGN',
+            purpose: tx.metadata?.purpose || 'N/A',
+            reference: tx.reference,
+            status: 'success',
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            donorName: tx.metadata?.name || 'Valued Giver',
+            donorEmail: tx.customer?.email || '',
+          });
+        } catch (e) {
+          // Never make Paystack retry a successfully charged transaction because of a write error.
+          console.error('CRITICAL: failed to record webhook donation:', e);
+        }
+      }
+    }
+    return NextResponse.json({ status: 'success' });
+  }
+
   // Only the signed-in giver may verify their own transaction. Without this,
   // a caller could post any reference and have it recorded against any uid
   // supplied in the client-controlled Paystack metadata.
@@ -65,7 +104,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Invalid authentication token' }, { status: 401 });
   }
 
-  const { reference } = await req.json();
+  let body: { reference?: string };
+  try { body = JSON.parse(rawBody); } catch { return NextResponse.json({ message: 'Invalid payload' }, { status: 400 }); }
+  const { reference } = body;
 
   if (!reference || typeof reference !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(reference)) {
     return NextResponse.json({ message: 'Invalid transaction reference' }, { status: 400 });
