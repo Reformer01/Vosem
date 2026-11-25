@@ -140,7 +140,19 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       router.push('/login');
       return;
     }
-    
+
+    const planCode = gateway === 'paystack'
+      ? process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE
+      : process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID;
+    if (frequency === 'recurring' && !planCode) {
+      toast({
+        variant: 'destructive',
+        title: 'Recurring giving is unavailable',
+        description: 'Please choose a one-time gift or contact the church office to set up a recurring plan.',
+      });
+      return;
+    }
+
     if (gateway === 'flutterwave') {
       const key = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY;
       if (!key) {
@@ -236,7 +248,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
                 {frequency === 'recurring' && (
                   <p className="max-w-sm text-center text-xs leading-relaxed text-muted-foreground">
-                    Recurring gifts need a plan code from the church office. This gift will be charged once.
+                    Recurring giving needs a plan from the church office. Choose one-time to give now.
                   </p>
                 )}
               </div>

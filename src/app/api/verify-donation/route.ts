@@ -254,10 +254,18 @@ export async function POST(req: NextRequest) {
       }
       
       // Step 5: Return success response to the frontend regardless of email outcome.
+      // Return only the fields the client needs — never the full Paystack
+      // payload (customer email, IP, metadata, etc.) to the browser.
       return NextResponse.json({
         status: 'success',
         message: 'Payment verified and recorded successfully.',
-        data,
+        data: {
+          reference: data.reference,
+          amount: data.amount,
+          currency: data.currency,
+          status: data.status,
+          metadata: { purpose: data.metadata?.purpose || 'Giving' },
+        },
       });
 
     } else {
