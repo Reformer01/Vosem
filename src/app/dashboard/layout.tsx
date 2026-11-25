@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -12,22 +13,28 @@ import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 import { CalendarDays, FileText, HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, ShieldCheck, UserRound } from 'lucide-react';
 import { VosemLogoIcon } from '@/components/icons';
 
-const navLinks = [
+const baseLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: UserRound },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
   { href: '/dashboard/events', label: 'My Events', icon: CalendarDays },
   { href: '/dashboard/testimonies', label: 'My Testimonies', icon: FileText },
-  { href: '/admin', label: 'Admin', icon: ShieldCheck },
 ];
+const adminLink = { href: '/admin', label: 'Admin', icon: ShieldCheck };
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const roleRef = useMemoFirebase(() => (user ? doc(firestore, 'admins', user.uid) : null), [user, firestore]);
+  const { data: role } = useDoc<{ role: string }>(roleRef);
+  const isAdmin = role?.role === 'admin' || role?.role === 'moderator';
+  const navLinks = isAdmin ? [...baseLinks, adminLink] : baseLinks;
 
   const handleSignOut = () => {
     auth.signOut();
