@@ -168,34 +168,37 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
             </DialogHeader>
 
             <div className="px-6 sm:px-10 pb-10">
-              <div className="mb-8 flex justify-center">
-                <RadioGroup value={frequency} onValueChange={setFrequency} className="flex h-12 w-full max-w-[320px] items-center justify-center rounded-xl bg-muted p-1">
-                  <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-semibold text-muted-foreground transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+              <div className="mb-8 flex flex-col items-center gap-4">
+                <RadioGroup value={frequency} onValueChange={setFrequency} className="flex h-11 w-full max-w-xs items-center justify-center rounded-xl bg-muted p-1">
+                  <Label className="flex h-full grow cursor-pointer items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
                     <RadioGroupItem value="one-time" id="one-time" className="sr-only" />
                     One-time
                   </Label>
-                  <Label className="group flex h-full grow cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-semibold text-muted-foreground transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                  <Label className="flex h-full grow cursor-pointer items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
                     <RadioGroupItem value="recurring" id="recurring" className="sr-only" />
                     Recurring
                   </Label>
                 </RadioGroup>
-                {frequency === 'recurring' && (
-                  <p className="mt-2 text-center text-xs text-amber-700">
-                    Recurring gifts use the church&apos;s plan code. If none is configured, this gift is processed as a single payment.
-                  </p>
-                )}
-                <div className="mt-4 flex items-center justify-center gap-2">
+
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pay with</span>
                   {(['paystack', 'flutterwave'] as const).map(option => (
                     <button
                       key={option}
                       type="button"
                       onClick={() => setGateway(option)}
-                      className={`rounded-full px-4 py-2 text-xs font-bold capitalize transition-colors ${gateway === option ? 'bg-accent text-white' : 'border border-border text-muted-foreground'}`}
+                      className={`rounded-full px-4 py-2 text-xs font-bold capitalize transition-colors ${gateway === option ? 'bg-primary text-white' : 'border border-border text-muted-foreground'}`}
                     >
                       {option}
                     </button>
                   ))}
                 </div>
+
+                {frequency === 'recurring' && (
+                  <p className="max-w-sm text-center text-xs leading-relaxed text-muted-foreground">
+                    Recurring gifts need a plan code from the church office. This gift will be charged once.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-6">
