@@ -1,12 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { VosemLogoIcon } from "@/components/icons";
 import { collection, orderBy, query, serverTimestamp, updateDoc, doc, where } from "firebase/firestore";
 import { addDocumentNonBlocking, useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+
+function AdminHeader() {
+  return (
+    <header className="border-b border-border bg-card">
+      <div className="site-wrap flex h-16 items-center justify-between">
+        <Link href="/dashboard" className="flex items-center gap-2.5 text-sm font-black tracking-tighter">
+          <VosemLogoIcon className="size-6 text-primary" /> VOSEM <span className="text-primary">INT&apos;L</span>
+        </Link>
+        <div className="flex items-center gap-5 text-sm font-bold">
+          <Link href="/dashboard" className="text-muted-foreground hover:text-primary">Dashboard</Link>
+          <Link href="/" className="text-muted-foreground hover:text-primary">Home</Link>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 export default function AdminPage() {
   const { user } = useUser();
@@ -51,17 +69,20 @@ export default function AdminPage() {
 
   if (!user || !isAdmin) {
     return (
-      <div className="app-shell">
-      <main className="flex-grow px-5 py-16 text-center">
-        <h1 className="text-3xl font-bold">Admin access required</h1>
-        <p className="mt-3 text-muted-foreground">Only approved church personnel can manage sermons, events and member submissions.</p>
-      </main>
+      <div className="app-shell flex min-h-screen flex-col">
+        <AdminHeader />
+        <main className="flex flex-grow flex-col items-center justify-center px-5 py-16 text-center">
+          <h1 className="text-3xl font-bold">Admin access required</h1>
+          <p className="mt-3 text-muted-foreground">Only approved church personnel can manage sermons, events and member submissions.</p>
+          <Link href="/dashboard" className="site-btn site-btn-solid mt-8">Back to dashboard</Link>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell flex min-h-screen flex-col">
+    <AdminHeader />
     <main className="flex-grow px-5 py-12 sm:px-10 md:px-40">
       <div className="w-full max-w-5xl">
         <h1 className="text-3xl font-bold sm:text-4xl">Admin</h1>

@@ -93,7 +93,10 @@ export default function SignupPage() {
   ];
 
   return (
-    <div className="app-shell flex min-h-screen items-center justify-center">
+    <div className="app-shell relative flex min-h-screen items-center justify-center">
+      <Link href="/" className="absolute left-5 top-5 inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary">
+        <ArrowLeft className="size-4" /> Back to site
+      </Link>
       <div className="app-card max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black tracking-tighter sm:text-4xl">Join the Family</h1>

@@ -5,22 +5,14 @@ import { AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { friendlyPaymentError } from '@/lib/error-messages';
+import SiteShell from '@/components/site/site-shell';
 
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const status = friendlyPaymentError(searchParams.get('reason'));
 
   return (
-    <div className="app-shell flex min-h-screen flex-col">
-      <header className="border-b border-border bg-card">
-        <div className="site-wrap flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 text-lg font-black tracking-tighter">
-            VOSEM <span className="text-primary">INT&apos;L</span>
-          </Link>
-          <Link href="/contact" className="text-sm font-bold text-muted-foreground hover:text-primary">Contact support</Link>
-        </div>
-      </header>
-
+    <SiteShell>
       <main className="flex flex-grow items-center justify-center px-5 py-16">
         <div className="app-card max-w-lg text-center">
           <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-red-500/10 text-red-600">
@@ -32,9 +24,10 @@ function PaymentFailedContent() {
             <Link href="/#giving" className="site-btn site-btn-solid"><RefreshCw className="size-4" /> Try again</Link>
             <Link href="/contact" className="site-btn site-btn-outline">Contact support <ArrowRight className="size-4" /></Link>
           </div>
+          <Link href="/dashboard" className="mt-6 inline-block text-sm font-bold text-primary hover:underline">Back to dashboard</Link>
         </div>
       </main>
-    </div>
+    </SiteShell>
   );
 }
 

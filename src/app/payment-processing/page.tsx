@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Lock } from 'lucide-react';
-import { VosemLogoIcon } from '@/components/icons';
+import SiteShell from '@/components/site/site-shell';
 import { paymentErrorCode } from '@/lib/error-messages';
 
 function PaymentProcessingContent() {
@@ -78,13 +78,7 @@ function PaymentProcessingContent() {
   }, [router, searchParams, auth, firestore, gateway]);
 
   return (
-    <div className="app-shell flex min-h-screen flex-col">
-      <header className="border-b border-border bg-card">
-        <div className="site-wrap flex h-16 items-center justify-center gap-3">
-          <VosemLogoIcon className="size-7 text-primary" />
-          <span className="font-black tracking-widest text-sm uppercase">VOSEM INT&apos;L</span>
-        </div>
-      </header>
+    <SiteShell>
       <main className="flex flex-grow items-center justify-center px-5 py-16">
         <div className="app-card max-w-md text-center">
           <div className="relative mx-auto mb-8 flex size-20 items-center justify-center">
@@ -94,14 +88,13 @@ function PaymentProcessingContent() {
           </div>
           <h1 className="text-2xl font-bold">Verifying your seed…</h1>
           <p className="mt-2 text-muted-foreground">Please do not close this window.</p>
+          <p className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
+            <Lock className="size-4" /> Secure payment processing
+          </p>
+          <a href="/dashboard" className="mt-4 inline-block text-sm font-bold text-primary hover:underline">Back to dashboard</a>
         </div>
       </main>
-      <footer className="border-t border-border py-5">
-        <div className="site-wrap flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
-          <Lock className="size-4" /> Secure payment processing
-        </div>
-      </footer>
-    </div>
+    </SiteShell>
   );
 }
 

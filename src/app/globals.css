@@ -93,7 +93,7 @@
     .printable-area *, .printable-area {
       color: #000000 !important;
     }
-    .no-print {
+    .no-print, header, footer {
       display: none !important;
     }
   }

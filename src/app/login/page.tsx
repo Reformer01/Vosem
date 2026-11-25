@@ -9,7 +9,7 @@ import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -67,7 +67,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="app-shell flex min-h-screen items-center justify-center">
+    <div className="app-shell relative flex min-h-screen items-center justify-center">
+      <Link href="/" className="absolute left-5 top-5 inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary">
+        <ArrowLeft className="size-4" /> Back to site
+      </Link>
       <div className="app-card max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">Welcome Back</h1>

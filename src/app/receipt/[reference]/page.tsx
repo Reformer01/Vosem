@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { doc } from "firebase/firestore";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import SiteShell from "@/components/site/site-shell";
 import { VosemLogoIcon } from "@/components/icons";
 import { ReceiptDetails } from "@/components/receipt/receipt-details";
 
@@ -25,28 +26,34 @@ export default function ReceiptPage() {
 
   if (isLoading) {
     return (
-      <div className="app-shell flex min-h-screen items-center justify-center">
-        <div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" />
-      </div>
+      <SiteShell>
+        <main className="flex flex-grow items-center justify-center py-20">
+          <div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" />
+        </main>
+      </SiteShell>
     );
   }
 
   if (!donation) {
     return (
-      <div className="app-shell flex min-h-screen flex-col">
-        <header className="border-b border-border bg-card">
-          <div className="site-wrap flex h-16 items-center gap-2.5 text-lg font-black tracking-tighter">
-            <VosemLogoIcon className="size-7 text-primary" /> VOSEM <span className="text-primary">INT&apos;L</span>
-          </div>
-        </header>
-        <main className="flex flex-grow items-center justify-center p-6">
+      <SiteShell>
+        <main className="flex flex-grow items-center justify-center px-5 py-16">
           <div className="app-card max-w-lg text-center">
+            <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <VosemLogoIcon className="size-7" />
+            </div>
             <h1 className="text-3xl font-bold">Receipt not found</h1>
-            <p className="mt-3 text-muted-foreground">This reference may be invalid, or the record is still being saved. Check your giving history in the dashboard.</p>
-            <Link href="/dashboard" className="site-btn site-btn-solid mt-8">Return to dashboard</Link>
+            <p className="mt-3 text-muted-foreground">
+              This reference may be invalid, or the record is still being saved. Check your giving history in the dashboard.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link href="/dashboard" className="site-btn site-btn-solid">Back to dashboard</Link>
+              <Link href="/giving" className="site-btn site-btn-outline">Giving</Link>
+              <Link href="/contact" className="site-btn site-btn-outline">Contact support</Link>
+            </div>
           </div>
         </main>
-      </div>
+      </SiteShell>
     );
   }
 
@@ -55,15 +62,25 @@ export default function ReceiptPage() {
     : donation.createdAt?.toDate?.().toISOString() ?? new Date().toISOString();
 
   return (
-    <ReceiptDetails donation={{
-      id: params.reference,
-      amount: donation.amount,
-      currency: donation.currency,
-      purpose: donation.purpose,
-      status: donation.status,
-      createdAt,
-      donorName: donation.donorName || "Valued Giver",
-      donorEmail: donation.donorEmail || "",
-    }} />
+    <SiteShell>
+      <main className="flex-grow px-5 py-10">
+        <div className="mx-auto mb-6 flex max-w-4xl flex-wrap items-center justify-between gap-3">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
+            ← Back to dashboard
+          </Link>
+          <Link href="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-primary">My giving history</Link>
+        </div>
+        <ReceiptDetails donation={{
+          id: params.reference,
+          amount: donation.amount,
+          currency: donation.currency,
+          purpose: donation.purpose,
+          status: donation.status,
+          createdAt,
+          donorName: donation.donorName || "Valued Giver",
+          donorEmail: donation.donorEmail || "",
+        }} />
+      </main>
+    </SiteShell>
   );
 }
