@@ -61,17 +61,14 @@ service cloud.firestore {
         && data.email is string
         && data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$');
 
-      // Handle optional 'whatsappNumber' field
-      if (data.keys().hasAny(['whatsappNumber'])) {
-        return baseValidation
-          && data.whatsappNumber is string
-          && data.keys().hasAll(requiredFields.concat(['whatsappNumber']))
-          && data.keys().size() == 5;
-      } else {
-        return baseValidation
-          && data.keys().hasAll(requiredFields)
-          && data.keys().size() == 4;
-      }
+      // Handle optional 'whatsappNumber' field with a ternary (rules have no if/else).
+      let hasWhatsapp = data.keys().hasAny(['whatsappNumber']);
+      return baseValidation
+        && (hasWhatsapp
+          ? (data.whatsappNumber is string
+             && data.keys().hasAll(requiredFields.concat(['whatsappNumber']))
+             && data.keys().size() == 5)
+          : (data.keys().hasAll(requiredFields) && data.keys().size() == 4));
     }
     
     function canUpdateUserProfile(request, resource) {
@@ -86,11 +83,11 @@ service cloud.firestore {
       let areChangesAllowed = changedKeys.hasOnly(mutableFields);
 
       // Validate the types of the fields being updated.
-      let nameIsValid = !changedKeys.has('name') || (incomingData.name is string && incomingData.name.size() >= 2);
-      let whatsappIsValid = !changedKeys.has('whatsappNumber') || incomingData.whatsappNumber is string;
-      let photoURLIsValid = !changedKeys.has('photoURL') || (incomingData.photoURL is string && incomingData.photoURL.matches('^https?://.*'));
-      let preferencesAreValid = !changedKeys.has('notificationPreferences') || incomingData.notificationPreferences is map;
-      let avatarStyleIsValid = !changedKeys.has('avatarStyle') || (incomingData.avatarStyle is string && incomingData.avatarStyle.size() <= 30);
+      let nameIsValid = !changedKeys.hasAny(['name']) || (incomingData.name is string && incomingData.name.size() >= 2);
+      let whatsappIsValid = !changedKeys.hasAny(['whatsappNumber']) || incomingData.whatsappNumber is string;
+      let photoURLIsValid = !changedKeys.hasAny(['photoURL']) || (incomingData.photoURL is string && incomingData.photoURL.matches('^https?://.*'));
+      let preferencesAreValid = !changedKeys.hasAny(['notificationPreferences']) || incomingData.notificationPreferences is map;
+      let avatarStyleIsValid = !changedKeys.hasAny(['avatarStyle']) || (incomingData.avatarStyle is string && incomingData.avatarStyle.size() <= 30);
       
       // Immutable fields must not change
       let immutableFieldsUnchanged = incomingData.uid == existingData.uid
