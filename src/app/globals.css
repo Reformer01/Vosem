@@ -164,6 +164,16 @@
   }
 }
 
+/* Full-bleed section panels get a small inset on phones so their edges
+   don't look cropped by the screen. */
+@media (max-width: 767px) {
+  .site-wrap.site-curved {
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+    max-width: calc(100% - 1.5rem);
+  }
+}
+
 @layer components {
   .glass-card {
     background: rgba(30, 30, 30, 0.3);
