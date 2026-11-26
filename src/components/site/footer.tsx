@@ -68,7 +68,7 @@ export default function SiteFooter() {
             <div>
               <h4 className="mb-6 text-xl font-black tracking-tight">Follow us</h4>
               <p className="mb-6 text-sm font-medium leading-relaxed">
-                Voice of Salvation Evangelical Ministries — a global community of believers passionate about God&apos;s presence and people&apos;s purpose.
+                Voice of Salvation Evangelical Ministries, a global community of believers passionate about God&apos;s presence and people&apos;s purpose.
               </p>
               <div className="flex gap-3">
                 <Link href="https://www.youtube.com" target="_blank" aria-label="YouTube" className="flex size-11 items-center justify-center rounded-full bg-foreground text-[#e5e0da] transition-colors hover:bg-primary">

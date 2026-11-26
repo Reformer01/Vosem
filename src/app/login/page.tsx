@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
-import { startSession } from '@/lib/session';
+import { hasSession, startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
@@ -38,7 +38,7 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (!isUserLoading && user) router.push('/dashboard');
+    if (!isUserLoading && user && hasSession()) router.push('/dashboard');
   }, [user, isUserLoading, router]);
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
@@ -70,7 +70,7 @@ export default function LoginPage() {
     }
   };
 
-  if (isUserLoading || user) {
+  if (isUserLoading || (user && hasSession())) {
     return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 rounded-full border-4 border-dashed border-primary animate-spin" /></div>;
   }
 

@@ -52,7 +52,7 @@ export default function GivingSection() {
           <h2 className="font-display text-4xl italic sm:text-6xl">Supporting the Vision</h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
             &ldquo;Give, and it will be given to you. A good measure, pressed down, shaken together and running over&hellip;&rdquo;
-            <span className="mt-2 block text-sm font-bold not-italic">— Luke 6:38</span>
+            <span className="mt-2 block text-sm font-bold not-italic">Luke 6:38</span>
           </p>
         </div>
 

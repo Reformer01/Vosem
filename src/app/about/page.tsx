@@ -36,7 +36,7 @@ export default function AboutPage() {
       <ContentSplit
         eyebrow="Belong to VOSEM"
         title="This is VOSEM"
-        body="Voice of Salvation Evangelical Ministries International (VOSEM INT'L) is a community of believers passionate about God's presence and people's purpose. Led by General Overseer Prophet J. Olu Ayeni, we are a family where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat — in Lagos and beyond."
+        body="Voice of Salvation Evangelical Ministries International (VOSEM INT'L) is a community of believers passionate about God's presence and people's purpose. Led by General Overseer Prophet J. Olu Ayeni, we are a family where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat in Lagos and beyond."
         image="/images/about-family.jpg"
         href="/contact"
         cta="Come and visit us"
@@ -82,7 +82,7 @@ export default function AboutPage() {
             <span className="site-eyebrow">Next Generation</span>
             <h2 className="font-display text-4xl italic leading-tight sm:text-5xl">Kids, Youth &amp; Young Adults</h2>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              We believe the next generation is not the church of tomorrow — they are the church today. Expect vibrant, safe and life-changing environments for every age, where young people encounter God and discover their purpose.
+              We believe the next generation is not the church of tomorrow. They are the church today. Expect vibrant, safe and life-changing environments for every age, where young people encounter God and discover their purpose.
             </p>
             <Link href="/contact" className="site-btn site-btn-outline mt-9">Plan your visit <ArrowRight className="size-4" /></Link>
           </div>

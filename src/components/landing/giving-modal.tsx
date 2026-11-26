@@ -125,7 +125,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   };
 
   const onClose = () => {
-    // Paystack was cancelled — bring our giving form back.
+    // Paystack was cancelled. Bring our giving form back.
     setIsPaying(false);
     onOpenChange(true);
   };

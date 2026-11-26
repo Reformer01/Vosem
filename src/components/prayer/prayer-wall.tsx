@@ -63,7 +63,7 @@ export default function PrayerWall() {
       <div className="site-wrap grid gap-10 lg:grid-cols-2">
         <div className="site-curved border border-border bg-[#e5e0da] p-8 sm:p-10">
           <h2 className="text-2xl font-bold">Share a prayer request</h2>
-          <p className="mt-2 text-muted-foreground">Pray with the church family — every request matters to God.</p>
+          <p className="mt-2 text-muted-foreground">Pray with the church family. Every request matters to God.</p>
           {user ? (
             <form onSubmit={submit} className="mt-8 space-y-5">
               <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Tell us what you would like the church to pray about…" className="min-h-36" />

@@ -47,7 +47,7 @@ function PaymentSuccessContent() {
               </div>
               <div>
                 <span className="text-xs font-black uppercase tracking-widest text-primary">Reference</span>
-                <p className="mt-2 truncate font-mono text-sm">{reference || '—'}</p>
+                <p className="mt-2 truncate font-mono text-sm">{reference || 'N/A'}</p>
               </div>
             </div>
 

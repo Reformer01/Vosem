@@ -16,7 +16,7 @@ export const metadata = pageMetadata({
 const faqs = [
   {
     question: "What is VOSEM's mission?",
-    answer: "We are a church family committed to worship, Bible teaching, prayer and community life — helping people encounter God and grow in faith in Lagos and beyond.",
+    answer: "We are a church family committed to worship, Bible teaching, prayer and community life, helping people encounter God and grow in faith in Lagos and beyond.",
   },
   {
     question: "What do you believe?",
@@ -58,7 +58,7 @@ const identity = [
   {
     icon: Compass,
     title: "Our mission",
-    text: "To help people encounter God, grow in faith and find their place in the family of Christ — worshipping together, serving our community and making disciples.",
+    text: "To help people encounter God, grow in faith and find their place in the family of Christ, worshipping together, serving our community and making disciples.",
   },
   {
     icon: BookOpen,
@@ -68,7 +68,7 @@ const identity = [
   {
     icon: Radio,
     title: "Our online ministry",
-    text: "Online, we teach the word, lead prayer and share testimonies of answered prayer — the message is simple: we pray, and we get answers.",
+    text: "Online, we teach the word, lead prayer and share testimonies of answered prayer. The message is simple: we pray, and we get answers.",
   },
 ];
 
@@ -88,7 +88,7 @@ export default function VoiceOfSalvationPage() {
         <div className="site-wrap site-curved bg-card px-6 py-10 sm:px-12">
           <h2 className="font-display text-3xl italic sm:text-4xl">What is VOSEM?</h2>
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-muted-foreground">
-            Voice of Salvation Evangelical Ministries International — VOSEM INT'L — is a Christian church family in Alapere, Lagos, Nigeria, led by General Overseer Prophet J. Olu Ayeni. The church exists to help people encounter God through worship, Bible teaching, prayer and community.
+            Voice of Salvation Evangelical Ministries International (VOSEM INT'L) is a Christian church family in Alapere, Lagos, Nigeria, led by General Overseer Prophet J. Olu Ayeni. The church exists to help people encounter God through worship, Bible teaching, prayer and community.
           </p>
         </div>
       </section>
@@ -114,7 +114,7 @@ export default function VoiceOfSalvationPage() {
             <div>
               <h2 className="font-display text-4xl italic sm:text-5xl">A heritage of revival</h2>
               <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-                Our special promotion and revival programmes have drawn worshippers from across Lagos to the VOSEM International Headquarters Auditorium. The 2022 programme themed <em>Mercy</em> ran through April and featured guest clerics ministering alongside our own pastors — a picture of the church&apos;s heart for prayer, healing and the word.
+                Our special promotion and revival programmes have drawn worshippers from across Lagos to the VOSEM International Headquarters Auditorium. The 2022 programme themed <em>Mercy</em> ran through April and featured guest clerics ministering alongside our own pastors. It was a picture of the church&apos;s heart for prayer, healing and the word.
               </p>
               <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
                 That same spirit shapes every service today: worship, practical teaching and a community where you can belong and grow.

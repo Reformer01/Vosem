@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
-import { startSession } from '@/lib/session';
+import { hasSession, startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
 
 const signupSchema = z.object({
@@ -40,7 +40,7 @@ export default function SignupPage() {
   });
 
   useEffect(() => {
-    if (!isUserLoading && user) router.push('/dashboard');
+    if (!isUserLoading && user && hasSession()) router.push('/dashboard');
   }, [user, isUserLoading, router]);
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
@@ -85,7 +85,7 @@ export default function SignupPage() {
     }
   };
 
-  if (isUserLoading || user) {
+  if (isUserLoading || (user && hasSession())) {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" />

@@ -51,7 +51,7 @@ type DonorTx = {
   customer?: { email?: string; first_name?: string; last_name?: string };
 };
 
-/** Full name for receipts — never fall back to a raw email address. */
+/** Full name for receipts. Never fall back to a raw email address. */
 async function resolveDonorName(tx: DonorTx, userId?: string): Promise<string> {
   let name = '';
   if (userId && db) {
@@ -254,7 +254,7 @@ export async function POST(req: NextRequest) {
       }
       
       // Step 5: Return success response to the frontend regardless of email outcome.
-      // Return only the fields the client needs — never the full Paystack
+      // Return only the fields the client needs. Never the full Paystack
       // payload (customer email, IP, metadata, etc.) to the browser.
       return NextResponse.json({
         status: 'success',

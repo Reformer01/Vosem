@@ -29,7 +29,7 @@ export default function Home() {
             Gather together<br />with us
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/85 sm:text-2xl">
-            Welcome to Voice of Salvation Evangelical Ministries (VOSEM INT&apos;L) — where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat in Lagos and beyond.
+            Welcome to Voice of Salvation Evangelical Ministries (VOSEM INT&apos;L), where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat in Lagos and beyond.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link href="/contact" className="site-btn site-btn-solid">Come and visit us <ArrowRight className="size-4" /></Link>
@@ -50,7 +50,7 @@ export default function Home() {
       {/* CTA strip */}
       <section className="bg-card py-8">
         <div className="site-wrap text-center">
-          <p className="mb-5 text-lg font-bold sm:text-xl">Join us this Sunday at 9:00 AM &amp; 11:00 AM — in person and online.</p>
+          <p className="mb-5 text-lg font-bold sm:text-xl">Join us this Sunday at 9:00 AM &amp; 11:00 AM, in person and online.</p>
           <Link href="/events" className="site-btn site-btn-outline">See all upcoming events <ArrowRight className="size-4" /></Link>
         </div>
       </section>
@@ -58,7 +58,7 @@ export default function Home() {
       <ContentSplit
         eyebrow="Welcome to VOSEM"
         title="This is VOSEM"
-        body="At VOSEM INT'L, we believe every individual carries a divine mandate. Our mission is to nurture that potential in an atmosphere of radical love and excellence — a family where you can belong, grow and discover your purpose."
+        body="At VOSEM INT'L, we believe every individual carries a divine mandate. Our mission is to nurture that potential in an atmosphere of radical love and excellence. We are a family where you can belong, grow and discover your purpose."
         image="/images/about-family.jpg"
         href="/about"
         cta="Find out more"
@@ -86,7 +86,7 @@ export default function Home() {
       <ContentSplit
         eyebrow="Growth Track"
         title="Take your Next Step"
-        body="Choosing to follow Jesus is the best decision you can ever make. Take a look at our Next Steps — from Foundations to water baptism — and discover where you belong in the family."
+        body="Choosing to follow Jesus is the best decision you can ever make. Take a look at our Next Steps, from Foundations to water baptism, and discover where you belong in the family."
         image="/images/next-steps-prayer.jpg"
         href="/about#vision"
         cta="Find out more"

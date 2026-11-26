@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "PerplexityBot", allow: "/" },
       // Training crawlers: not needed for search visibility.
       { userAgent: ["GPTBot", "ClaudeBot"], disallow: "/" },
-      // Never block /_next/ — Google needs CSS and JS to render pages.
+      // Never block /_next/. Google needs CSS and JS to render pages.
       { userAgent: "*", allow: "/", disallow: ["/api/"] },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

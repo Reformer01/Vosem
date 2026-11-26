@@ -18,7 +18,7 @@ export default function GivingPage() {
       <PageHero
         eyebrow="Giving"
         title="Supporting the vision"
-        description="Every gift helps us reach more lives with the love of Christ — in Lagos and beyond."
+        description="Every gift helps us reach more lives with the love of Christ in Lagos and beyond."
         image="/images/church-building.jpg"
         path="/giving"
       />

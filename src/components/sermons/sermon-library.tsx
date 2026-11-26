@@ -76,7 +76,7 @@ export default function SermonLibrary() {
               <h3 className="mt-3 text-xl font-bold">{sermon.title}</h3>
               {sermon.date && <p className="mt-1 text-sm text-muted-foreground">{String(sermon.date).slice(0, 10)}</p>}
               <p className="mt-4 flex-grow text-sm leading-relaxed text-muted-foreground">
-                {summaries[sermon.id] || sermon.summary || "No summary yet — generate one below."}
+                {summaries[sermon.id] || sermon.summary || "No summary yet. Generate one below."}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a href={sermon.videoUrl} target="_blank" rel="noreferrer" className="site-btn site-btn-solid !px-5 !py-2 !text-xs">Watch</a>

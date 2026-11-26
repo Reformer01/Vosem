@@ -89,7 +89,7 @@ export default function CrudTable<T extends { id: string }>({
                 {pageRows.map(row => (
                   <tr key={row.id} className="border-b border-border/50 text-sm last:border-0">
                     {columns.map(c => (
-                      <td key={c.key} className="px-3 py-3">{c.render ? c.render(row) : String((row as any)[c.key] ?? "—")}</td>
+                      <td key={c.key} className="px-3 py-3">{c.render ? c.render(row) : String((row as any)[c.key] ?? "-")}</td>
                     ))}
                     {(onEdit || onDelete) && (
                       <td className="px-3 py-3 text-right">
@@ -109,7 +109,7 @@ export default function CrudTable<T extends { id: string }>({
             {pageRows.map(row => (
               <article key={row.id} className="rounded-2xl border border-border p-4">
                 {columns.map(c => (
-                  <p key={c.key} className="mb-1 text-sm"><span className="font-bold">{c.label}: </span>{c.render ? c.render(row) : String((row as any)[c.key] ?? "—")}</p>
+                  <p key={c.key} className="mb-1 text-sm"><span className="font-bold">{c.label}: </span>{c.render ? c.render(row) : String((row as any)[c.key] ?? "-")}</p>
                 ))}
                 {(onEdit || onDelete) && (
                   <div className="mt-3 flex gap-2">

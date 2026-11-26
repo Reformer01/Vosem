@@ -16,7 +16,7 @@ export default function SermonsPage() {
       <PageHero
         eyebrow="Teaching"
         title="Sermon library"
-        description="Look back at the messages that are shaping our church family — and get the key points in a short AI-generated summary."
+        description="Look back at the messages that are shaping our church family and get the key points in a short AI-generated summary."
         image="/images/sermon-pastor.jpg"
         path="/sermons"
       />

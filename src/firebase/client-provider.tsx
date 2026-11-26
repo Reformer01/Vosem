@@ -105,7 +105,7 @@ export function FirebaseClientProvider({ children }: { children: ReactNode }) {
   // Initialize synchronously so page content and JSON-LD are in the initial HTML
   // for search engines and AI crawlers (which do not execute JavaScript).
   const { services, error } = useMemo((): { services: FirebaseServices | null; error: Error | null } => {
-    // Without NEXT_PUBLIC_FIREBASE_* do not call initializeApp() at all — that
+    // Without NEXT_PUBLIC_FIREBASE_* do not call initializeApp() at all. That
     // produces the noisy "Need to provide options" warning and invalid auth calls.
     if (!isFirebaseConfigured()) return { services: placeholderServices(), error: null };
     try {

@@ -1,5 +1,5 @@
 // Public env vars are baked in at build/deploy time. When they are absent,
-// Firebase Auth cannot work — public pages still render via a local placeholder app.
+// Firebase Auth cannot work. Public pages still render via a local placeholder app.
 export function isFirebaseConfigured(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&

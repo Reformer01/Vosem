@@ -9,7 +9,7 @@ import { FULL_NAME, OG_IMAGE, SITE_NAME, SITE_URL, organizationSchema, websiteSc
 import { keywordsFor } from '@/lib/seo-keywords';
 
 const title = "Voice of Salvation Evangelical Ministries | VOSEM";
-const description = "VOSEM INT'L — Voice of Salvation Evangelical Ministries in Lagos, Nigeria. Join our church family for worship, teaching, prayer and community.";
+const description = "VOSEM INT'L, Voice of Salvation Evangelical Ministries in Lagos, Nigeria. Join our church family for worship, teaching, prayer and community.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -83,7 +83,7 @@ export default function EventCalendar() {
         </div>
 
         {isLoading && <p className="mt-8 text-muted-foreground">Loading events…</p>}
-        {!isLoading && (!events || events.length === 0) && <p className="mt-8 text-muted-foreground">No events scheduled yet — check back soon.</p>}
+        {!isLoading && (!events || events.length === 0) && <p className="mt-8 text-muted-foreground">No events scheduled yet. Check back soon.</p>}
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {events?.map(event => (
             <RsvpCard key={event.id} event={event} onToggle={(going) => toggleRsvp(event.id, going)} busy={busy === event.id} signedIn={!!user} />
@@ -111,7 +111,7 @@ function RsvpCard({ event, onToggle, busy, signedIn }: { event: Event & { id: st
       <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="size-4" /> {event.location}</p>
       <p className="mt-4 flex-grow text-sm leading-relaxed text-muted-foreground">{event.description}</p>
       <Button variant={data ? "outline" : "default"} className="site-btn site-btn-solid mt-6 w-full" disabled={!signedIn || busy} onClick={() => onToggle(!!data)}>
-        {!signedIn ? "Log in to RSVP" : busy ? "Saving…" : data ? "Going — cancel RSVP" : "RSVP"}
+        {!signedIn ? "Log in to RSVP" : busy ? "Saving…" : data ? "Going (cancel RSVP)" : "RSVP"}
       </Button>
     </article>
   );

@@ -133,7 +133,7 @@ export default function AdminPage() {
   const sermonCols: AdminColumn<any>[] = [
     { key: "title", label: "Title" },
     { key: "speaker", label: "Speaker" },
-    { key: "summary", label: "Summary", render: r => <span className="line-clamp-1 text-muted-foreground">{r.summary || "—"}</span> },
+    { key: "summary", label: "Summary", render: r => <span className="line-clamp-1 text-muted-foreground">{r.summary || "-"}</span> },
   ];
   const eventCols: AdminColumn<any>[] = [
     { key: "title", label: "Title" },

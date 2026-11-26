@@ -17,6 +17,10 @@ function readSessionId(): string | null {
 
 // Firebase Auth handles credentials; this record gives the session a revocable,
 // expiring server-side identity. The cookie is not HttpOnly because it is set here.
+export function hasSession(): boolean {
+  return !!readSessionId();
+}
+
 export async function startSession(firestore: Firestore, user: User) {
   const previous = readSessionId();
   if (previous) await deleteDoc(doc(firestore, 'sessions', previous)).catch(() => {});

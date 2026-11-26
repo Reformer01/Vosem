@@ -35,7 +35,7 @@ export default function ContactPage() {
       <PageHero
         eyebrow="Contact"
         title="Come and visit us"
-        description="Find us in Alapere, Ketu — or join us online. We would love to meet you."
+        description="Find us in Alapere, Ketu, or join us online. We would love to meet you."
         image="/images/church-building.jpg"
         path="/contact"
       />

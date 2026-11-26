@@ -63,7 +63,7 @@ export type PaymentResultState = "success" | "not-found" | "auth-required" | "ve
 const copy: Record<Exclude<PaymentResultState, "success">, { title: string; description: string }> = {
   "not-found": {
     title: "We couldn't find that payment",
-    description: "The payment link is missing its reference. Return to Giving and try again — if you were charged, contact us with your bank receipt.",
+    description: "The payment link is missing its reference. Return to Giving and try again. If you were charged, contact us with your bank receipt.",
   },
   "auth-required": {
     title: "Please sign in to see your gift",
@@ -75,7 +75,7 @@ const copy: Record<Exclude<PaymentResultState, "success">, { title: string; desc
   },
   "verification-unavailable": {
     title: "Verification is temporarily unavailable",
-    description: "We could not reach the payment service just now. Your bank will show whether the charge went through — please retry shortly.",
+    description: "We could not reach the payment service just now. Your bank will show whether the charge went through. Please retry shortly.",
   },
   "generic-error": {
     title: "Something went wrong with this payment",

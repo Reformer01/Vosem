@@ -24,7 +24,7 @@ export default function PageHero({ eyebrow, title, description, image, path, cta
   } : null;
   return (
     <section className="relative flex min-h-[46vh] items-end overflow-hidden bg-[#282b37] py-20 text-white sm:min-h-[52vh] sm:py-28">
-      <Image src={image} alt={`${title} — VOSEM church life`} fill priority className="object-cover" sizes="100vw" />
+      <Image src={image} alt={`${title} at VOSEM`} fill priority className="object-cover" sizes="100vw" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#282b37] via-[#282b37]/70 to-[#282b37]/30" />
       {breadcrumbSchema && <JsonLd data={breadcrumbSchema} />}
       <div className="site-wrap relative z-10">
