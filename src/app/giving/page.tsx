@@ -26,7 +26,7 @@ export default function GivingPage() {
       <GivingSection />
 
       <section className="bg-card py-16 sm:py-20">
-        <div className="site-wrap site-curved flex flex-col items-start justify-between gap-6 bg-[#e5e0da] p-8 sm:flex-row sm:items-center sm:p-12">
+        <div className="site-wrap site-curved giving-assurance flex flex-col items-start justify-between gap-6 bg-[#e5e0da] p-8 sm:flex-row sm:items-center sm:p-12">
           <div className="flex items-start gap-5">
             <ShieldCheck className="mt-1 size-8 shrink-0 text-primary" />
             <div>

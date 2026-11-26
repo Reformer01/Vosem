@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Church, MapPin, Radio, Users } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, MapPin, Radio } from "lucide-react";
 import SiteShell from "@/components/site/site-shell";
 import PageHero from "@/components/site/page-hero";
 import JsonLd from "@/components/site/json-ld";
@@ -8,19 +8,19 @@ import RelatedLinks from "@/components/site/related-links";
 
 export const metadata = pageMetadata({
   title: "Voice of Salvation Evangelical Ministries | VOSEM INT'L",
-  description: "Voice of Salvation Evangelical Ministries (VOSEM INT'L) is a Lagos church led by Prophet J. Olu Ayeni. Learn our name, location, leadership and beliefs.",
+  description: "Voice of Salvation Evangelical Ministries (VOSEM INT'L) is a Lagos church family. Explore our mission, beliefs, location and what to expect at a service.",
   path: "/voice-of-salvation",
   absolute: true,
 });
 
 const faqs = [
   {
-    question: "What is Voice of Salvation Evangelical Ministries?",
-    answer: "Voice of Salvation Evangelical Ministries International, shortened to VOSEM INT'L, is a Christian church family based in Alapere, Lagos, Nigeria, committed to worship, prayer, teaching and community life.",
+    question: "What is VOSEM's mission?",
+    answer: "We are a church family committed to worship, Bible teaching, prayer and community life — helping people encounter God and grow in faith in Lagos and beyond.",
   },
   {
-    question: "Who leads VOSEM International?",
-    answer: "Prophet J. Olu Ayeni is the General Overseer and host of VOSEM's programmes. He also coordinates God's General International Ministers' Fellowship.",
+    question: "What do you believe?",
+    answer: "We believe the Bible is God's word, that Jesus Christ is the Saviour, and that salvation comes by grace through faith. Prayer, fellowship and the work of the Holy Spirit are at the heart of our life together.",
   },
   {
     question: "Where is the VOSEM International Headquarters?",
@@ -56,19 +56,19 @@ const faqSchema = {
 
 const identity = [
   {
-    icon: Church,
-    title: "Our name",
-    text: "Voice of Salvation Evangelical Ministries International — VOSEM INT'L. A church family in Lagos, Nigeria, built around the gospel of Jesus Christ and the power of His word.",
+    icon: Compass,
+    title: "Our mission",
+    text: "To help people encounter God, grow in faith and find their place in the family of Christ — worshipping together, serving our community and making disciples.",
   },
   {
-    icon: Users,
-    title: "Our leader",
-    text: "Prophet J. Olu Ayeni is the host and General Overseer. He also coordinates God's General International Ministers' Fellowship, a platform for raising ministers.",
+    icon: BookOpen,
+    title: "What we believe",
+    text: "The Bible is God's word, Jesus Christ is the Son of God and Saviour, and salvation is by grace through faith. Prayer, fellowship and the Holy Spirit shape our life together.",
   },
   {
     icon: Radio,
     title: "Our online ministry",
-    text: "VOSEM's online ministry teaches the word, leads prayer and shares testimonies of answered prayer — the message is simple: we pray, and we get answers.",
+    text: "Online, we teach the word, lead prayer and share testimonies of answered prayer — the message is simple: we pray, and we get answers.",
   },
 ];
 
@@ -151,7 +151,7 @@ export default function VoiceOfSalvationPage() {
       <section className="bg-card py-16 text-center sm:py-20">
         <div className="site-wrap">
           <h2 className="font-display text-3xl italic sm:text-5xl">Follow the ministry</h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">Teaching, prayer and testimonies from Prophet J. Olu Ayeni and the VOSEM family.</p>
+          <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">Teaching, prayer and testimonies from the VOSEM family and our ministers.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="https://www.youtube.com/@JOluAyeni1" target="_blank" rel="noreferrer" className="site-btn site-btn-solid">Watch on YouTube <ArrowRight className="size-4" /></Link>
             <Link href="/contact" className="site-btn site-btn-outline">Get in touch</Link>

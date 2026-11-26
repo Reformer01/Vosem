@@ -172,6 +172,11 @@
     margin-right: 0.75rem;
     max-width: calc(100% - 1.5rem);
   }
+  .site-wrap.site-curved.giving-assurance {
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+    max-width: calc(100% - 2.5rem);
+  }
 }
 
 @layer components {
