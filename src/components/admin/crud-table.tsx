@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowUpDown, Pencil, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, Download, Pencil, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { downloadCsv } from "@/lib/csv";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface AdminColumn<T> {
@@ -21,12 +22,13 @@ interface Props<T extends { id: string }> {
   onDelete?: (row: T) => void;
   emptyLabel?: string;
   searchPlaceholder?: string;
+  exportFilename?: string;
 }
 
 const PAGE_SIZE = 10;
 
 export default function CrudTable<T extends { id: string }>({
-  rows, columns, loading, onEdit, onDelete, emptyLabel = "No records yet.", searchPlaceholder = "Search records",
+  rows, columns, loading, onEdit, onDelete, emptyLabel = "No records yet.", searchPlaceholder = "Search records", exportFilename,
 }: Props<T>) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "", dir: "desc" });
@@ -60,9 +62,18 @@ export default function CrudTable<T extends { id: string }>({
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder={searchPlaceholder} className="site-btn site-btn-outline !py-2 pl-9" />
         </div>
-        <span className="text-xs font-semibold text-muted-foreground">
-          {filtered.length ? `Showing ${page * PAGE_SIZE + 1}-${Math.min((page + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}` : "0 records"}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold text-muted-foreground">
+            {filtered.length ? `Showing ${page * PAGE_SIZE + 1}-${Math.min((page + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}` : "0 records"}
+          </span>
+          {exportFilename && (
+            <Button variant="outline" className="rounded-xl" aria-label="Export CSV" onClick={() => downloadCsv(exportFilename,
+              columns.map(c => ({ label: c.label, value: (row: T) => c.value?.(row) ?? (row as any)[c.key] })),
+              filtered)}>
+              <Download className="size-4" /> Export CSV
+            </Button>
+          )}
+        </div>
       </div>
 
       {loading ? (

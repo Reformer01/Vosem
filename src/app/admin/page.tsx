@@ -12,8 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { VosemLogoIcon } from "@/components/icons";
 import { useSessionGuard } from "@/lib/session";
 import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
+import RsvpCount from "@/components/admin/rsvp-count";
+import { downloadCsv, formatNaira } from "@/lib/csv";
 
-const tabs = ["Overview", "Sermons", "Events", "Testimonies", "Prayer requests", "Users", "Admins", "Activity"] as const;
+const tabs = ["Overview", "Sermons", "Events", "Giving", "Testimonies", "Prayer requests", "Users", "Admins", "Reports", "Activity"] as const;
 type Tab = typeof tabs[number];
 
 function AdminHeader() {
@@ -53,6 +55,7 @@ export default function AdminPage() {
   const users = useCollection<any>(col("users"));
   const admins = useCollection<any>(col("admins"));
   const logs = useCollection<any>(useMemoFirebase(() => firestore ? query(collection(firestore, "audit_logs"), orderBy("createdAt", "desc")) : null, [firestore]));
+  const donations = useCollection<any>(useMemoFirebase(() => firestore ? query(collection(firestore, "donations"), orderBy("createdAt", "desc")) : null, [firestore]));
 
   const log = (action: string, target: string) => {
     if (!user || !firestore) return;
@@ -139,6 +142,7 @@ export default function AdminPage() {
     { key: "title", label: "Title" },
     { key: "location", label: "Location" },
     { key: "startTime", label: "Starts", value: r => new Date(r.startTime).getTime(), render: r => <span className="text-muted-foreground">{new Date(r.startTime).toLocaleDateString()}</span> },
+    { key: "rsvps", label: "Going", value: () => 0, render: r => <RsvpCount eventId={r.id} /> },
   ];
   const moderationCols = (collectionName: string): AdminColumn<any>[] => [
     { key: "author", label: "Author" },
@@ -162,6 +166,36 @@ export default function AdminPage() {
     { key: "target", label: "Target" },
     { key: "actor", label: "By" },
   ];
+  const donationCols: AdminColumn<any>[] = [
+    { key: "createdAt", label: "Date", value: r => r.createdAt?.toMillis?.() ?? 0, render: r => <span className="text-muted-foreground">{r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString() : "-"}</span> },
+    { key: "donorName", label: "Donor" },
+    { key: "purpose", label: "Purpose" },
+    { key: "amount", label: "Amount (₦)", value: r => (Number(r.amount) || 0) / 100, render: r => <span className="font-bold">{formatNaira(Number(r.amount) || 0)}</span> },
+    { key: "gateway", label: "Gateway" },
+    { key: "status", label: "Status", render: r => <span className="app-status bg-primary/10 text-primary">{r.status}</span> },
+    { key: "reference", label: "Reference" },
+  ];
+  const gifts = data(donations.data);
+  const succeeded = gifts.filter(r => r.status === "succeeded");
+  const totalGiving = succeeded.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const thisMonth = succeeded.filter(r => r.createdAt?.toMillis?.() >= monthStart.getTime()).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const byPurpose = Object.entries(succeeded.reduce((totals: Record<string, number>, r) => {
+    const key = String(r.purpose || "Giving");
+    totals[key] = (totals[key] || 0) + (Number(r.amount) || 0);
+    return totals;
+  }, {})).sort((a, b) => b[1] - a[1]);
+
+  const reports = [
+    { label: "Giving", count: gifts.length, filename: "vosem-giving.csv", rows: gifts, columns: [{ label: "Date", key: "createdAt" }, { label: "Donor", key: "donorName" }, { label: "Purpose", key: "purpose" }, { label: "Amount (kobo)", key: "amount" }, { label: "Gateway", key: "gateway" }, { label: "Status", key: "status" }, { label: "Reference", key: "reference" }] },
+    { label: "Members", count: data(users.data).length, filename: "vosem-members.csv", rows: data(users.data), columns: [{ label: "Name", key: "name" }, { label: "Email", key: "email" }, { label: "WhatsApp", key: "whatsappNumber" }] },
+    { label: "Events", count: data(events.data).length, filename: "vosem-events.csv", rows: data(events.data), columns: [{ label: "Title", key: "title" }, { label: "Location", key: "location" }, { label: "Starts", key: "startTime" }, { label: "Ends", key: "endTime" }] },
+    { label: "Sermons", count: data(sermons.data).length, filename: "vosem-sermons.csv", rows: data(sermons.data), columns: [{ label: "Title", key: "title" }, { label: "Speaker", key: "speaker" }, { label: "Summary", key: "summary" }] },
+    { label: "Testimonies", count: data(testimonies.data).length, filename: "vosem-testimonies.csv", rows: data(testimonies.data), columns: [{ label: "Author", key: "author" }, { label: "Content", key: "content" }, { label: "Approved", key: "approved" }] },
+    { label: "Prayer requests", count: data(prayers.data).length, filename: "vosem-prayer-requests.csv", rows: data(prayers.data), columns: [{ label: "Author", key: "author" }, { label: "Content", key: "content" }, { label: "Anonymous", key: "isAnonymous" }, { label: "Approved", key: "approved" }] },
+  ];
 
   return (
     <div className="app-shell flex min-h-screen flex-col">
@@ -180,12 +214,14 @@ export default function AdminPage() {
           <div className="mt-8 flex flex-col gap-8">
             {tab === "Overview" && (
               <>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {[
                     { label: "Sermons", value: data(sermons.data).length },
                     { label: "Events", value: data(events.data).length },
                     { label: "Members", value: data(users.data).length },
                     { label: "Pending submissions", value: data(testimonies.data).filter(r => !r.approved).length + data(prayers.data).filter(r => !r.approved).length },
+                    { label: "Giving this month", value: formatNaira(thisMonth) },
+                    { label: "Total giving", value: formatNaira(totalGiving) },
                   ].map(s => (
                     <div key={s.label} className="site-curved border border-border bg-card p-6">
                       <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{s.label}</p>
@@ -200,38 +236,85 @@ export default function AdminPage() {
             {tab === "Sermons" && (
               <>
                 <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("sermon")}>Add sermon</Button>
-                <CrudTable rows={data(sermons.data)} columns={sermonCols} loading={sermons.isLoading} onEdit={r => openForm("sermon", r)} onDelete={r => remove("sermons", r.id)} emptyLabel="No sermons yet." />
+                <CrudTable rows={data(sermons.data)} columns={sermonCols} loading={sermons.isLoading} onEdit={r => openForm("sermon", r)} onDelete={r => remove("sermons", r.id)} emptyLabel="No sermons yet." exportFilename="vosem-sermons.csv" />
               </>
             )}
 
             {tab === "Events" && (
               <>
                 <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("event")}>Add event</Button>
-                <CrudTable rows={data(events.data)} columns={eventCols} loading={events.isLoading} onEdit={r => openForm("event", r)} onDelete={r => remove("events", r.id)} emptyLabel="No events yet." />
+                <CrudTable rows={data(events.data)} columns={eventCols} loading={events.isLoading} onEdit={r => openForm("event", r)} onDelete={r => remove("events", r.id)} emptyLabel="No events yet." exportFilename="vosem-events.csv" />
+              </>
+            )}
+
+            {tab === "Giving" && (
+              <>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {[
+                    { label: "Confirmed gifts", value: succeeded.length },
+                    { label: "Total giving", value: formatNaira(totalGiving) },
+                    { label: "This month", value: formatNaira(thisMonth) },
+                  ].map(s => (
+                    <div key={s.label} className="site-curved border border-border bg-card p-6">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{s.label}</p>
+                      <p className="mt-2 text-3xl font-black">{s.value}</p>
+                    </div>
+                  ))}
+                </div>
+                {byPurpose.length > 0 && (
+                  <div className="site-curved border border-border bg-card p-6">
+                    <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground">By purpose</h2>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {byPurpose.map(([purpose, amount]) => (
+                        <div key={purpose} className="flex items-center justify-between gap-3 rounded-xl bg-muted/40 p-4 text-sm">
+                          <span className="font-semibold">{purpose}</span>
+                          <span className="font-black text-primary">{formatNaira(amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <CrudTable rows={gifts} columns={donationCols} loading={donations.isLoading} exportFilename="vosem-giving.csv" emptyLabel="No gifts recorded yet." searchPlaceholder="Search gifts" />
               </>
             )}
 
             {tab === "Testimonies" && (
-              <CrudTable rows={data(testimonies.data)} columns={moderationCols("testimonies")} loading={testimonies.isLoading} onDelete={r => remove("testimonies", r.id)} emptyLabel="No testimonies yet." />
+              <CrudTable rows={data(testimonies.data)} columns={moderationCols("testimonies")} loading={testimonies.isLoading} onDelete={r => remove("testimonies", r.id)} emptyLabel="No testimonies yet." exportFilename="vosem-testimonies.csv" />
             )}
 
             {tab === "Prayer requests" && (
-              <CrudTable rows={data(prayers.data)} columns={moderationCols("prayer_requests")} loading={prayers.isLoading} onDelete={r => remove("prayer_requests", r.id)} emptyLabel="No prayer requests yet." />
+              <CrudTable rows={data(prayers.data)} columns={moderationCols("prayer_requests")} loading={prayers.isLoading} onDelete={r => remove("prayer_requests", r.id)} emptyLabel="No prayer requests yet." exportFilename="vosem-prayer-requests.csv" />
             )}
 
             {tab === "Users" && (
-              <CrudTable rows={data(users.data)} columns={userCols} loading={users.isLoading} emptyLabel="No members yet." searchPlaceholder="Search members" />
+              <CrudTable rows={data(users.data)} columns={userCols} loading={users.isLoading} emptyLabel="No members yet." searchPlaceholder="Search members" exportFilename="vosem-members.csv" />
             )}
 
             {tab === "Admins" && (
               <>
                 <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("admin")}>Add admin</Button>
-                <CrudTable rows={data(admins.data)} columns={adminCols} loading={admins.isLoading} onEdit={r => openForm("admin", r)} onDelete={r => remove("admins", r.id)} emptyLabel="No admins yet." />
+                <CrudTable rows={data(admins.data)} columns={adminCols} loading={admins.isLoading} onEdit={r => openForm("admin", r)} onDelete={r => remove("admins", r.id)} emptyLabel="No admins yet." exportFilename="vosem-admins.csv" />
               </>
             )}
 
+            {tab === "Reports" && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {reports.map(report => (
+                  <div key={report.label} className="site-curved flex flex-col border border-border bg-card p-6">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{report.label}</p>
+                    <p className="mt-2 text-2xl font-black">{report.count}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Download all {report.label.toLowerCase()} records as CSV.</p>
+                    <Button variant="outline" className="mt-5 w-fit rounded-xl" onClick={() => downloadCsv(report.filename,
+                      report.columns.map(c => ({ label: c.label, value: (row: any) => row[c.key] })), report.rows)}>
+                      Download CSV
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {tab === "Activity" && (
-              <CrudTable rows={data(logs.data)} columns={logCols} loading={logs.isLoading} emptyLabel="No activity yet." searchPlaceholder="Search activity" />
+              <CrudTable rows={data(logs.data)} columns={logCols} loading={logs.isLoading} emptyLabel="No activity yet." searchPlaceholder="Search activity" exportFilename="vosem-activity.csv" />
             )}
           </div>
         </div>
