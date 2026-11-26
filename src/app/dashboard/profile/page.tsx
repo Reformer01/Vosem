@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword, signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { endSession } from '@/lib/session';
 
 interface UserProfile {
   name: string;
@@ -71,6 +72,7 @@ export default function ProfilePage() {
         description: "Your password has been changed successfully. Please log in again.",
       });
 
+      await endSession(firestore);
       await signOut(auth);
       router.push('/login');
 

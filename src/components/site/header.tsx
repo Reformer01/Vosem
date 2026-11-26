@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { LogOut, Menu } from "lucide-react";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useFirestore, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { VosemLogoIcon } from "@/components/icons";
+import { endSession } from "@/lib/session";
 
 const links = [
   { href: "/about", label: "About" },
@@ -33,6 +34,10 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
+  const handleSignOut = () => {
+    void endSession(firestore).finally(() => auth.signOut());
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur">
@@ -55,7 +60,7 @@ export default function SiteHeader() {
           ) : user ? (
             <>
               <Link href="/dashboard" className="site-btn site-btn-solid">Dashboard</Link>
-              <Button variant="ghost" size="icon" onClick={() => auth.signOut()} aria-label="Log out" className="rounded-full">
+              <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Log out" className="rounded-full">
                 <LogOut className="size-5" />
               </Button>
             </>
@@ -89,7 +94,7 @@ export default function SiteHeader() {
                 {user ? (
                   <>
                     <SheetClose asChild><Link href="/dashboard" className="site-btn site-btn-solid">Dashboard</Link></SheetClose>
-                    <Button variant="outline" onClick={() => { auth.signOut(); setOpen(false); }}>Log out</Button>
+                    <Button variant="outline" onClick={() => { handleSignOut(); setOpen(false); }}>Log out</Button>
                   </>
                 ) : (
                   <>

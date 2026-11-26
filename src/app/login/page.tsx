@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
+import { startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
@@ -24,6 +25,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +51,8 @@ export default function LoginPage() {
     setAuthError(null);
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      await startSession(firestore, credential.user);
       router.push('/dashboard');
     } catch (error: any) {
       const message = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found'

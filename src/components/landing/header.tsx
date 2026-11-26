@@ -4,8 +4,9 @@ import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useState, useEffect } from 'react';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore } from '@/firebase';
 import { VosemLogoIcon } from '../icons';
+import { endSession } from '@/lib/session';
 
 const navLinks = [
   { href: '/#home', label: 'Home' },
@@ -21,13 +22,14 @@ export default function Header() {
   const [isMounted, setIsMounted] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   const handleSignOut = () => {
-    auth.signOut();
+    void endSession(firestore).finally(() => auth.signOut());
   };
 
   return (

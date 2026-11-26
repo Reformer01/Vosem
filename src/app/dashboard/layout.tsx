@@ -8,6 +8,7 @@ import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/fireb
 import { doc } from 'firebase/firestore';
 import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
+import { signOutUser, useSessionGuard } from '@/lib/session';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { CalendarDays, FileText, Flame, HeartHandshake, LayoutDashboard, LogOut, Menu, Settings2, ShieldCheck, UserRound } from 'lucide-react';
@@ -31,6 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const sessionStatus = useSessionGuard(!!user);
 
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, 'admins', user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);
@@ -38,11 +40,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navLinks = isAdmin ? [...baseLinks, adminLink] : baseLinks;
 
   const handleSignOut = () => {
-    auth.signOut();
-    router.push('/');
+    void signOutUser(auth, firestore).finally(() => router.push('/'));
   };
 
-  if (!user) {
+  if (!user || sessionStatus !== 'valid') {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 rounded-full border-4 border-dashed border-primary animate-spin" />

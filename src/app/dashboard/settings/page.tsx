@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { deleteUser } from 'firebase/auth';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { endSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -59,6 +60,7 @@ export default function SettingsPage() {
       await deleteDoc(userDocRef);
 
       await deleteUser(user);
+      await endSession(firestore);
 
       toast({
         title: "Account Deleted",

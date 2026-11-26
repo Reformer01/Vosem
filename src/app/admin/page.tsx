@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { VosemLogoIcon } from "@/components/icons";
+import { useSessionGuard } from "@/lib/session";
 import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
 
 const tabs = ["Overview", "Sermons", "Events", "Testimonies", "Prayer requests", "Users", "Admins", "Activity"] as const;
@@ -34,6 +35,7 @@ function AdminHeader() {
 export default function AdminPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const sessionStatus = useSessionGuard(!!user);
   const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("Overview");
   const [editing, setEditing] = useState<any>(null);
@@ -106,7 +108,15 @@ export default function AdminPage() {
     toast({ title: "Deleted", description: "The record was removed." });
   };
 
-  if (!user || !isAdmin) {
+  if (user && sessionStatus === 'checking') {
+    return (
+      <div className="app-shell flex min-h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-dashed border-primary" />
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin || sessionStatus !== 'valid') {
     return (
       <div className="app-shell flex min-h-screen flex-col">
         <AdminHeader />

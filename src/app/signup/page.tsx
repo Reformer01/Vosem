@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
+import { startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
 
 const signupSchema = z.object({
@@ -66,6 +67,7 @@ export default function SignupPage() {
       if (values.whatsapp) userProfile.whatsappNumber = values.whatsapp;
 
       await setDoc(doc(firestore, 'users', newUser.uid), userProfile);
+      await startSession(firestore, newUser);
       router.push('/dashboard');
     } catch (error: any) {
       const message = error.code === 'auth/email-already-in-use'
