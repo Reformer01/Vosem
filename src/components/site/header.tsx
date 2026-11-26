@@ -22,8 +22,8 @@ const links = [
 function Logo() {
   return (
     <span className="flex items-center gap-2.5">
-      <VosemLogoIcon className="size-8 text-primary" />
-      <span className="text-xl font-black tracking-tighter">
+      <VosemLogoIcon className="size-11 text-primary" />
+      <span className="text-lg font-black tracking-tighter">
         VOSEM <span className="text-primary">INT&apos;L</span>
       </span>
     </span>
