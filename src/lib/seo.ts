@@ -13,7 +13,7 @@ export const organizationSchema = {
   name: FULL_NAME,
   alternateName: [SITE_NAME, "Voice of Salvation Evangelical Ministries"],
   url: SITE_URL,
-  logo: `${SITE_URL}/icon.svg`,
+  logo: `${SITE_URL}/icon.png`,
   description:
     "VOSEM INT'L is a Lagos-based church family where hearts are transformed, destinies are discovered, and the love of Christ is our heartbeat.",
   address: {

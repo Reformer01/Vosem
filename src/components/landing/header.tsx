@@ -36,7 +36,7 @@ export default function Header() {
     <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
       <nav className="w-full max-w-5xl bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl transition-all duration-300">
         <Link href="/" className="flex items-center gap-3 pl-2">
-          <VosemLogoIcon className="size-8 text-accent" />
+          <VosemLogoIcon className="size-8" invert />
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tighter text-white font-sans">
             VOSEM <span className="text-accent">INT'L</span>
           </h1>
@@ -84,7 +84,7 @@ export default function Header() {
                 </SheetHeader>
                 <div>
                   <div className="flex items-center gap-3 mb-8">
-                    <VosemLogoIcon className="size-8 text-accent" />
+                    <VosemLogoIcon className="size-8" invert />
                     <h2 className="text-2xl font-extrabold tracking-tighter text-white font-sans">
                       VOSEM <span className="text-accent">INT'L</span>
                     </h2>
