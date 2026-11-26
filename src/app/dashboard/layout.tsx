@@ -37,12 +37,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, 'admins', user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);
   const profileRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
-  const { data: profile, isLoading: isProfileLoading } = useDoc(profileRef);
+  const { data: profile, isLoading: isProfileLoading, error: profileError } = useDoc(profileRef);
   const isAdmin = role?.role === 'admin' || role?.role === 'moderator';
   const navLinks = isAdmin ? [...baseLinks, adminLink] : baseLinks;
 
   useEffect(() => {
-    if (user && !isProfileLoading && !profile) {
+    if (user && !isProfileLoading && !profileError && !profile) {
       void signOutUser(auth, firestore).finally(() => router.push('/login'));
     }
   }, [user, isProfileLoading, profile, auth, firestore, router]);
@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     void signOutUser(auth, firestore).finally(() => router.push('/'));
   };
 
-  if (!user || sessionStatus !== 'valid' || (!isProfileLoading && !profile)) {
+  if (!user || sessionStatus !== 'valid' || (!isProfileLoading && !profileError && !profile)) {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 rounded-full border-4 border-dashed border-primary animate-spin" />
