@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,12 @@ export default function SignupPage() {
       if (values.whatsapp) userProfile.whatsappNumber = values.whatsapp;
 
       await setDoc(doc(firestore, 'users', newUser.uid), userProfile);
-      await startSession(firestore, newUser);
+      try {
+        await startSession(firestore, newUser);
+      } catch (sessionError) {
+        await signOut(auth);
+        throw sessionError;
+      }
       router.push('/dashboard');
     } catch (error: any) {
       const message = error.code === 'auth/email-already-in-use'

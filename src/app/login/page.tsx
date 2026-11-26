@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 import { startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
@@ -52,7 +52,12 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      await startSession(firestore, credential.user);
+      try {
+        await startSession(firestore, credential.user);
+      } catch (sessionError) {
+        await signOut(auth);
+        throw sessionError;
+      }
       router.push('/dashboard');
     } catch (error: any) {
       const message = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found'
