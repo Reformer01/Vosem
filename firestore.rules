@@ -269,9 +269,7 @@ service cloud.firestore {
     // Server-side session records. Reads and cleanup stop working at expiry,
     // and a client can only keep its own session alive for up to eight days.
     match /sessions/{sessionId} {
-      allow get: if isSignedIn()
-        && resource.data.userId == request.auth.uid
-        && request.time < resource.data.expiresAt;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.keys().hasOnly(['userId', 'createdAt', 'expiresAt'])
