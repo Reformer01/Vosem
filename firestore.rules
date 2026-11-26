@@ -149,7 +149,7 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isOwner(userId) && isCreatingUserProfile(request.resource.data);
       allow update: if isOwner(userId) && canUpdateUserProfile(request, resource);
-      allow delete: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
     }
 
     /**

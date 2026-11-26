@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
@@ -36,14 +36,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, 'admins', user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);
+  const profileRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
+  const { data: profile, isLoading: isProfileLoading } = useDoc(profileRef);
   const isAdmin = role?.role === 'admin' || role?.role === 'moderator';
   const navLinks = isAdmin ? [...baseLinks, adminLink] : baseLinks;
+
+  useEffect(() => {
+    if (user && !isProfileLoading && !profile) {
+      void signOutUser(auth, firestore).finally(() => router.push('/login'));
+    }
+  }, [user, isProfileLoading, profile, auth, firestore, router]);
 
   const handleSignOut = () => {
     void signOutUser(auth, firestore).finally(() => router.push('/'));
   };
 
-  if (!user || sessionStatus !== 'valid') {
+  if (!user || sessionStatus !== 'valid' || (!isProfileLoading && !profile)) {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 rounded-full border-4 border-dashed border-primary animate-spin" />

@@ -13,6 +13,7 @@ import { ArrowLeft, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 import { hasSession, startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +53,14 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const profile = await getDoc(doc(firestore, 'users', credential.user.uid));
+      if (!profile.exists()) {
+        const message = 'This account is no longer active. Please contact the church office.';
+        await signOut(auth);
+        setAuthError(message);
+        toast({ variant: 'destructive', title: 'Account unavailable', description: message });
+        return;
+      }
       try {
         await startSession(firestore, credential.user);
       } catch (sessionError) {

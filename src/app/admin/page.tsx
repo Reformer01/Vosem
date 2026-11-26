@@ -106,9 +106,21 @@ export default function AdminPage() {
   };
 
   const remove = async (collectionName: string, id: string) => {
-    await deleteDoc(doc(firestore, collectionName, id));
-    log("deleted", `${collectionName}: ${id}`);
-    toast({ title: "Deleted", description: "The record was removed." });
+    try {
+      await deleteDoc(doc(firestore, collectionName, id));
+      log("deleted", `${collectionName}: ${id}`);
+      toast({ title: "Deleted", description: "The record was removed." });
+    } catch {
+      toast({ variant: "destructive", title: "Could not delete", description: "Please check your permissions and try again." });
+    }
+  };
+
+  const removeUser = async (row: any) => {
+    if (row.id === user?.uid) {
+      toast({ variant: "destructive", title: "Cannot delete your own account", description: "Ask another administrator to remove you." });
+      return;
+    }
+    await remove("users", row.id);
   };
 
   if (user && sessionStatus === 'checking') {
@@ -287,7 +299,7 @@ export default function AdminPage() {
             )}
 
             {tab === "Users" && (
-              <CrudTable rows={data(users.data)} columns={userCols} loading={users.isLoading} emptyLabel="No members yet." searchPlaceholder="Search members" exportFilename="vosem-members.csv" />
+              <CrudTable rows={data(users.data)} columns={userCols} loading={users.isLoading} emptyLabel="No members yet." searchPlaceholder="Search members" exportFilename="vosem-members.csv" onDelete={removeUser} />
             )}
 
             {tab === "Admins" && (
