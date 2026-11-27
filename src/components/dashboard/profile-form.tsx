@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
-import { useState } from 'react';
+import { useMachine } from '@/machines/use-machine';
+import { formMachine } from '@/machines/app.machine';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -39,7 +40,8 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isSaving, setIsSaving] = useState(false);
+  const [formState, sendForm] = useMachine(formMachine);
+  const isSaving = formState === 'submitting';
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -53,7 +55,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
 
   const onSubmit = async (data: ProfileFormValues) => {
     if (!user) return;
-    setIsSaving(true);
+    sendForm('SUBMIT');
     
     try {
         const userDocRef = doc(firestore, 'users', user.uid);
@@ -77,6 +79,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
           description: 'Your information has been saved successfully.',
         });
         form.reset(data); // Resets the form's dirty state
+        sendForm('SUCCESS');
     } catch (error) {
         console.error("Error updating profile: ", error);
         toast({
@@ -84,8 +87,7 @@ export function ProfileForm({ userProfile }: ProfileFormProps) {
             title: "Update Failed",
             description: "Could not save your profile changes. Please try again.",
         });
-    } finally {
-        setIsSaving(false);
+        sendForm('FAILURE');
     }
   };
 

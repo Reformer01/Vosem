@@ -4,12 +4,12 @@ import {
   givingMachine, paymentVerificationMachine, donationMachine,
   paymentResultMachine, normalizeDonationStatus, paymentResultForReason,
 } from "./payment.machine";
-import { testimonyMachine, prayerMachine, rsvpMachine } from "./content.machine";
+import { testimonyMachine, testimonySubmissionMachine, prayerMachine, rsvpMachine } from "./content.machine";
 import { prayerSubmissionMachine } from "./prayer-submission.machine";
 import { sessionGuardMachine } from "./session.machine";
 import { dataLoadMachine } from "./data-load.machine";
 import {
-  adminMachine, adminCrudMachine, dashboardDataMachine, formMachine, headerMenuMachine,
+  adminMachine, adminCrudMachine, confirmDeleteMachine, dashboardDataMachine, formMachine, headerMenuMachine,
   dashboardMenuMachine, givingDialogMachine, deleteAccountDialogMachine,
   testimonyDialogMachine,
 } from "./app.machine";
@@ -28,8 +28,8 @@ export * from "./app.machine";
 export const machineRegistry = [
   authSessionMachine, loginMachine, signupMachine,
   givingMachine, paymentVerificationMachine, donationMachine, paymentResultMachine,
-  testimonyMachine, prayerMachine, prayerSubmissionMachine, rsvpMachine, sessionGuardMachine, dataLoadMachine,
-  adminMachine, adminCrudMachine, dashboardDataMachine, formMachine,
+  testimonyMachine, testimonySubmissionMachine, prayerMachine, prayerSubmissionMachine, rsvpMachine, sessionGuardMachine, dataLoadMachine,
+  adminMachine, adminCrudMachine, confirmDeleteMachine, dashboardDataMachine, formMachine,
   headerMenuMachine, dashboardMenuMachine, givingDialogMachine,
   deleteAccountDialogMachine, testimonyDialogMachine,
 ];

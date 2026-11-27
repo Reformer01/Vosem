@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -17,6 +17,8 @@ function PaymentProcessingContent() {
   const firestore = useFirestore();
   const gateway = searchParams.get('gateway') || 'paystack';
   const [verifyState, sendVerify] = useMachine(paymentVerificationMachine);
+  const [attempt, setAttempt] = useState(0);
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -29,6 +31,12 @@ function PaymentProcessingContent() {
     }
 
     const go = (url: string) => { if (active) router.replace(url); };
+    const watchdog = window.setTimeout(() => {
+      if (!active) return;
+      active = false;
+      setTimedOut(true);
+      sendVerify('NETWORK_ERROR');
+    }, 15000);
 
     const verifyPayment = async () => {
       sendVerify('START');
@@ -88,24 +96,37 @@ function PaymentProcessingContent() {
     };
 
     verifyPayment();
-    return () => { active = false; };
-  }, [router, searchParams, auth, firestore, gateway, sendVerify]);
+    return () => { active = false; window.clearTimeout(watchdog); };
+  }, [router, searchParams, auth, firestore, gateway, sendVerify, attempt]);
 
   return (
     <SiteShell>
       <main className="flex flex-grow items-center justify-center px-5 py-16">
         <div className="app-card max-w-md text-center">
-          <div className="relative mx-auto mb-8 flex size-20 items-center justify-center">
-            <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-            <span className="absolute inset-2 animate-ping rounded-full bg-primary/10" />
-            <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-primary text-white">₦</span>
-          </div>
-          <h1 className="text-2xl font-bold">Verifying your seed…</h1>
-          <p className="mt-2 text-muted-foreground" aria-live="polite">{verifyState === 'checking' ? 'Please do not close this window.' : 'Confirming your gift with the payment provider...'}</p>
-          <p className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
-            <Lock className="size-4" /> Secure payment processing
-          </p>
-          <a href="/dashboard" className="mt-4 inline-block text-sm font-bold text-primary hover:underline">Back to dashboard</a>
+          {timedOut ? (
+            <>
+              <h1 className="text-2xl font-bold">Verification is taking longer than expected</h1>
+              <p className="mt-4 text-muted-foreground">Your bank will show whether the charge went through. Please retry, or contact the church office if you were charged.</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <button onClick={() => { sendVerify('RETRY'); setTimedOut(false); setAttempt(a => a + 1); }} className="site-btn site-btn-solid">Try again</button>
+                <a href="/contact" className="site-btn site-btn-outline">Contact support</a>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative mx-auto mb-8 flex size-20 items-center justify-center">
+                <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
+                <span className="absolute inset-2 animate-ping rounded-full bg-primary/10" />
+                <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-primary text-white">₦</span>
+              </div>
+              <h1 className="text-2xl font-bold">Verifying your seed…</h1>
+              <p className="mt-2 text-muted-foreground" aria-live="polite">{verifyState === 'checking' ? 'Please do not close this window.' : 'Confirming your gift with the payment provider...'}</p>
+              <p className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
+                <Lock className="size-4" /> Secure payment processing
+              </p>
+              <a href="/dashboard" className="mt-4 inline-block text-sm font-bold text-primary hover:underline">Back to dashboard</a>
+            </>
+          )}
         </div>
       </main>
     </SiteShell>

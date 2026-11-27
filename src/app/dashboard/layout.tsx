@@ -10,6 +10,7 @@ import { doc } from 'firebase/firestore';
 import { GivingModal } from "@/components/landing/giving-modal";
 import { cn } from '@/lib/utils';
 import { signOutUser, useSessionGuard } from '@/lib/session';
+import { useMembershipGuard } from '@/lib/membership';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CalendarDays, FileText, Flame, HeartHandshake, LayoutDashboard, LogOut, MoreHorizontal, Settings2, ShieldCheck, UserRound } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const setIsModalOpen = (next: boolean) => sendDialog(next ? "OPEN" : "CLOSE");
   const setIsSheetOpen = (next: boolean) => sendMenu(next ? "OPEN" : "CLOSE");
   const sessionStatus = useSessionGuard(!!user);
+  useMembershipGuard(sessionStatus === 'valid');
 
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, 'admins', user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);

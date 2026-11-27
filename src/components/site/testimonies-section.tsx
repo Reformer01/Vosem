@@ -6,9 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import * as z from "zod";
-import { addDocumentNonBlocking, useFirestore, useUser } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
+import { testimonySubmissionMachine } from "@/machines/content.machine";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import ScriptureQuote from "./scripture-quote";
@@ -34,19 +35,27 @@ export default function TestimoniesSection() {
   const open = dialogState === "open";
   const setOpen = (next: boolean) => sendDialog(next ? "OPEN" : "CLOSE");
   const form = useForm({ resolver: zodResolver(schema), defaultValues: { content: "" } });
+  const [submitState, sendSubmit] = useMachine(testimonySubmissionMachine);
 
-  const submit = (values: z.infer<typeof schema>) => {
-    if (!user) return;
-    addDocumentNonBlocking(collection(firestore, "testimonies"), {
-      author: user.displayName || "Anonymous",
-      authorId: user.uid,
-      content: values.content,
-      date: serverTimestamp(),
-      approved: false,
-    });
-    toast({ title: "Testimony submitted!", description: "Your testimony has been received." });
-    form.reset();
-    setOpen(false);
+  const submit = async (values: z.infer<typeof schema>) => {
+    if (!user || submitState === "submitting") return;
+    sendSubmit("SUBMIT");
+    try {
+      await addDoc(collection(firestore, "testimonies"), {
+        author: user.displayName || "Anonymous",
+        authorId: user.uid,
+        content: values.content,
+        date: serverTimestamp(),
+        approved: false,
+      });
+      sendSubmit("SUCCESS");
+      toast({ title: "Testimony submitted!", description: "Your testimony has been received." });
+      form.reset();
+      setOpen(false);
+    } catch {
+      sendSubmit("FAILURE");
+      toast({ variant: "destructive", title: "Could not submit", description: "Please try again shortly." });
+    }
   };
 
   return (
@@ -98,7 +107,7 @@ export default function TestimoniesSection() {
             )}
             <div className="flex justify-end gap-3">
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" className="site-btn site-btn-solid">Submit</Button>
+              <Button type="submit" disabled={submitState === "submitting"} className="site-btn site-btn-solid">{submitState === "submitting" ? "Submitting..." : "Submit"}</Button>
             </div>
           </form>
         </DialogContent>

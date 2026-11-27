@@ -5,6 +5,8 @@ import { ArrowUpDown, Download, Pencil, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { downloadCsv } from "@/lib/csv";
+import { useMachine } from "@/machines/use-machine";
+import { confirmDeleteMachine } from "@/machines/app.machine";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface AdminColumn<T> {
@@ -34,6 +36,21 @@ export default function CrudTable<T extends { id: string }>({
   const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "", dir: "desc" });
   const [page, setPage] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<T | null>(null);
+  const [confirmState, sendConfirm] = useMachine(confirmDeleteMachine);
+  const requestDelete = (row: T) => { setPendingDelete(row); sendConfirm("OPEN"); };
+  const cancelDelete = () => { setPendingDelete(null); sendConfirm("CANCEL"); };
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const row = pendingDelete;
+    sendConfirm("CONFIRM");
+    setPendingDelete(null);
+    try {
+      await onDelete?.(row);
+      sendConfirm("DONE");
+    } catch {
+      sendConfirm("FAILURE");
+    }
+  };
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -106,7 +123,7 @@ export default function CrudTable<T extends { id: string }>({
                       <td className="px-3 py-3 text-right">
                         <div className="flex justify-end gap-2">
                           {onEdit && <Button variant="ghost" size="icon" className="rounded-xl" aria-label="Edit" onClick={() => onEdit(row)}><Pencil className="size-4" /></Button>}
-                          {onDelete && <Button variant="ghost" size="icon" className="rounded-xl text-red-600" aria-label="Delete" onClick={() => setPendingDelete(row)}><Trash2 className="size-4" /></Button>}
+                          {onDelete && <Button variant="ghost" size="icon" className="rounded-xl text-red-600" aria-label="Delete" onClick={() => requestDelete(row)}><Trash2 className="size-4" /></Button>}
                         </div>
                       </td>
                     )}
@@ -125,7 +142,7 @@ export default function CrudTable<T extends { id: string }>({
                 {(onEdit || onDelete) && (
                   <div className="mt-3 flex gap-2">
                     {onEdit && <Button variant="outline" className="rounded-xl" onClick={() => onEdit(row)}>Edit</Button>}
-                    {onDelete && <Button variant="outline" className="rounded-xl text-red-600" onClick={() => setPendingDelete(row)}>Delete</Button>}
+                    {onDelete && <Button variant="outline" className="rounded-xl text-red-600" onClick={() => requestDelete(row)}>Delete</Button>}
                   </div>
                 )}
               </article>
@@ -142,15 +159,15 @@ export default function CrudTable<T extends { id: string }>({
         </>
       )}
 
-      <Dialog open={!!pendingDelete} onOpenChange={open => { if (!open) setPendingDelete(null); }}>
+      <Dialog open={confirmState !== "closed"} onOpenChange={open => { if (!open) cancelDelete(); }}>
         <DialogContent aria-describedby="crud-delete-description">
           <DialogHeader>
             <DialogTitle>Delete this record?</DialogTitle>
             <DialogDescription id="crud-delete-description">This cannot be undone. The record will be permanently removed.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setPendingDelete(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => { if (pendingDelete) onDelete?.(pendingDelete); setPendingDelete(null); }}>Delete</Button>
+            <Button variant="ghost" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" disabled={confirmState === "deleting"} onClick={confirmDelete}>{confirmState === "deleting" ? "Deleting..." : "Delete"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

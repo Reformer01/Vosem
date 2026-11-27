@@ -52,6 +52,12 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['admin', 'moderator'];
     }
 
+    // Destructive and structural actions are reserved for full admins.
+    function isFullAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // --- User Profile Validation Functions ---
     function isCreatingUserProfile(data) {
       // Core fields that are always required
@@ -149,7 +155,7 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isOwner(userId) && isCreatingUserProfile(request.resource.data);
       allow update: if isOwner(userId) && canUpdateUserProfile(request, resource);
-      allow delete: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isFullAdmin();
     }
 
     /**
@@ -162,7 +168,8 @@ service cloud.firestore {
     match /events/{eventId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if isFullAdmin();
 
       // Members can RSVP to an event; only their own RSVP is readable/deletable.
       match /rsvps/{userId} {
@@ -184,7 +191,8 @@ service cloud.firestore {
     match /sermons/{sermonId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if isFullAdmin();
     }
 
     /**
@@ -201,7 +209,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isSignedIn() && isCreatingTestimony(request.resource.data);
       allow update: if isAdmin() && isApprovingTestimony(request.resource.data, resource);
-      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid || isAdmin();
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid || isFullAdmin();
     }
 
     /**
@@ -215,7 +223,7 @@ service cloud.firestore {
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
         && request.resource.data.approved is bool;
-      allow delete: if isAdmin();
+      allow delete: if isFullAdmin();
     }
 
     // Own RSVPs across all events (used by the dashboard "My events" list).
@@ -229,7 +237,7 @@ service cloud.firestore {
     match /admins/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isFullAdmin();
     }
 
     // Append-only activity log for admin actions.

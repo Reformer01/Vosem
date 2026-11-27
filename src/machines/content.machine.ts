@@ -33,6 +33,20 @@ export const prayerMachine = createMachine({
   },
 });
 
+export const testimonySubmissionMachine = createMachine({
+  id: "testimony-submission",
+  description: "Submitting a member testimony before moderation.",
+  initial: "idle",
+  states: ["idle", "submitting", "success", "error"] as const,
+  events: ["SUBMIT", "SUCCESS", "FAILURE", "RESET"] as const,
+  transitions: {
+    idle: { SUBMIT: "submitting" },
+    submitting: { SUCCESS: "success", FAILURE: "error" },
+    success: { SUBMIT: "submitting", RESET: "idle" },
+    error: { SUBMIT: "submitting", RESET: "idle" },
+  },
+});
+
 export const rsvpMachine = createMachine({
   id: "rsvp",
   description: "Event attendance intent.",

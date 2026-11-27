@@ -2,11 +2,12 @@
 
 import { useMachine } from "@/machines/use-machine";
 import { testimonyDialogMachine } from "@/machines/app.machine";
-import { collection, deleteDoc, doc, query, serverTimestamp, where } from "firebase/firestore";
+import { testimonySubmissionMachine } from "@/machines/content.machine";
+import { addDoc, collection, deleteDoc, doc, query, serverTimestamp, where } from "firebase/firestore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { addDocumentNonBlocking, useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,18 +45,27 @@ export default function MyTestimoniesPage() {
   );
   const { data: testimonies, isLoading } = useCollection<Testimony>(testimoniesQuery);
 
-  const submit = (values: z.infer<typeof schema>) => {
-    if (!user || !firestore) return;
-    addDocumentNonBlocking(collection(firestore, "testimonies"), {
-      author: user.displayName || "Anonymous",
-      authorId: user.uid,
-      content: values.content.trim(),
-      date: serverTimestamp(),
-      approved: false,
-    });
-    toast({ title: "Testimony submitted", description: "Your testimony has been received." });
-    form.reset();
-    setOpen(false);
+  const [submitState, sendSubmit] = useMachine(testimonySubmissionMachine);
+
+  const submit = async (values: z.infer<typeof schema>) => {
+    if (!user || !firestore || submitState === "submitting") return;
+    sendSubmit("SUBMIT");
+    try {
+      await addDoc(collection(firestore, "testimonies"), {
+        author: user.displayName || "Anonymous",
+        authorId: user.uid,
+        content: values.content.trim(),
+        date: serverTimestamp(),
+        approved: false,
+      });
+      sendSubmit("SUCCESS");
+      toast({ title: "Testimony submitted", description: "Your testimony has been received." });
+      form.reset();
+      setOpen(false);
+    } catch {
+      sendSubmit("FAILURE");
+      toast({ variant: "destructive", title: "Could not submit", description: "Please try again shortly." });
+    }
   };
 
   const remove = (id: string) => {
@@ -118,7 +128,7 @@ export default function MyTestimoniesPage() {
             {form.formState.errors.content && <p className="text-sm text-destructive">{form.formState.errors.content.message}</p>}
             <div className="flex justify-end gap-3">
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" className="site-btn site-btn-solid">Submit</Button>
+              <Button type="submit" disabled={submitState === "submitting"} className="site-btn site-btn-solid">{submitState === "submitting" ? "Submitting..." : "Submit"}</Button>
             </div>
           </form>
         </DialogContent>

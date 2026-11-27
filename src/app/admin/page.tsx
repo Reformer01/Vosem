@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from "@/hooks/use-toast";
 import { VosemLogoIcon } from "@/components/icons";
 import { useSessionGuard } from "@/lib/session";
+import { useMembershipGuard } from "@/lib/membership";
 import { useMachine } from "@/machines/use-machine";
 import { adminMachine, adminCrudMachine, dashboardMenuMachine } from "@/machines/app.machine";
 import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
@@ -59,6 +60,7 @@ export default function AdminPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const sessionStatus = useSessionGuard(!!user);
+  useMembershipGuard(sessionStatus === 'valid');
   const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("Overview");
   const [menuState, sendMenu] = useMachine(dashboardMenuMachine);
@@ -70,6 +72,7 @@ export default function AdminPage() {
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, "admins", user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);
   const isAdmin = role?.role === "admin" || role?.role === "moderator";
+  const isFullAdmin = role?.role === "admin";
   const [gateState, sendGate] = useMachine(adminMachine);
   const [crudState, sendCrud] = useMachine(adminCrudMachine);
   const isBusy = crudState === "saving" || crudState === "deleting";
@@ -112,6 +115,10 @@ export default function AdminPage() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firestore || !user || !editing || isBusy) return;
+    if (editing.kind === "admin" && !isFullAdmin) {
+      toast({ variant: "destructive", title: "Admin access required", description: "Only full administrators can manage admin roles." });
+      return;
+    }
     sendCrud("SUBMIT");
     try {
       if (editing.kind === "sermon") {
@@ -267,6 +274,7 @@ export default function AdminPage() {
         <div className="mx-auto w-full max-w-6xl">
           <h1 className="text-3xl font-black sm:text-4xl">Admin</h1>
           <p className="mt-2 text-muted-foreground">Manage teaching, events, submissions, members and administrators.</p>
+          {!isFullAdmin && <p className="mt-1 text-xs font-bold uppercase tracking-widest text-primary">Moderator view: approvals only</p>}
 
           <div className="mt-8 hidden flex-wrap gap-2 border-b border-border pb-3 md:flex">
             {tabs.map(t => (
@@ -299,14 +307,14 @@ export default function AdminPage() {
             {tab === "Sermons" && (
               <>
                 <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("sermon")}>Add sermon</Button>
-                <CrudTable rows={data(sermons.data)} columns={sermonCols} loading={sermons.isLoading} onEdit={r => openForm("sermon", r)} onDelete={r => remove("sermons", r.id)} emptyLabel="No sermons yet." exportFilename="vosem-sermons.csv" />
+                <CrudTable rows={data(sermons.data)} columns={sermonCols} loading={sermons.isLoading} onEdit={r => openForm("sermon", r)} onDelete={isFullAdmin ? r => remove("sermons", r.id) : undefined} emptyLabel="No sermons yet." exportFilename="vosem-sermons.csv" />
               </>
             )}
 
             {tab === "Events" && (
               <>
                 <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("event")}>Add event</Button>
-                <CrudTable rows={data(events.data)} columns={eventCols} loading={events.isLoading} onEdit={r => openForm("event", r)} onDelete={r => remove("events", r.id)} emptyLabel="No events yet." exportFilename="vosem-events.csv" />
+                <CrudTable rows={data(events.data)} columns={eventCols} loading={events.isLoading} onEdit={r => openForm("event", r)} onDelete={isFullAdmin ? r => remove("events", r.id) : undefined} emptyLabel="No events yet." exportFilename="vosem-events.csv" />
               </>
             )}
 
@@ -342,21 +350,21 @@ export default function AdminPage() {
             )}
 
             {tab === "Testimonies" && (
-              <CrudTable rows={data(testimonies.data)} columns={moderationCols("testimonies")} loading={testimonies.isLoading} onDelete={r => remove("testimonies", r.id)} emptyLabel="No testimonies yet." exportFilename="vosem-testimonies.csv" />
+              <CrudTable rows={data(testimonies.data)} columns={moderationCols("testimonies")} loading={testimonies.isLoading} onDelete={isFullAdmin ? r => remove("testimonies", r.id) : undefined} emptyLabel="No testimonies yet." exportFilename="vosem-testimonies.csv" />
             )}
 
             {tab === "Prayer requests" && (
-              <CrudTable rows={data(prayers.data)} columns={moderationCols("prayer_requests")} loading={prayers.isLoading} onDelete={r => remove("prayer_requests", r.id)} emptyLabel="No prayer requests yet." exportFilename="vosem-prayer-requests.csv" />
+              <CrudTable rows={data(prayers.data)} columns={moderationCols("prayer_requests")} loading={prayers.isLoading} onDelete={isFullAdmin ? r => remove("prayer_requests", r.id) : undefined} emptyLabel="No prayer requests yet." exportFilename="vosem-prayer-requests.csv" />
             )}
 
             {tab === "Users" && (
-              <CrudTable rows={data(users.data)} columns={userCols} loading={users.isLoading} emptyLabel="No members yet." searchPlaceholder="Search members" exportFilename="vosem-members.csv" onDelete={removeUser} />
+              <CrudTable rows={data(users.data)} columns={userCols} loading={users.isLoading} emptyLabel="No members yet." searchPlaceholder="Search members" exportFilename="vosem-members.csv" onDelete={isFullAdmin ? removeUser : undefined} />
             )}
 
             {tab === "Admins" && (
               <>
-                <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("admin")}>Add admin</Button>
-                <CrudTable rows={data(admins.data)} columns={adminCols} loading={admins.isLoading} onEdit={r => openForm("admin", r)} onDelete={r => remove("admins", r.id)} emptyLabel="No admins yet." exportFilename="vosem-admins.csv" />
+                {isFullAdmin && <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("admin")}>Add admin</Button>}
+                <CrudTable rows={data(admins.data)} columns={adminCols} loading={admins.isLoading} onEdit={isFullAdmin ? r => openForm("admin", r) : undefined} onDelete={isFullAdmin ? r => remove("admins", r.id) : undefined} emptyLabel="No admins yet." exportFilename="vosem-admins.csv" />
               </>
             )}
 

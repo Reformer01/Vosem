@@ -48,6 +48,12 @@ export default function LoginPage() {
     if (!isUserLoading) sendAuth('AUTH_RESOLVED');
   }, [isUserLoading, sendAuth]);
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('reason') === 'account-removed') {
+      setAuthError('This account is no longer active. Please contact the church office.');
+    }
+  }, []);
+
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     if (!isFirebaseConfigured()) {
       const message = 'Sign-in is not configured on this deployment. Please contact the church office.';

@@ -29,6 +29,19 @@ export const adminCrudMachine = createMachine({
   },
 });
 
+export const confirmDeleteMachine = createMachine({
+  id: "confirm-delete",
+  description: "Confirmation and deletion state for table row actions.",
+  initial: "closed",
+  states: ["closed", "confirming", "deleting"] as const,
+  events: ["OPEN", "CANCEL", "CONFIRM", "DONE", "FAILURE"] as const,
+  transitions: {
+    closed: { OPEN: "confirming" },
+    confirming: { CANCEL: "closed", CONFIRM: "deleting" },
+    deleting: { DONE: "closed", FAILURE: "confirming" },
+  },
+});
+
 export const dashboardDataMachine = createMachine({
   id: "dashboard-data",
   description: "Combined auth + Firestore readiness for dashboard screens.",
@@ -72,12 +85,12 @@ export const formMachine = createMachine({
   states: ["pristine", "dirty", "invalid", "valid", "submitting", "success", "error"] as const,
   events: ["CHANGE", "INVALID", "VALID", "SUBMIT", "SUCCESS", "FAILURE", "RESET"] as const,
   transitions: {
-    pristine: { CHANGE: "dirty", INVALID: "invalid", VALID: "valid" },
-    dirty: { CHANGE: "dirty", INVALID: "invalid", VALID: "valid" },
+    pristine: { CHANGE: "dirty", INVALID: "invalid", VALID: "valid", SUBMIT: "submitting" },
+    dirty: { CHANGE: "dirty", INVALID: "invalid", VALID: "valid", SUBMIT: "submitting" },
     invalid: { CHANGE: "dirty", VALID: "valid", INVALID: "invalid" },
     valid: { CHANGE: "dirty", SUBMIT: "submitting", INVALID: "invalid" },
     submitting: { SUCCESS: "success", FAILURE: "error" },
-    success: { RESET: "pristine" },
+    success: { RESET: "pristine", SUBMIT: "submitting" },
     error: { SUBMIT: "submitting", RESET: "pristine" },
   },
 });

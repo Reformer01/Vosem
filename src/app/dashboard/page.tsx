@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowRight, Check, Download, Flame, Search, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { normalizeDonationStatus } from '@/machines/payment.machine';
+import { useMachine } from '@/machines/use-machine';
+import { dashboardDataMachine } from '@/machines/app.machine';
 import { GivingModal } from '@/components/landing/giving-modal';
 
 interface UserProfile {
@@ -34,10 +36,10 @@ export default function DashboardPage() {
   const firestore = useFirestore();
 
   const userProfileRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile, isLoading: isProfileLoading, error: profileError } = useDoc<UserProfile>(userProfileRef);
 
   const donationsQuery = useMemoFirebase(() => user ? query(collection(firestore, 'donations'), where('userId', '==', user.uid)) : null, [user, firestore]);
-  const { data: unsortedDonations, isLoading: isDonationsLoading } = useCollection<Donation>(donationsQuery);
+  const { data: unsortedDonations, isLoading: isDonationsLoading, error: donationsError } = useCollection<Donation>(donationsQuery);
 
   const testimoniesQuery = useMemoFirebase(() => user ? query(collection(firestore, 'testimonies'), where('authorId', '==', user.uid)) : null, [user, firestore]);
   const { data: myTestimonies } = useCollection(testimoniesQuery);
@@ -46,6 +48,7 @@ export default function DashboardPage() {
   const [range, setRange] = useState('all');
   const [page, setPage] = useState(0);
   const [givingOpen, setGivingOpen] = useState(false);
+  const [dataState, sendData] = useMachine(dashboardDataMachine);
   const pageSize = 5;
 
   const donations = useMemo(() => {
@@ -113,7 +116,30 @@ export default function DashboardPage() {
     if (!isAuthLoading && !user) router.push('/login');
   }, [user, isAuthLoading, router]);
 
-  const isLoading = isAuthLoading || isProfileLoading || (user && isDonationsLoading);
+  useEffect(() => {
+    if (isAuthLoading) return;
+    if (!user) {
+      sendData('AUTH_MISSING');
+      return;
+    }
+    sendData('AUTH_READY');
+    if (profileError || donationsError) sendData('DATA_ERROR');
+    else if (!isProfileLoading && !isDonationsLoading) sendData(donations?.length ? 'DATA_LOADED' : 'DATA_EMPTY');
+  }, [isAuthLoading, user, profileError, donationsError, isProfileLoading, isDonationsLoading, donations, sendData]);
+
+  const isLoading = dataState === 'auth-loading' || dataState === 'data-loading';
+
+  if (dataState === 'error') {
+    return (
+      <div className="app-shell flex flex-1 items-center justify-center px-5 text-center">
+        <div className="app-card max-w-md">
+          <h1 className="text-2xl font-bold">We couldn&apos;t load your dashboard</h1>
+          <p className="mt-3 text-muted-foreground">Please try again in a moment. Your gifts are safe.</p>
+          <button className="site-btn site-btn-solid mt-6" onClick={() => sendData('RETRY')}>Try again</button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !user) {
     return (
