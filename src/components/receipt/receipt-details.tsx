@@ -37,7 +37,7 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                     </Button>
                 </div>
 
-                <div className="printable-area site-curved border border-border bg-card p-5 shadow-sm sm:p-8 lg:p-12">
+                <div className="printable-area site-curved border border-border bg-card p-4 shadow-sm sm:p-8 lg:p-12">
                     <header className="flex flex-col justify-between gap-6 border-b border-border pb-8 sm:flex-row">
                         <div>
                             <div className="mb-4 flex items-center gap-3">
@@ -70,24 +70,24 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                         <table className="app-table w-full table-fixed">
                             <thead>
                                 <tr className="border-y border-border bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
-                                    <th className="w-1/2 px-2 sm:px-4">Description</th>
-                                    <th className="w-1/2 px-2 text-right sm:px-4">Amount</th>
+                                    <th className="w-1/2 px-3 sm:px-4">Description</th>
+                                    <th className="w-1/2 px-3 text-right sm:px-4">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr className="border-b border-border">
-                                    <td className="break-words px-2 font-semibold sm:px-4">{donation.purpose}</td>
-                                    <td className="break-words px-2 text-right font-mono sm:px-4">{formattedAmount}</td>
+                                    <td className="break-words px-3 font-semibold sm:px-4">{donation.purpose}</td>
+                                    <td className="whitespace-nowrap px-3 text-right font-mono text-sm sm:px-4 sm:text-base">{formattedAmount}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </section>
 
-                    <section className="grid gap-1 py-8 sm:flex sm:justify-end">
-                        <div className="w-full sm:max-w-xs">
-                            <div className="flex flex-col justify-between gap-1 py-3 text-muted-foreground sm:flex-row sm:gap-3"><span>Subtotal</span><span className="break-all text-right">{formattedAmount}</span></div>
-                            <div className="flex flex-col justify-between gap-1 border-b border-border py-3 text-muted-foreground sm:flex-row sm:gap-3"><span>Fees</span><span className="break-all text-right">{formattedAmount.replace(/[\d,.]+/, '0')}</span></div>
-                            <div className="flex flex-col justify-between gap-1 pt-4 text-xl font-bold sm:flex-row sm:gap-3"><span>Total paid</span><span className="break-all text-right">{formattedAmount}</span></div>
+                    <section className="py-8">
+                        <div className="w-full sm:ml-auto sm:max-w-xs">
+                            <div className="flex items-center justify-between gap-3 py-3 text-sm text-muted-foreground sm:text-base"><span>Subtotal</span><span className="whitespace-nowrap text-right">{formattedAmount}</span></div>
+                            <div className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm text-muted-foreground sm:text-base"><span>Fees</span><span className="whitespace-nowrap text-right">{formattedAmount.replace(/[\d,.]+/, '0')}</span></div>
+                            <div className="flex items-center justify-between gap-3 pt-4 text-base font-bold sm:text-xl"><span>Total paid</span><span className="whitespace-nowrap text-right">{formattedAmount}</span></div>
                         </div>
                     </section>
 
