@@ -16,6 +16,13 @@ export interface AdminColumn<T> {
   value?: (row: T) => string | number;
 }
 
+export interface AdminFilter<T> {
+  key: string;
+  label: string;
+  options: { value: string; label: string }[];
+  match: (row: T, value: string) => boolean;
+}
+
 interface Props<T extends { id: string }> {
   rows: T[];
   columns: AdminColumn<T>[];
@@ -25,14 +32,16 @@ interface Props<T extends { id: string }> {
   emptyLabel?: string;
   searchPlaceholder?: string;
   exportFilename?: string;
+  filters?: AdminFilter<T>[];
 }
 
 const PAGE_SIZE = 10;
 
 export default function CrudTable<T extends { id: string }>({
-  rows, columns, loading, onEdit, onDelete, emptyLabel = "No records yet.", searchPlaceholder = "Search records", exportFilename,
+  rows, columns, loading, onEdit, onDelete, emptyLabel = "No records yet.", searchPlaceholder = "Search records", exportFilename, filters,
 }: Props<T>) {
   const [search, setSearch] = useState("");
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "", dir: "desc" });
   const [page, setPage] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<T | null>(null);
@@ -54,7 +63,13 @@ export default function CrudTable<T extends { id: string }>({
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const matched = term ? rows.filter(r => JSON.stringify(r).toLowerCase().includes(term)) : [...rows];
+    const matched = rows.filter(row => {
+      const passesFilters = (filters ?? []).every(filter => {
+        const selected = filterValues[filter.key];
+        return !selected || filter.match(row, selected);
+      });
+      return passesFilters && (!term || JSON.stringify(row).toLowerCase().includes(term));
+    });
     if (!sort.key) return matched;
     return matched.sort((a, b) => {
       const get = (r: T) => columns.find(c => c.key === sort.key)?.value?.(r) ?? String((r as any)[sort.key] ?? "");
@@ -62,7 +77,7 @@ export default function CrudTable<T extends { id: string }>({
       const result = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
       return sort.dir === "asc" ? result : -result;
     });
-  }, [rows, search, sort, columns]);
+  }, [rows, search, sort, columns, filters, filterValues]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -92,6 +107,28 @@ export default function CrudTable<T extends { id: string }>({
           )}
         </div>
       </div>
+
+      {filters && filters.length > 0 && (
+        <div className="mb-5 flex flex-wrap gap-2">
+          {filters.map(filter => (
+            <select
+              key={filter.key}
+              value={filterValues[filter.key] ?? ""}
+              onChange={event => {
+                setFilterValues(values => ({ ...values, [filter.key]: event.target.value }));
+                setPage(0);
+              }}
+              aria-label={filter.label}
+              className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground"
+            >
+              <option value="">All {filter.label}</option>
+              {filter.options.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>

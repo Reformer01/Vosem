@@ -16,10 +16,11 @@ import { useSessionGuard } from "@/lib/session";
 import { useMembershipGuard } from "@/lib/membership";
 import { useMachine } from "@/machines/use-machine";
 import { adminMachine, adminCrudMachine, dashboardMenuMachine } from "@/machines/app.machine";
-import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
+import CrudTable, { type AdminColumn, type AdminFilter } from "@/components/admin/crud-table";
 import RsvpCount from "@/components/admin/rsvp-count";
 import { downloadCsv, formatNaira } from "@/lib/csv";
 import { ADMIN_ROLES, roleLabel } from "@/lib/roles";
+import { normalizeDonationStatus } from "@/machines/payment.machine";
 import {
   Activity, BarChart3, BookOpen, CalendarDays, Heart, HeartHandshake, LayoutDashboard,
   MessageCircle, MoreHorizontal, ShieldCheck, Users,
@@ -292,6 +293,64 @@ export default function AdminPage() {
     return totals;
   }, {})).sort((a, b) => b[1] - a[1]);
 
+  const periodOptions = [
+    { value: "month", label: "This month" },
+    { value: "30days", label: "Last 30 days" },
+    { value: "year", label: "This year" },
+    { value: "older", label: "Older than this year" },
+  ];
+  const inPeriod = (value: unknown, period: string) => {
+    const ms = (value as { toMillis?: () => number })?.toMillis?.() ?? (value ? new Date(String(value)).getTime() : 0);
+    if (!ms) return false;
+    const now = new Date();
+    if (period === "month") return ms >= new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    if (period === "30days") return ms >= now.getTime() - 30 * 86400000;
+    if (period === "year") return ms >= new Date(now.getFullYear(), 0, 1).getTime();
+    return ms < new Date(now.getFullYear(), 0, 1).getTime();
+  };
+
+  const givingFilters: AdminFilter<any>[] = [
+    { key: "period", label: "periods", options: periodOptions, match: (row, value) => inPeriod(row.createdAt, value) },
+    {
+      key: "status", label: "statuses",
+      options: [
+        { value: "succeeded", label: "Succeeded" }, { value: "failed", label: "Failed" },
+        { value: "pending", label: "Pending" }, { value: "refunded", label: "Refunded" },
+      ],
+      match: (row, value) => normalizeDonationStatus(row.status) === value,
+    },
+    {
+      key: "purpose", label: "purposes",
+      options: Array.from(new Set(gifts.map(row => String(row.purpose || "Giving")))).sort().map(value => ({ value, label: value })),
+      match: (row, value) => String(row.purpose || "Giving") === value,
+    },
+    {
+      key: "gateway", label: "gateways",
+      options: Array.from(new Set(gifts.map(row => String(row.gateway || "paystack")))).sort().map(value => ({ value, label: value })),
+      match: (row, value) => String(row.gateway || "paystack") === value,
+    },
+  ];
+  const moderationFilters: AdminFilter<any>[] = [
+    {
+      key: "status", label: "statuses",
+      options: [{ value: "pending", label: "Pending" }, { value: "approved", label: "Approved" }],
+      match: (row, value) => value === "approved" ? !!row.approved : !row.approved,
+    },
+  ];
+  const eventFilters: AdminFilter<any>[] = [
+    {
+      key: "period", label: "periods",
+      options: [{ value: "upcoming", label: "Upcoming" }, { value: "past", label: "Past" }],
+      match: (row, value) => {
+        const upcoming = new Date(row.startTime).getTime() >= Date.now();
+        return value === "upcoming" ? upcoming : !upcoming;
+      },
+    },
+  ];
+  const activityFilters: AdminFilter<any>[] = [
+    { key: "period", label: "periods", options: periodOptions, match: (row, value) => inPeriod(row.createdAt, value) },
+  ];
+
   const reports = [
     { label: "Giving", count: gifts.length, filename: "vosem-giving.csv", rows: gifts, columns: [{ label: "Date", key: "createdAt" }, { label: "Donor", key: "donorName" }, { label: "Purpose", key: "purpose" }, { label: "Amount (kobo)", key: "amount" }, { label: "Gateway", key: "gateway" }, { label: "Status", key: "status" }, { label: "Reference", key: "reference" }] },
     { label: "Members", count: data(users.data).length, filename: "vosem-members.csv", rows: data(users.data), columns: [{ label: "Name", key: "name" }, { label: "Email", key: "email" }, { label: "WhatsApp", key: "whatsappNumber" }] },
@@ -348,7 +407,7 @@ export default function AdminPage() {
             {tab === "Events" && (
               <>
                 <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("event")}>Add event</Button>
-                <CrudTable rows={data(events.data)} columns={eventCols} loading={events.isLoading} onEdit={r => openForm("event", r)} onDelete={isFullAdmin ? r => remove("events", r.id) : undefined} emptyLabel="No events yet." exportFilename="vosem-events.csv" />
+                <CrudTable rows={data(events.data)} columns={eventCols} loading={events.isLoading} onEdit={r => openForm("event", r)} onDelete={isFullAdmin ? r => remove("events", r.id) : undefined} emptyLabel="No events yet." exportFilename="vosem-events.csv" filters={eventFilters} />
               </>
             )}
 
@@ -379,16 +438,16 @@ export default function AdminPage() {
                     </div>
                   </div>
                 )}
-                <CrudTable rows={gifts} columns={donationCols} loading={donations.isLoading} exportFilename="vosem-giving.csv" emptyLabel="No gifts recorded yet." searchPlaceholder="Search gifts" />
+                <CrudTable rows={gifts} columns={donationCols} loading={donations.isLoading} exportFilename="vosem-giving.csv" emptyLabel="No gifts recorded yet." searchPlaceholder="Search gifts" filters={givingFilters} />
               </>
             )}
 
             {tab === "Testimonies" && (
-              <CrudTable rows={data(testimonies.data)} columns={moderationCols("testimonies")} loading={testimonies.isLoading} onDelete={isFullAdmin ? r => remove("testimonies", r.id) : undefined} emptyLabel="No testimonies yet." exportFilename="vosem-testimonies.csv" />
+              <CrudTable rows={data(testimonies.data)} columns={moderationCols("testimonies")} loading={testimonies.isLoading} onDelete={isFullAdmin ? r => remove("testimonies", r.id) : undefined} emptyLabel="No testimonies yet." exportFilename="vosem-testimonies.csv" filters={moderationFilters} />
             )}
 
             {tab === "Prayer requests" && (
-              <CrudTable rows={data(prayers.data)} columns={moderationCols("prayer_requests")} loading={prayers.isLoading} onDelete={isFullAdmin ? r => remove("prayer_requests", r.id) : undefined} emptyLabel="No prayer requests yet." exportFilename="vosem-prayer-requests.csv" />
+              <CrudTable rows={data(prayers.data)} columns={moderationCols("prayer_requests")} loading={prayers.isLoading} onDelete={isFullAdmin ? r => remove("prayer_requests", r.id) : undefined} emptyLabel="No prayer requests yet." exportFilename="vosem-prayer-requests.csv" filters={moderationFilters} />
             )}
 
             {tab === "Users" && (
@@ -426,7 +485,7 @@ export default function AdminPage() {
             )}
 
             {tab === "Activity" && (
-              <CrudTable rows={data(logs.data)} columns={logCols} loading={logs.isLoading} emptyLabel="No activity yet." searchPlaceholder="Search activity" exportFilename="vosem-activity.csv" />
+              <CrudTable rows={data(logs.data)} columns={logCols} loading={logs.isLoading} emptyLabel="No activity yet." searchPlaceholder="Search activity" exportFilename="vosem-activity.csv" filters={activityFilters} />
             )}
           </div>
         </div>
