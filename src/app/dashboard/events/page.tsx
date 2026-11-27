@@ -74,7 +74,9 @@ export default function MyEventsPage() {
           ))}
         </div>
       </div>
-      <EventCalendar />
+      <div className="mt-10">
+        <EventCalendar />
+      </div>
     </main>
   );
 }
