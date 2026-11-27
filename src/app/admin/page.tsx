@@ -62,10 +62,24 @@ export default function AdminPage() {
   const sessionStatus = useSessionGuard(!!user);
   useMembershipGuard(sessionStatus === 'valid');
   const { toast } = useToast();
-  const [tab, setTab] = useState<Tab>("Overview");
+  const [tab, setTabState] = useState<Tab>("Overview");
   const [menuState, sendMenu] = useMachine(dashboardMenuMachine);
   const isMoreOpen = menuState === "open";
   const setIsMoreOpen = (next: boolean) => sendMenu(next ? "OPEN" : "CLOSE");
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab") as Tab | null;
+    if (requested && (tabs as readonly string[]).includes(requested)) setTabState(requested);
+  }, []);
+
+  const selectTab = (next: Tab) => {
+    setTabState(next);
+    const url = new URL(window.location.href);
+    if (next === "Overview") url.searchParams.delete("tab");
+    else url.searchParams.set("tab", next);
+    window.history.replaceState(null, "", url);
+  };
+
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ title: "", speaker: "", videoUrl: "", summary: "", description: "", startTime: "", endTime: "", location: "", email: "", role: "admin", uid: "" });
 
@@ -278,7 +292,7 @@ export default function AdminPage() {
 
           <div className="mt-8 hidden flex-wrap gap-2 border-b border-border pb-3 md:flex">
             {tabs.map(t => (
-              <button key={t} onClick={() => setTab(t)} className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${tab === t ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted"}`}>{t}</button>
+              <button key={t} onClick={() => selectTab(t)} className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${tab === t ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted"}`}>{t}</button>
             ))}
           </div>
 
@@ -396,7 +410,7 @@ export default function AdminPage() {
           {bottomTabs.map(name => {
             const Icon = tabIcons[name];
             return (
-              <button key={name} type="button" onClick={() => setTab(name)}
+              <button key={name} type="button" onClick={() => selectTab(name)}
                 className={`flex flex-col items-center gap-1 py-3 text-[11px] font-bold transition-colors ${tab === name ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
                 <Icon className="size-5" aria-hidden="true" />
                 {name}
@@ -424,7 +438,7 @@ export default function AdminPage() {
               const Icon = tabIcons[name];
               return (
                 <SheetClose key={name} asChild>
-                  <button type="button" onClick={() => setTab(name)}
+                  <button type="button" onClick={() => selectTab(name)}
                     className={`flex items-center gap-4 rounded-2xl px-4 py-3.5 text-base font-bold transition-colors ${tab === name ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'}`}>
                     <Icon className="size-5" aria-hidden="true" />
                     {name}
