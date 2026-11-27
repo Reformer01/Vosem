@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { collection, orderBy, query, serverTimestamp, where } from "firebase/firestore";
-import { addDocumentNonBlocking, useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { collection, deleteDoc, doc, orderBy, query, serverTimestamp, setDoc, where } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { useMachine } from "@/machines";
+import { prayerSubmissionMachine } from "@/machines/prayer-submission.machine";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Send } from "lucide-react";
@@ -23,7 +24,8 @@ export default function PrayerWall() {
   const { user } = useUser();
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [state, send] = useMachine(prayerSubmissionMachine);
 
   const wallQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, "prayer_requests"), where("approved", "==", true), orderBy("date", "desc")) : null,
@@ -33,23 +35,42 @@ export default function PrayerWall() {
     () => (firestore && user) ? query(collection(firestore, "prayer_requests"), where("authorId", "==", user.uid)) : null,
     [firestore, user]
   );
-  const { data: prayers } = useCollection<Prayer>(wallQuery);
+  const { data: prayers, isLoading: wallLoading } = useCollection<Prayer>(wallQuery);
   const { data: mine } = useCollection<Prayer>(mineQuery);
 
-  const submit = (event: React.FormEvent) => {
+  const changeContent = (value: string) => {
+    setContent(value);
+    if (state !== "idle") {
+      setError("");
+      send("RESET");
+    }
+  };
+
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!user || !firestore || content.trim().length < 5) return;
-    addDocumentNonBlocking(collection(firestore, "prayer_requests"), {
-      author: isAnonymous ? "Anonymous" : (user.displayName || "Member"),
-      authorId: user.uid,
-      content: content.trim(),
-      date: serverTimestamp(),
-      isAnonymous,
-      approved: false,
-    });
-    setContent("");
-    setIsAnonymous(false);
-    setSent(true);
+    const text = content.trim();
+    if (!user || !firestore || text.length < 5 || text.length > 1000 || state === "submitting") return;
+    send("SUBMIT");
+    setError("");
+    try {
+      // One live request per member. Older submissions are removed so they do not stack.
+      const old = (mine ?? []).filter(request => request.id !== user.uid);
+      await Promise.all(old.map(request => deleteDoc(doc(firestore, "prayer_requests", request.id))));
+      await setDoc(doc(firestore, "prayer_requests", user.uid), {
+        author: isAnonymous ? "Anonymous" : (user.displayName || "Member"),
+        authorId: user.uid,
+        content: text,
+        date: serverTimestamp(),
+        isAnonymous,
+        approved: false,
+      });
+      setContent("");
+      setIsAnonymous(false);
+      send("SUCCESS");
+    } catch {
+      setError("We could not send your request. Please try again.");
+      send("FAILURE");
+    }
   };
 
   return (
@@ -66,12 +87,15 @@ export default function PrayerWall() {
           <p className="mt-2 text-muted-foreground">Pray with the church family. Every request matters to God.</p>
           {user ? (
             <form onSubmit={submit} className="mt-8 space-y-5">
-              <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Tell us what you would like the church to pray about…" className="min-h-36" />
+              <Textarea value={content} onChange={e => changeContent(e.target.value)} placeholder="Tell us what you would like the church to pray about..." className="min-h-36" />
               <label className="flex items-center gap-3 text-sm font-semibold">
                 <Checkbox checked={isAnonymous} onCheckedChange={checked => setIsAnonymous(checked === true)} /> Post anonymously
               </label>
-              <Button type="submit" className="site-btn site-btn-solid" disabled={content.trim().length < 5}><Send className="size-4" /> Send request</Button>
-              {sent && <p className="text-sm font-semibold text-primary">Your prayer request has been received.</p>}
+              <Button type="submit" className="site-btn site-btn-solid" disabled={state === "submitting" || content.trim().length < 5 || content.trim().length > 1000}>
+                <Send className="size-4" /> {state === "submitting" ? "Sending..." : "Send request"}
+              </Button>
+              {state === "success" && <p className="text-sm font-semibold text-primary">Your prayer request has been received.</p>}
+              {state === "error" && <p className="text-sm font-semibold text-destructive">{error}</p>}
             </form>
           ) : (
             <p className="mt-8 text-muted-foreground">Please <a href="/login" className="font-semibold text-primary underline">log in</a> to share a request.</p>
@@ -79,12 +103,12 @@ export default function PrayerWall() {
 
           {mine && mine.length > 0 && (
             <div className="mt-10 border-t border-border pt-6">
-              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-muted-foreground">Your requests</h3>
+              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-muted-foreground">Your request</h3>
               <ul className="space-y-3 text-sm">
-                {mine.map((p, i) => (
-                  <li key={i} className="rounded-2xl bg-card p-4">
-                    <span className={`mr-2 font-bold ${p.approved ? "text-primary" : "text-muted-foreground"}`}>{p.approved ? "On the wall" : "Received"}</span>
-                    {p.content.slice(0, 90)}
+                {mine.map(request => (
+                  <li key={request.id} className="rounded-2xl bg-card p-4">
+                    <span className={`mr-2 font-bold ${request.approved ? "text-primary" : "text-muted-foreground"}`}>{request.approved ? "On the wall" : "Received"}</span>
+                    {request.content.slice(0, 90)}
                   </li>
                 ))}
               </ul>
@@ -95,11 +119,13 @@ export default function PrayerWall() {
         <div>
           <h2 className="mb-6 text-2xl font-bold">Prayer wall</h2>
           <div className="flex flex-col gap-4">
-            {prayers && prayers.length > 0 ? prayers.map((p, i) => (
-              <article key={i} className="site-curved border border-border bg-[#e5e0da] p-6">
-                <p className="leading-relaxed">{p.content}</p>
+            {wallLoading ? (
+              <p className="text-muted-foreground">Loading prayer requests...</p>
+            ) : prayers && prayers.length > 0 ? prayers.map(request => (
+              <article key={request.id} className="site-curved border border-border bg-[#e5e0da] p-6">
+                <p className="leading-relaxed">{request.content}</p>
                 <p className="mt-3 text-xs font-bold uppercase tracking-widest text-primary">
-                  {p.isAnonymous ? "Anonymous" : p.author}
+                  {request.isAnonymous ? "Anonymous" : request.author}
                 </p>
               </article>
             )) : (

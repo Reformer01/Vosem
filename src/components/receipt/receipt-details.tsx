@@ -25,19 +25,19 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
     }).format(amountInMajorUnit);
 
     return (
-        <div className="app-shell min-h-screen p-4 sm:p-8 md:p-12">
+        <div className="app-shell min-h-screen p-3 sm:p-8 md:p-12">
             <div className="mx-auto max-w-4xl">
-                <div className="mb-8 flex items-start justify-between no-print">
-                    <div className="flex items-center gap-3">
-                        <VosemLogoIcon className="size-9 text-primary" />
-                        <span className="text-xl font-black tracking-tighter">VOSEM <span className="text-primary">INT&apos;L</span></span>
+                <div className="no-print mb-8 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                        <VosemLogoIcon className="size-8 shrink-0 text-primary sm:size-9" />
+                        <span className="truncate text-base font-black tracking-tighter sm:text-xl">VOSEM <span className="text-primary">INT&apos;L</span></span>
                     </div>
-                    <Button onClick={() => window.print()} className="site-btn site-btn-solid">
+                    <Button onClick={() => window.print()} className="site-btn site-btn-solid shrink-0 !px-4 !py-2 text-xs sm:!px-6 sm:!py-3 sm:text-sm">
                         <Download className="size-4" /> Print / Download
                     </Button>
                 </div>
 
-                <div className="printable-area site-curved border border-border bg-card p-8 shadow-sm sm:p-12">
+                <div className="printable-area site-curved border border-border bg-card p-5 shadow-sm sm:p-8 lg:p-12">
                     <header className="flex flex-col justify-between gap-6 border-b border-border pb-8 sm:flex-row">
                         <div>
                             <div className="mb-4 flex items-center gap-3">
@@ -50,7 +50,7 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                         </div>
                         <div className="sm:text-right">
                             <h3 className="text-2xl font-black uppercase tracking-wider">Receipt</h3>
-                            <p className="mt-1 font-mono text-sm text-muted-foreground"># {donation.id}</p>
+                            <p className="mt-1 break-all font-mono text-sm text-muted-foreground"># {donation.id}</p>
                         </div>
                     </header>
 
@@ -67,28 +67,28 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                         </div>
                     </section>
 
-                    <section className="overflow-x-auto">
-                        <table className="app-table">
+                    <section>
+                        <table className="app-table w-full table-fixed">
                             <thead>
                                 <tr className="border-y border-border bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
-                                    <th className="px-4">Description</th>
-                                    <th className="px-4 text-right">Amount</th>
+                                    <th className="w-1/2 px-2 sm:px-4">Description</th>
+                                    <th className="w-1/2 px-2 text-right sm:px-4">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr className="border-b border-border">
-                                    <td className="px-4 font-semibold">{donation.purpose}</td>
-                                    <td className="px-4 text-right font-mono">{formattedAmount}</td>
+                                    <td className="break-words px-2 font-semibold sm:px-4">{donation.purpose}</td>
+                                    <td className="break-words px-2 text-right font-mono sm:px-4">{formattedAmount}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </section>
 
-                    <section className="flex justify-end py-8">
-                        <div className="w-full max-w-xs">
-                            <div className="flex justify-between py-3 text-muted-foreground"><span>Subtotal</span><span>{formattedAmount}</span></div>
-                            <div className="flex justify-between border-b border-border py-3 text-muted-foreground"><span>Fees</span><span>{formattedAmount.replace(/[\d,.]+/, '0')}</span></div>
-                            <div className="flex justify-between pt-4 text-xl font-bold"><span>Total paid</span><span>{formattedAmount}</span></div>
+                    <section className="grid gap-1 py-8 sm:flex sm:justify-end">
+                        <div className="w-full sm:max-w-xs">
+                            <div className="flex flex-col justify-between gap-1 py-3 text-muted-foreground sm:flex-row sm:gap-3"><span>Subtotal</span><span className="break-all text-right">{formattedAmount}</span></div>
+                            <div className="flex flex-col justify-between gap-1 border-b border-border py-3 text-muted-foreground sm:flex-row sm:gap-3"><span>Fees</span><span className="break-all text-right">{formattedAmount.replace(/[\d,.]+/, '0')}</span></div>
+                            <div className="flex flex-col justify-between gap-1 pt-4 text-xl font-bold sm:flex-row sm:gap-3"><span>Total paid</span><span className="break-all text-right">{formattedAmount}</span></div>
                         </div>
                     </section>
 

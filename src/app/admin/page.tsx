@@ -100,7 +100,7 @@ export default function AdminPage() {
   };
 
   const approve = async (collectionName: string, id: string) => {
-    await updateDoc(doc(firestore, collectionName, id), { approved: true, reviewedAt: serverTimestamp(), reviewedBy: user?.uid });
+    await updateDoc(doc(firestore, collectionName, id), { approved: true });
     log("approved", `${collectionName}: ${id}`);
     toast({ title: "Approved", description: "Now visible to the church family." });
   };

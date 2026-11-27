@@ -205,21 +205,25 @@ service cloud.firestore {
     }
 
     /**
-     * @description A private "drop-box" for user-submitted prayer requests.
-     * @path /prayer_requests/{prayerRequestId}
-     * @allow A signed-in user (auth!=null) submits a new, validated prayer request. (create)
-     * @deny Any user, including the original author, attempts to read, update, or delete a prayer request. (get, update, delete)
-     * @principle Implements a "write-only" pattern. Data can be submitted by any authenticated user but cannot be read back, ensuring privacy.
+     * Each member keeps one prayer request at /prayer_requests/{uid}; submitting
+     * again replaces it. Approved requests are public, pending ones are private
+     * to their author and admins.
      */
     match /prayer_requests/{prayerRequestId} {
-      allow create: if isSignedIn() && isCreatingPrayerRequest(request.resource.data);
-      // Approved requests form the public prayer wall; authors can see their own pending requests.
+      allow create: if isSignedIn()
+        && prayerRequestId == request.auth.uid
+        && isCreatingPrayerRequest(request.resource.data);
       allow get: if (isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin())) || resource.data.approved == true;
       allow list: if isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.approved == true || isAdmin());
-      allow update: if isAdmin()
+      allow update: if (isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
-        && request.resource.data.approved is bool;
-      allow delete: if isAdmin();
+        && request.resource.data.approved is bool)
+        || (isSignedIn()
+        && prayerRequestId == request.auth.uid
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.approved == resource.data.approved
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['author', 'content', 'date', 'isAnonymous']));
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.authorId == request.auth.uid);
     }
 
     // Own RSVPs across all events (used by the dashboard "My events" list).

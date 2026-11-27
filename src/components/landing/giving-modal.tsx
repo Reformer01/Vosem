@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { HeartHandshake, ArrowRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const [isPaying, setIsPaying] = useState(false);
   const [frequency, setFrequency] = useState('one-time');
   const [gateway, setGateway] = useState<'paystack' | 'flutterwave'>('paystack');
+  const paystackTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -82,6 +83,10 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       setIsPaying(false);
     }
   }, [isOpen, defaultPurpose]);
+
+  useEffect(() => () => {
+    if (paystackTimer.current !== null) window.clearTimeout(paystackTimer.current);
+  }, []);
 
   const finalAmount = Number(customAmount) || Number(amount);
 
@@ -198,7 +203,8 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
     // Paystack iframe (which is portalled outside this dialog).
     setIsPaying(true);
     onOpenChange(false);
-    window.setTimeout(() => {
+    paystackTimer.current = window.setTimeout(() => {
+      paystackTimer.current = null;
       openPaystack().catch(() => {
         toast({ variant: "destructive", title: "Payment Error", description: "We could not open the payment window. Please try again." });
         onOpenChange(true);

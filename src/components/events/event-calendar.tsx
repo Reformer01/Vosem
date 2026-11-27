@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { collection, deleteDoc, doc, orderBy, query, serverTimestamp } from "firebase/firestore";
-import { addDocumentNonBlocking, useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { collection, deleteDoc, doc, orderBy, query, serverTimestamp, setDoc } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import ScriptureQuote from "@/components/site/scripture-quote";
@@ -27,13 +27,15 @@ export default function EventCalendar() {
 
   const toggleRsvp = async (eventId: string, going: boolean) => {
     if (!user || !firestore) return;
+    if (busy) return;
     setBusy(eventId);
     const rsvpRef = doc(firestore, "events", eventId, "rsvps", user.uid);
-    if (going) await deleteDoc(rsvpRef);
-    else await addDocumentNonBlocking(collection(firestore, "events", eventId, "rsvps"), {
-      userId: user.uid, eventId, createdAt: serverTimestamp(), status: "going",
-    });
-    setBusy(null);
+    try {
+      if (going) await deleteDoc(rsvpRef);
+      else await setDoc(rsvpRef, { userId: user.uid, eventId, createdAt: serverTimestamp(), status: "going" });
+    } finally {
+      setBusy(null);
+    }
   };
 
   const view = new Date();

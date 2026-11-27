@@ -61,8 +61,8 @@ function PaymentSuccessContent() {
                 <Link href={`/receipt/${reference}`} target="_blank" className="site-btn site-btn-outline"><Download className="size-4" /> Download receipt</Link>
               )}
             </div>
-            <a href={whatsAppLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#128C7E] hover:underline">
-              <WhatsAppIcon className="size-5" /> Share your testimony on WhatsApp
+            <a href={whatsAppLink} target="_blank" rel="noopener noreferrer" className="mx-auto mt-5 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-left align-middle text-sm font-bold leading-snug text-[#128C7E] hover:underline">
+              <WhatsAppIcon className="size-5 shrink-0" /> <span>Share your testimony on WhatsApp</span>
             </a>
           </div>
         </div>
