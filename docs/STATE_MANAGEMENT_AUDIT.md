@@ -33,7 +33,7 @@ Unused declarations remain as documentation-only: `donationMachine` (status voca
 | `/receipt/[reference]` | `useDoc` data-load machine; loading / not-found / ready. |
 | `/dashboard` + children | Layout session guard + membership check; page uses `dashboardDataMachine`, Firestore read errors surface as a retry card. |
 | `POST /api/membership` | Verifies the ID token, then checks the profile with the member's own token. Fails open on errors. |
-| `POST /api/verify-donation`, `/api/verify-flutterwave` | Token verification plus gateway checks. |
+| `POST /api/membership`, `POST /api/verify-donation` | Token verification, membership check and Paystack confirmation. |
 
 Global `error.tsx`, `loading.tsx` and `not-found.tsx` now cover every route.
 

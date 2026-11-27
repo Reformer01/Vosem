@@ -71,9 +71,8 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const [amount, setAmount] = useState("10000");
   const [customAmount, setCustomAmount] = useState("");
   const [givingState, sendGive] = useMachine(givingMachine);
-  const isPaying = givingState === "paying-paystack" || givingState === "redirecting-flutterwave";
+  const isPaying = givingState === "paying-paystack";
   const [frequency, setFrequency] = useState('one-time');
-  const [gateway, setGateway] = useState<'paystack' | 'flutterwave'>('paystack');
   const paystackTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -82,7 +81,6 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       setAmount("10000");
       setCustomAmount("");
       setFrequency('one-time');
-      setGateway('paystack');
       sendGive('RESET');
       sendGive('CLOSE');
       sendGive('OPEN');
@@ -151,52 +149,13 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       return;
     }
 
-    const planCode = gateway === 'paystack'
-      ? process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE
-      : process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID;
+    const planCode = process.env.NEXT_PUBLIC_PAYSTACK_PLAN_CODE;
     if (frequency === 'recurring' && !planCode) {
       toast({
         variant: 'destructive',
         title: 'Recurring giving is unavailable',
         description: 'Please choose a one-time gift or contact the church office to set up a recurring plan.',
       });
-      return;
-    }
-
-    if (gateway === 'flutterwave') {
-      const key = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY;
-      if (!key) {
-        toast({ variant: 'destructive', title: 'Payment Error', description: 'Flutterwave is not configured for this site.' });
-        return;
-      }
-      const txRef = `VOSEM-FW-${Date.now()}`;
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'https://checkout.flutterwave.com/v3/hosted/pay';
-      const fields: Record<string, string> = {
-        public_key: key,
-        tx_ref: txRef,
-        amount: String(finalAmount),
-        currency: 'NGN',
-        email: user.email || '',
-        name: fullName,
-        redirect_url: `${window.location.origin}/payment-processing?gateway=flutterwave&amount=${finalAmount}&reference=${txRef}`,
-        meta: JSON.stringify({ userId: user.uid, purpose, name: fullName, recurring: frequency === 'recurring' }),
-      };
-      if (frequency === 'recurring' && process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID) {
-        fields.payment_plan = process.env.NEXT_PUBLIC_FLUTTERWAVE_PLAN_ID;
-      }
-      Object.entries(fields).forEach(([name, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-      });
-      document.body.appendChild(form);
-      sendGive('PROCEED_FLUTTERWAVE');
-      onOpenChange(false);
-      form.submit();
       return;
     }
 
@@ -245,19 +204,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
                   </Label>
                 </RadioGroup>
 
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pay with</span>
-                  {(['paystack', 'flutterwave'] as const).map(option => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setGateway(option)}
-                      className={`rounded-full px-4 py-2 text-xs font-bold capitalize transition-colors ${gateway === option ? 'bg-primary text-white' : 'border border-border text-muted-foreground'}`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Secure payment by Paystack</p>
 
                 {frequency === 'recurring' && (
                   <p className="max-w-sm text-center text-xs leading-relaxed text-muted-foreground">

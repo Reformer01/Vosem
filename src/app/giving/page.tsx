@@ -30,8 +30,8 @@ export default function GivingPage() {
           <div className="flex items-start gap-5">
             <ShieldCheck className="mt-1 size-8 shrink-0 text-primary" />
             <div>
-              <h2 className="text-2xl font-bold">Secure, simple giving</h2>
-              <p className="mt-2 max-w-2xl text-muted-foreground">Donations are processed securely through Paystack. You will receive a receipt for every gift once the payment is confirmed.</p>
+              <h2 className="text-2xl font-bold">Give with a grateful heart</h2>
+              <p className="mt-2 max-w-2xl text-muted-foreground">Your generosity helps us share the gospel, care for the church family and serve our community. A receipt will be sent once your gift is confirmed.</p>
             </div>
           </div>
           <Link href="/signup" className="site-btn site-btn-solid shrink-0">Join Us <ArrowRight className="size-4" /></Link>

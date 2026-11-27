@@ -15,7 +15,7 @@ function PaymentProcessingContent() {
   const searchParams = useSearchParams();
   const auth = useAuth();
   const firestore = useFirestore();
-  const gateway = searchParams.get('gateway') || 'paystack';
+  const gateway = 'paystack';
   const [verifyState, sendVerify] = useMachine(paymentVerificationMachine);
   const [attempt, setAttempt] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
@@ -48,7 +48,7 @@ function PaymentProcessingContent() {
           go('/payment-failed?reason=Please_sign_in_to_verify_your_gift');
           return;
         }
-        const response = await fetch(gateway === 'flutterwave' ? '/api/verify-flutterwave' : '/api/verify-donation', {
+        const response = await fetch('/api/verify-donation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ reference }),
