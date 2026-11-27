@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { collection, deleteDoc, doc, orderBy, query, serverTimestamp, setDoc, where } from "firebase/firestore";
+import { addDoc, collection, orderBy, query, serverTimestamp, where } from "firebase/firestore";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { useMachine } from "@/machines";
 import { prayerSubmissionMachine } from "@/machines/prayer-submission.machine";
@@ -17,6 +17,7 @@ interface Prayer {
   content: string;
   isAnonymous: boolean;
   approved: boolean;
+  date?: { toMillis?: () => number };
 }
 
 export default function PrayerWall() {
@@ -37,6 +38,10 @@ export default function PrayerWall() {
   );
   const { data: prayers, isLoading: wallLoading } = useCollection<Prayer>(wallQuery);
   const { data: mine } = useCollection<Prayer>(mineQuery);
+  // Only the member's latest request is shown; older ones do not stack in the form area.
+  const latestMine = mine
+    ? [...mine].sort((a, b) => (b.date?.toMillis?.() ?? 0) - (a.date?.toMillis?.() ?? 0)).slice(0, 1)
+    : [];
 
   const changeContent = (value: string) => {
     setContent(value);
@@ -53,10 +58,7 @@ export default function PrayerWall() {
     send("SUBMIT");
     setError("");
     try {
-      // One live request per member. Older submissions are removed so they do not stack.
-      const old = (mine ?? []).filter(request => request.id !== user.uid);
-      await Promise.all(old.map(request => deleteDoc(doc(firestore, "prayer_requests", request.id))));
-      await setDoc(doc(firestore, "prayer_requests", user.uid), {
+      await addDoc(collection(firestore, "prayer_requests"), {
         author: isAnonymous ? "Anonymous" : (user.displayName || "Member"),
         authorId: user.uid,
         content: text,
@@ -101,11 +103,11 @@ export default function PrayerWall() {
             <p className="mt-8 text-muted-foreground">Please <a href="/login" className="font-semibold text-primary underline">log in</a> to share a request.</p>
           )}
 
-          {mine && mine.length > 0 && (
+          {latestMine.length > 0 && (
             <div className="mt-10 border-t border-border pt-6">
-              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-muted-foreground">Your request</h3>
+              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-muted-foreground">Your latest request</h3>
               <ul className="space-y-3 text-sm">
-                {mine.map(request => (
+                {latestMine.map(request => (
                   <li key={request.id} className="rounded-2xl bg-card p-4">
                     <span className={`mr-2 font-bold ${request.approved ? "text-primary" : "text-muted-foreground"}`}>{request.approved ? "On the wall" : "Received"}</span>
                     {request.content.slice(0, 90)}

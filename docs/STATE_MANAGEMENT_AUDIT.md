@@ -34,8 +34,8 @@ There is no `loading.tsx`, `error.tsx` or `not-found.tsx` anywhere, so route-lev
 
 ## 3. Fixes made in this pass
 
-- `PrayerWall` now uses `prayerSubmissionMachine` (`idle → submitting → success|error → idle`), awaits the write, disables double submits, resets the banner when the member edits the form, validates 5–1000 characters, and replaces the member's previous request instead of stacking new ones. Rows use stable Firestore IDs; loading is shown instead of a false "no requests" state.
-- Firestore `prayer_requests` rules now allow one document per member (`{uid}`), owner replacement that cannot self-approve, and owner deletion of older requests. Admin approval writes only `approved`, matching the rule (previously it wrote `reviewedAt`/`reviewedBy` and was denied).
+- `PrayerWall` now uses `prayerSubmissionMachine` (`idle → submitting → success|error → idle`), awaits the write, disables double submits, resets the banner when the member edits the form, validates 5–1000 characters, and shows only the member's latest request so old ones stop stacking in the UI. Rows use stable Firestore IDs; loading is shown instead of a false "no requests" state.
+- Admin approval now writes only `approved`, matching the deployed rule (previously it wrote `reviewedAt`/`reviewedBy` and was denied).
 - RSVPs use a deterministic document ID `{event}/{rsvps}/{uid}` and a `try/finally` so a failed write cannot leave the button stuck.
 - The Paystack hand-off timer in `GivingModal` is cleared on unmount.
 
