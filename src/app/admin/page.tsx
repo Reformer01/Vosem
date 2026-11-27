@@ -5,6 +5,7 @@ import Link from "next/link";
 import { addDoc, collection, deleteDoc, doc, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { addDocumentNonBlocking, useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,13 +13,31 @@ import { useToast } from "@/hooks/use-toast";
 import { VosemLogoIcon } from "@/components/icons";
 import { useSessionGuard } from "@/lib/session";
 import { useMachine } from "@/machines/use-machine";
-import { adminMachine, adminCrudMachine } from "@/machines/app.machine";
+import { adminMachine, adminCrudMachine, dashboardMenuMachine } from "@/machines/app.machine";
 import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
 import RsvpCount from "@/components/admin/rsvp-count";
 import { downloadCsv, formatNaira } from "@/lib/csv";
+import {
+  Activity, BarChart3, BookOpen, CalendarDays, Heart, HeartHandshake, LayoutDashboard,
+  MessageCircle, MoreHorizontal, ShieldCheck, Users,
+} from "lucide-react";
 
 const tabs = ["Overview", "Sermons", "Events", "Giving", "Testimonies", "Prayer requests", "Users", "Admins", "Reports", "Activity"] as const;
 type Tab = typeof tabs[number];
+
+const tabIcons: Record<Tab, typeof LayoutDashboard> = {
+  Overview: LayoutDashboard,
+  Sermons: BookOpen,
+  Events: CalendarDays,
+  Giving: HeartHandshake,
+  Testimonies: MessageCircle,
+  "Prayer requests": Heart,
+  Users: Users,
+  Admins: ShieldCheck,
+  Reports: BarChart3,
+  Activity: Activity,
+};
+const bottomTabs: Tab[] = ["Overview", "Sermons", "Events", "Giving"];
 
 function AdminHeader() {
   return (
@@ -42,6 +61,9 @@ export default function AdminPage() {
   const sessionStatus = useSessionGuard(!!user);
   const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("Overview");
+  const [menuState, sendMenu] = useMachine(dashboardMenuMachine);
+  const isMoreOpen = menuState === "open";
+  const setIsMoreOpen = (next: boolean) => sendMenu(next ? "OPEN" : "CLOSE");
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ title: "", speaker: "", videoUrl: "", summary: "", description: "", startTime: "", endTime: "", location: "", email: "", role: "admin", uid: "" });
 
@@ -241,12 +263,12 @@ export default function AdminPage() {
   return (
     <div className="app-shell flex min-h-screen flex-col">
       <AdminHeader />
-      <main className="flex-grow px-5 py-10 sm:px-10 md:px-24">
+      <main className="flex-grow px-5 py-10 pb-24 sm:px-10 md:px-24 md:pb-10">
         <div className="mx-auto w-full max-w-6xl">
           <h1 className="text-3xl font-black sm:text-4xl">Admin</h1>
           <p className="mt-2 text-muted-foreground">Manage teaching, events, submissions, members and administrators.</p>
 
-          <div className="mt-8 flex flex-wrap gap-2 border-b border-border pb-3">
+          <div className="mt-8 hidden flex-wrap gap-2 border-b border-border pb-3 md:flex">
             {tabs.map(t => (
               <button key={t} onClick={() => setTab(t)} className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${tab === t ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted"}`}>{t}</button>
             ))}
@@ -360,6 +382,51 @@ export default function AdminPage() {
           </div>
         </div>
       </main>
+
+      <nav aria-label="Admin navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur md:hidden">
+        <div className="grid grid-cols-5">
+          {bottomTabs.map(name => {
+            const Icon = tabIcons[name];
+            return (
+              <button key={name} type="button" onClick={() => setTab(name)}
+                className={`flex flex-col items-center gap-1 py-3 text-[11px] font-bold transition-colors ${tab === name ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+                <Icon className="size-5" aria-hidden="true" />
+                {name}
+              </button>
+            );
+          })}
+          <button type="button" onClick={() => setIsMoreOpen(true)} aria-label="More admin tabs"
+            className={`flex flex-col items-center gap-1 py-3 text-[11px] font-bold transition-colors ${isMoreOpen || !bottomTabs.includes(tab) ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <MoreHorizontal className="size-5" aria-hidden="true" />
+            More
+          </button>
+        </div>
+      </nav>
+
+      <Sheet open={isMoreOpen} onOpenChange={setIsMoreOpen}>
+        <SheetContent side="left" className="flex flex-col bg-card p-0">
+          <SheetHeader className="border-b border-border px-6 py-5 text-left">
+            <SheetTitle className="flex items-center gap-2.5">
+              <VosemLogoIcon className="size-7 text-primary" />
+              <span className="text-lg font-black tracking-tighter">Admin <span className="text-primary">tabs</span></span>
+            </SheetTitle>
+          </SheetHeader>
+          <nav className="flex flex-col gap-2 px-4 py-6" aria-label="All admin tabs">
+            {tabs.map(name => {
+              const Icon = tabIcons[name];
+              return (
+                <SheetClose key={name} asChild>
+                  <button type="button" onClick={() => setTab(name)}
+                    className={`flex items-center gap-4 rounded-2xl px-4 py-3.5 text-base font-bold transition-colors ${tab === name ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'}`}>
+                    <Icon className="size-5" aria-hidden="true" />
+                    {name}
+                  </button>
+                </SheetClose>
+              );
+            })}
+          </nav>
+        </SheetContent>
+      </Sheet>
 
       <Dialog open={!!editing} onOpenChange={open => { if (!open) setEditing(null); }}>
         <DialogContent aria-describedby="admin-form-description">
