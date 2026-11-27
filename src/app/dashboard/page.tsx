@@ -1,4 +1,5 @@
 'use client';
+import LoadingDove from "@/components/site/loading-dove";
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -144,7 +145,7 @@ export default function DashboardPage() {
   if (isLoading || !user) {
     return (
       <div className="app-shell flex flex-1 items-center justify-center">
-        <div className="h-10 w-10 rounded-full border-4 border-dashed border-primary animate-spin" />
+        <LoadingDove className="size-10" />
       </div>
     );
   }

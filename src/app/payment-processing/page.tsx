@@ -1,4 +1,5 @@
 'use client';
+import LoadingDove from "@/components/site/loading-dove";
 
 import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -114,10 +115,8 @@ function PaymentProcessingContent() {
             </>
           ) : (
             <>
-              <div className="relative mx-auto mb-8 flex size-20 items-center justify-center">
-                <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-                <span className="absolute inset-2 animate-ping rounded-full bg-primary/10" />
-                <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-primary text-white">₦</span>
+              <div className="mb-8 flex justify-center">
+                <LoadingDove className="size-16" label="Verifying your gift" />
               </div>
               <h1 className="text-2xl font-bold">Verifying your seed…</h1>
               <p className="mt-2 text-muted-foreground" aria-live="polite">{verifyState === 'checking' ? 'Please do not close this window.' : 'Confirming your gift with the payment provider...'}</p>
@@ -135,7 +134,7 @@ function PaymentProcessingContent() {
 
 export default function PaymentProcessingPage() {
   return (
-    <Suspense fallback={<div className="app-shell flex min-h-screen items-center justify-center"><div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" /></div>}>
+    <Suspense fallback={<div className="app-shell flex min-h-screen items-center justify-center"><LoadingDove className="size-10" /></div>}>
       <PaymentProcessingContent />
     </Suspense>
   );

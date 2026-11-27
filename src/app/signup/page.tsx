@@ -1,4 +1,5 @@
 'use client';
+import LoadingDove from "@/components/site/loading-dove";
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -100,7 +101,7 @@ export default function SignupPage() {
   if (isUserLoading || (user && hasSession())) {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
-        <div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" />
+        <LoadingDove className="size-10" />
       </div>
     );
   }

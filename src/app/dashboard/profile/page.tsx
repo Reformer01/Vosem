@@ -1,4 +1,5 @@
 'use client';
+import LoadingDove from "@/components/site/loading-dove";
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { ProfileForm } from '@/components/dashboard/profile-form';
@@ -98,7 +99,7 @@ export default function ProfilePage() {
   if (isUserLoading || isProfileLoading || !user) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
+        <LoadingDove className="size-16" />
       </div>
     );
   }

@@ -1,4 +1,5 @@
 "use client";
+import LoadingDove from "@/components/site/loading-dove";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -217,7 +218,7 @@ export default function AdminPage() {
   if (user && sessionStatus === 'checking') {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-dashed border-primary" />
+        <LoadingDove className="size-10" />
       </div>
     );
   }

@@ -1,4 +1,5 @@
 'use client';
+import LoadingDove from "@/components/site/loading-dove";
 
 import { useMachine } from '@/machines/use-machine';
 import { dashboardMenuMachine, givingDialogMachine } from '@/machines/app.machine';
@@ -58,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user || sessionStatus !== 'valid') {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
-        <div className="h-10 w-10 rounded-full border-4 border-dashed border-primary animate-spin" />
+        <LoadingDove className="size-10" />
       </div>
     );
   }

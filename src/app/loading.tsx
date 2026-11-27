@@ -1,7 +1,8 @@
+import LoadingDove from "@/components/site/loading-dove";
 export default function Loading() {
   return (
     <div className="app-shell flex min-h-screen items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-dashed border-primary" aria-label="Loading" />
+      <LoadingDove className="size-10" />
     </div>
   );
 }

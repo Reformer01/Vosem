@@ -1,5 +1,6 @@
-
 "use client";
+
+import LoadingDove from "@/components/site/loading-dove";
 
 import { useRouter } from "next/navigation";
 import {
@@ -283,7 +284,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
           <div className="flex flex-col items-center justify-center p-10 h-[580px]">
             <DialogTitle className="sr-only">Processing Payment</DialogTitle>
             <DialogDescription className="sr-only">Please wait while we redirect you to the secure payment gateway.</DialogDescription>
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-primary"></div>
+            <LoadingDove className="size-16" />
             <p className="mt-6 text-muted-foreground font-medium">Redirecting to secure payment gateway...</p>
           </div>
         )}

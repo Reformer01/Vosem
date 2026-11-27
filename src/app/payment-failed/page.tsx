@@ -1,4 +1,5 @@
 'use client';
+import LoadingDove from "@/components/site/loading-dove";
 
 import Link from 'next/link';
 import { AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
@@ -33,7 +34,7 @@ function PaymentFailedContent() {
 
 export default function PaymentFailedPage() {
   return (
-    <Suspense fallback={<div className="app-shell flex min-h-screen items-center justify-center"><div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" /></div>}>
+    <Suspense fallback={<div className="app-shell flex min-h-screen items-center justify-center"><LoadingDove className="size-10" /></div>}>
       <PaymentFailedContent />
     </Suspense>
   );

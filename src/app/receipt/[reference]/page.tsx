@@ -1,4 +1,5 @@
 "use client";
+import LoadingDove from "@/components/site/loading-dove";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -28,7 +29,7 @@ export default function ReceiptPage() {
     return (
       <SiteShell>
         <main className="flex flex-grow items-center justify-center py-20">
-          <div className="size-10 animate-spin rounded-full border-4 border-dashed border-primary" />
+          <LoadingDove className="size-10" />
         </main>
       </SiteShell>
     );

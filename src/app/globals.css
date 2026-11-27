@@ -209,3 +209,44 @@
     background: rgba(238, 43, 238, 0.05);
   }
 }
+
+@keyframes dove-fly {
+  0%, 100% { transform: translate(-6px, 3px) rotate(-4deg); }
+  50% { transform: translate(6px, -4px) rotate(4deg); }
+}
+
+@keyframes dove-flap-left {
+  0%, 100% { transform: rotate(-10deg) scaleY(0.92); }
+  50% { transform: rotate(20deg) scaleY(1.05); }
+}
+
+@keyframes dove-flap-right {
+  0%, 100% { transform: rotate(10deg) scaleY(0.92); }
+  50% { transform: rotate(-20deg) scaleY(1.05); }
+}
+
+.loading-dove {
+  display: inline-flex;
+  color: hsl(var(--primary));
+  animation: dove-fly 1.3s ease-in-out infinite;
+}
+
+.loading-dove .dove-wing-left {
+  transform-box: fill-box;
+  transform-origin: 85% 90%;
+  animation: dove-flap-left 0.42s ease-in-out infinite;
+}
+
+.loading-dove .dove-wing-right {
+  transform-box: fill-box;
+  transform-origin: 15% 90%;
+  animation: dove-flap-right 0.42s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-dove,
+  .loading-dove .dove-wing-left,
+  .loading-dove .dove-wing-right {
+    animation: none;
+  }
+}
