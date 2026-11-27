@@ -63,7 +63,6 @@ export function ReceiptDetails({ donation }: { donation: Donation }) {
                         <div className="sm:text-right">
                             <h4 className="mb-3 text-xs font-black uppercase tracking-widest text-primary">Payment details</h4>
                             <p className="text-muted-foreground">Date: <span className="font-semibold text-foreground">{formattedDate}</span></p>
-                            <p className="text-muted-foreground">Status: <span className="font-semibold capitalize text-green-700">{donation.status}</span></p>
                         </div>
                     </section>
 
