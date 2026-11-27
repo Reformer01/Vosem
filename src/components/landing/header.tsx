@@ -4,6 +4,8 @@ import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useState, useEffect } from 'react';
+import { useMachine } from '@/machines/use-machine';
+import { headerMenuMachine } from '@/machines/app.machine';
 import { useUser, useAuth, useFirestore } from '@/firebase';
 import { VosemLogoIcon } from '../icons';
 import { endSession } from '@/lib/session';
@@ -18,7 +20,9 @@ const navLinks = [
 ];
 
 export default function Header() {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [menuState, sendMenu] = useMachine(headerMenuMachine);
+  const isSheetOpen = menuState === "open";
+  const setIsSheetOpen = (next: boolean) => sendMenu(next ? "OPEN" : "CLOSE");
   const [isMounted, setIsMounted] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();

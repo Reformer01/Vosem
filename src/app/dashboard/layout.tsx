@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useMachine } from '@/machines/use-machine';
+import { dashboardMenuMachine, givingDialogMachine } from '@/machines/app.machine';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
@@ -30,8 +31,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const firestore = useFirestore();
   const router = useRouter();
   const pathname = usePathname();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [dialogState, sendDialog] = useMachine(givingDialogMachine);
+  const [menuState, sendMenu] = useMachine(dashboardMenuMachine);
+  const isModalOpen = dialogState === "open";
+  const isSheetOpen = menuState === "open";
+  const setIsModalOpen = (next: boolean) => sendDialog(next ? "OPEN" : "CLOSE");
+  const setIsSheetOpen = (next: boolean) => sendMenu(next ? "OPEN" : "CLOSE");
   const sessionStatus = useSessionGuard(!!user);
 
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, 'admins', user.uid) : null), [user, firestore]);

@@ -11,8 +11,12 @@ Companion to `docs/STATE_MACHINE_AUDIT.md`, refreshed after the session, admin a
 | `authSessionMachine`, `loginMachine`, `signupMachine` | `auth.machine.ts` | No. Login/signup use local `useState` flags with the same states. |
 | `givingMachine`, `paymentVerificationMachine`, `donationMachine`, `paymentResultMachine` | `payment.machine.ts` | Only `normalizeDonationStatus` and `paymentResultForReason` (as `friendlyPaymentError`) are used. |
 | `testimonyMachine`, `prayerMachine`, `rsvpMachine` | `content.machine.ts` | No. Firestore `approved` field carries the moderation state. |
-| **`prayerSubmissionMachine`** | **`prayer-submission.machine.ts`** | **Yes, added in this pass** via `useMachine` in `PrayerWall`. |
-| `adminMachine`, `dashboardDataMachine`, `formMachine`, 5 overlay machines | `app.machine.ts` | No. Admin uses `tab`/`editing` flags; overlays use boolean state. |
+| **`prayerSubmissionMachine`** | **`prayer-submission.machine.ts`** | **Yes**, via `useMachine` in `PrayerWall`. |
+| **`sessionGuardMachine`** | `session.machine.ts` | **Yes**, via `useMachine` in `useSessionGuard` (dashboard + admin). |
+| **`dataLoadMachine`** | `data-load.machine.ts` | **Yes**, via `useMachine` in `useCollection` and `useDoc`. |
+| `authSessionMachine`, **`loginMachine`, `signupMachine`** | `auth.machine.ts` | Login/signup submission state now uses `useMachine`; `authSessionMachine` remains unused. |
+| **`givingMachine`, `paymentVerificationMachine`** | `payment.machine.ts` | **Yes**, bound in `GivingModal` and `payment-processing`. `donationMachine` unused; `paymentResultMachine` used for copy only. |
+| **`adminMachine`, `adminCrudMachine`**, `dashboardDataMachine`, `formMachine`, 5 overlay machines | `app.machine.ts` | Admin gate/CRUD and header/dashboard/testimony/delete overlays now use `useMachine`; `dashboardDataMachine`/`formMachine` remain unused. |
 
 `prayerMachine` still declares a `deleted` state with no transition into it; `donationMachine.pending` is never written (client writes `succeeded`, webhook writes `success`).
 
@@ -44,12 +48,11 @@ There is no `loading.tsx`, `error.tsx` or `not-found.tsx` anywhere, so route-lev
 | Flow | Implicit states | Where |
 | --- | --- | --- |
 | Firebase auth | loading → authenticated / anonymous / error | `src/firebase/provider.tsx` |
-| Session guard | checking → valid → invalid → redirect | `src/lib/session.tsx` |
-| Login/signup | checking → ready → submitting → redirect / error | `src/app/login`, `src/app/signup` |
-| Giving modal | closed → open → paying → config-error / auth-required | `src/components/landing/giving-modal.tsx` |
-| Payment verification | checking → verifying → succeeded / failed / network-error | `src/app/payment-processing/page.tsx` |
-| Admin CRUD | checking-role → ready → saving / deleting / error | `src/app/admin/page.tsx` |
-| Data hooks | loading → data / empty / error | `src/firebase/firestore/use-collection.tsx`, `use-doc.tsx` |
-| Dialogs/sheets/menus | closed → open | headers, dashboard layout, `CrudTable` |
+| Dashboard data | auth-loading → data-loading → ready / empty / error | `src/app/dashboard/page.tsx` |
+| Form lifecycle | pristine → dirty → valid → submitting → success / error | shared react-hook-form pages |
+| Table delete confirm | closed → confirming → deleting | `src/components/admin/crud-table.tsx` |
+| Testimony submit | draft → submitting → success / error | `src/components/site/testimonies-section.tsx`, dashboard testimonies |
+
+Bound in this pass: session guard, data hooks, login, signup, giving modal, payment verification, admin gate, admin CRUD, site/landing/dashboard menus, giving dialog, delete-account dialog and testimony dialogs.
 
 These remain ad-hoc boolean/flag state, but each maps 1:1 to an existing typed machine, so the registry is a complete map of the app's state surfaces. Highest-risk remaining gaps: payment processing has no retry or unmount guard, and dashboard/admin ignore Firestore read errors.

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { HeartHandshake, ArrowRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useMachine } from "@/machines/use-machine";
+import { givingMachine } from "@/machines/payment.machine";
 import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
@@ -68,7 +70,8 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   const [purpose, setPurpose] = useState(defaultPurpose);
   const [amount, setAmount] = useState("10000");
   const [customAmount, setCustomAmount] = useState("");
-  const [isPaying, setIsPaying] = useState(false);
+  const [givingState, sendGive] = useMachine(givingMachine);
+  const isPaying = givingState === "paying-paystack" || givingState === "redirecting-flutterwave";
   const [frequency, setFrequency] = useState('one-time');
   const [gateway, setGateway] = useState<'paystack' | 'flutterwave'>('paystack');
   const paystackTimer = useRef<number | null>(null);
@@ -80,9 +83,11 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
       setCustomAmount("");
       setFrequency('one-time');
       setGateway('paystack');
-      setIsPaying(false);
+      sendGive('RESET');
+      sendGive('CLOSE');
+      sendGive('OPEN');
     }
-  }, [isOpen, defaultPurpose]);
+  }, [isOpen, defaultPurpose, sendGive]);
 
   useEffect(() => () => {
     if (paystackTimer.current !== null) window.clearTimeout(paystackTimer.current);
@@ -124,14 +129,14 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
   };
 
   const onSuccess = (reference: { reference: string }) => {
-    setIsPaying(false);
+    sendGive('PAYMENT_SUCCESS');
     onOpenChange(false);
     router.replace(`/payment-processing?amount=${finalAmount}&reference=${reference.reference}`);
   };
 
   const onClose = () => {
     // Paystack was cancelled. Bring our giving form back.
-    setIsPaying(false);
+    sendGive('PAYMENT_CLOSED');
     onOpenChange(true);
   };
 
@@ -189,6 +194,7 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
         form.appendChild(input);
       });
       document.body.appendChild(form);
+      sendGive('PROCEED_FLUTTERWAVE');
       onOpenChange(false);
       form.submit();
       return;
@@ -201,11 +207,12 @@ export function GivingModal({ isOpen, onOpenChange, defaultPurpose }: GivingModa
 
     // Close our Radix dialog first: its modal layer blocks clicks inside the
     // Paystack iframe (which is portalled outside this dialog).
-    setIsPaying(true);
+    sendGive('PROCEED_PAYSTACK');
     onOpenChange(false);
     paystackTimer.current = window.setTimeout(() => {
       paystackTimer.current = null;
       openPaystack().catch(() => {
+        sendGive('PAYMENT_CLOSED');
         toast({ variant: "destructive", title: "Payment Error", description: "We could not open the payment window. Please try again." });
         onOpenChange(true);
       });

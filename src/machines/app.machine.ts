@@ -14,6 +14,21 @@ export const adminMachine = createMachine({
   },
 });
 
+export const adminCrudMachine = createMachine({
+  id: "admin-crud",
+  description: "Guards admin writes against duplicate submits and reports failures.",
+  initial: "idle",
+  states: ["idle", "saving", "deleting", "success", "error"] as const,
+  events: ["SUBMIT", "DELETE", "SUCCESS", "FAILURE", "RESET"] as const,
+  transitions: {
+    idle: { SUBMIT: "saving", DELETE: "deleting" },
+    saving: { SUCCESS: "success", FAILURE: "error" },
+    deleting: { SUCCESS: "success", FAILURE: "error" },
+    success: { RESET: "idle", SUBMIT: "saving", DELETE: "deleting" },
+    error: { RESET: "idle", SUBMIT: "saving", DELETE: "deleting" },
+  },
+});
+
 export const dashboardDataMachine = createMachine({
   id: "dashboard-data",
   description: "Combined auth + Firestore readiness for dashboard screens.",

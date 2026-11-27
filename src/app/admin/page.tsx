@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { addDoc, collection, deleteDoc, doc, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { addDocumentNonBlocking, useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from "@/hooks/use-toast";
 import { VosemLogoIcon } from "@/components/icons";
 import { useSessionGuard } from "@/lib/session";
+import { useMachine } from "@/machines/use-machine";
+import { adminMachine, adminCrudMachine } from "@/machines/app.machine";
 import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
 import RsvpCount from "@/components/admin/rsvp-count";
 import { downloadCsv, formatNaira } from "@/lib/csv";
@@ -46,6 +48,18 @@ export default function AdminPage() {
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, "admins", user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);
   const isAdmin = role?.role === "admin" || role?.role === "moderator";
+  const [gateState, sendGate] = useMachine(adminMachine);
+  const [crudState, sendCrud] = useMachine(adminCrudMachine);
+  const isBusy = crudState === "saving" || crudState === "deleting";
+
+  useEffect(() => {
+    if (!user || sessionStatus !== "valid") {
+      sendGate("SIGN_OUT");
+      return;
+    }
+    sendGate("USER_READY");
+    sendGate(isAdmin ? "ROLE_ADMIN" : "ROLE_OTHER");
+  }, [user, sessionStatus, isAdmin, sendGate]);
 
   const col = (name: string) => useMemoFirebase(() => firestore ? query(collection(firestore, name), orderBy("__name__")) : null, [firestore, name]);
   const sermons = useCollection<any>(col("sermons"));
@@ -75,7 +89,8 @@ export default function AdminPage() {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firestore || !user || !editing) return;
+    if (!firestore || !user || !editing || isBusy) return;
+    sendCrud("SUBMIT");
     try {
       if (editing.kind === "sermon") {
         const data = { title: form.title, speaker: form.speaker, videoUrl: form.videoUrl, summary: form.summary, updatedAt: serverTimestamp() };
@@ -93,24 +108,38 @@ export default function AdminPage() {
       }
       log(editing.id ? "updated" : "created", `${editing.kind}: ${form.title || form.email}`);
       toast({ title: "Saved", description: "Your changes have been saved." });
+      sendCrud("SUCCESS");
       setEditing(null);
     } catch {
+      sendCrud("FAILURE");
       toast({ variant: "destructive", title: "Could not save", description: "Please check the details and try again." });
     }
   };
 
   const approve = async (collectionName: string, id: string) => {
-    await updateDoc(doc(firestore, collectionName, id), { approved: true });
-    log("approved", `${collectionName}: ${id}`);
-    toast({ title: "Approved", description: "Now visible to the church family." });
+    if (isBusy) return;
+    sendCrud("SUBMIT");
+    try {
+      await updateDoc(doc(firestore, collectionName, id), { approved: true });
+      log("approved", `${collectionName}: ${id}`);
+      toast({ title: "Approved", description: "Now visible to the church family." });
+      sendCrud("SUCCESS");
+    } catch {
+      sendCrud("FAILURE");
+      toast({ variant: "destructive", title: "Could not approve", description: "Please check your permissions and try again." });
+    }
   };
 
   const remove = async (collectionName: string, id: string) => {
+    if (isBusy) return;
+    sendCrud("DELETE");
     try {
       await deleteDoc(doc(firestore, collectionName, id));
       log("deleted", `${collectionName}: ${id}`);
       toast({ title: "Deleted", description: "The record was removed." });
+      sendCrud("SUCCESS");
     } catch {
+      sendCrud("FAILURE");
       toast({ variant: "destructive", title: "Could not delete", description: "Please check your permissions and try again." });
     }
   };
@@ -131,7 +160,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!user || !isAdmin || sessionStatus !== 'valid') {
+  if (!user || sessionStatus !== 'valid' || gateState !== 'admin') {
     return (
       <div className="app-shell flex min-h-screen flex-col">
         <AdminHeader />

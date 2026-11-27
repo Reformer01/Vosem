@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMachine } from "@/machines/use-machine";
+import { headerMenuMachine } from "@/machines/app.machine";
 import { LogOut, Menu } from "lucide-react";
 import { useAuth, useFirestore, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,9 @@ function Logo() {
 }
 
 export default function SiteHeader() {
-  const [open, setOpen] = useState(false);
+  const [menuState, sendMenu] = useMachine(headerMenuMachine);
+  const open = menuState === "open";
+  const setOpen = (next: boolean) => sendMenu(next ? "OPEN" : "CLOSE");
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();

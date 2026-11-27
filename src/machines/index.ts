@@ -9,7 +9,7 @@ import { prayerSubmissionMachine } from "./prayer-submission.machine";
 import { sessionGuardMachine } from "./session.machine";
 import { dataLoadMachine } from "./data-load.machine";
 import {
-  adminMachine, dashboardDataMachine, formMachine, headerMenuMachine,
+  adminMachine, adminCrudMachine, dashboardDataMachine, formMachine, headerMenuMachine,
   dashboardMenuMachine, givingDialogMachine, deleteAccountDialogMachine,
   testimonyDialogMachine,
 } from "./app.machine";
@@ -29,7 +29,7 @@ export const machineRegistry = [
   authSessionMachine, loginMachine, signupMachine,
   givingMachine, paymentVerificationMachine, donationMachine, paymentResultMachine,
   testimonyMachine, prayerMachine, prayerSubmissionMachine, rsvpMachine, sessionGuardMachine, dataLoadMachine,
-  adminMachine, dashboardDataMachine, formMachine,
+  adminMachine, adminCrudMachine, dashboardDataMachine, formMachine,
   headerMenuMachine, dashboardMenuMachine, givingDialogMachine,
   deleteAccountDialogMachine, testimonyDialogMachine,
 ];

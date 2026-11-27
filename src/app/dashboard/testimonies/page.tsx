@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMachine } from "@/machines/use-machine";
+import { testimonyDialogMachine } from "@/machines/app.machine";
 import { collection, deleteDoc, doc, query, serverTimestamp, where } from "firebase/firestore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +29,9 @@ export default function MyTestimoniesPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [dialogState, sendDialog] = useMachine(testimonyDialogMachine);
+  const open = dialogState === "open";
+  const setOpen = (next: boolean) => sendDialog(next ? "OPEN" : "CLOSE");
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

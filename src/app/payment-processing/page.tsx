@@ -7,6 +7,8 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Lock } from 'lucide-react';
 import SiteShell from '@/components/site/site-shell';
 import { paymentErrorCode } from '@/lib/error-messages';
+import { useMachine } from '@/machines/use-machine';
+import { paymentVerificationMachine } from '@/machines/payment.machine';
 
 function PaymentProcessingContent() {
   const router = useRouter();
@@ -14,21 +16,28 @@ function PaymentProcessingContent() {
   const auth = useAuth();
   const firestore = useFirestore();
   const gateway = searchParams.get('gateway') || 'paystack';
+  const [verifyState, sendVerify] = useMachine(paymentVerificationMachine);
 
   useEffect(() => {
+    let active = true;
     const reference = searchParams.get('reference');
     const amount = searchParams.get('amount');
     if (!reference) {
+      sendVerify('REFERENCE_MISSING');
       router.replace('/payment-failed?reason=No_transaction_reference_found');
-      return;
+      return () => { active = false; };
     }
 
+    const go = (url: string) => { if (active) router.replace(url); };
+
     const verifyPayment = async () => {
+      sendVerify('START');
       try {
         await auth.authStateReady();
         const token = await auth.currentUser?.getIdToken();
         if (!token) {
-          router.replace('/payment-failed?reason=Please_sign_in_to_verify_your_gift');
+          sendVerify('TOKEN_MISSING');
+          go('/payment-failed?reason=Please_sign_in_to_verify_your_gift');
           return;
         }
         const response = await fetch(gateway === 'flutterwave' ? '/api/verify-flutterwave' : '/api/verify-donation', {
@@ -62,20 +71,25 @@ function PaymentProcessingContent() {
             } catch (error) {
               console.error('Could not save donation record:', error);
             }
-            router.replace(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
+            sendVerify('API_SUCCESS');
+            go(`/payment-success?amount=${amount}&reference=${reference}&currency=${currency}`);
           } else {
-            router.replace(`/payment-failed?reason=${paymentErrorCode(result.message)}`);
+            sendVerify('API_FAILED');
+            go(`/payment-failed?reason=${paymentErrorCode(result.message)}`);
           }
         } else {
-          router.replace('/payment-failed?reason=Verification_unavailable');
+          sendVerify('NETWORK_ERROR');
+          go('/payment-failed?reason=Verification_unavailable');
         }
       } catch {
-        router.replace('/payment-failed?reason=Verification_unavailable');
+        sendVerify('NETWORK_ERROR');
+        go('/payment-failed?reason=Verification_unavailable');
       }
     };
 
     verifyPayment();
-  }, [router, searchParams, auth, firestore, gateway]);
+    return () => { active = false; };
+  }, [router, searchParams, auth, firestore, gateway, sendVerify]);
 
   return (
     <SiteShell>
@@ -87,7 +101,7 @@ function PaymentProcessingContent() {
             <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-primary text-white">₦</span>
           </div>
           <h1 className="text-2xl font-bold">Verifying your seed…</h1>
-          <p className="mt-2 text-muted-foreground">Please do not close this window.</p>
+          <p className="mt-2 text-muted-foreground" aria-live="polite">{verifyState === 'checking' ? 'Please do not close this window.' : 'Confirming your gift with the payment provider...'}</p>
           <p className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
             <Lock className="size-4" /> Secure payment processing
           </p>

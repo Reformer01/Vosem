@@ -6,6 +6,8 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { deleteUser } from 'firebase/auth';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { endSession } from '@/lib/session';
+import { useMachine } from '@/machines/use-machine';
+import { deleteAccountDialogMachine } from '@/machines/app.machine';
 import { useToast } from '@/hooks/use-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -27,7 +29,9 @@ export default function SettingsPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [deleteDialogState, sendDeleteDialog] = useMachine(deleteAccountDialogMachine);
+  const isDeleteAlertOpen = deleteDialogState === "open";
+  const setIsDeleteAlertOpen = (next: boolean) => sendDeleteDialog(next ? "OPEN" : "CLOSE");
   const [prefs, setPrefs] = useState({ eventReminders: true, weeklyNewsletter: true, givingUpdates: false });
 
   const profileRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
