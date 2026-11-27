@@ -5,6 +5,7 @@ import Script from 'next/script';
 import { FirebaseClientProvider } from '@/firebase';
 import { plusJakartaSans, playfairDisplay } from './fonts';
 import JsonLd from '@/components/site/json-ld';
+import ServiceWorkerRegistrar from '@/components/site/service-worker-registrar';
 import { FULL_NAME, OG_IMAGE, SITE_NAME, SITE_URL, organizationSchema, websiteSchema } from '@/lib/seo';
 import { keywordsFor } from '@/lib/seo-keywords';
 
@@ -39,6 +40,7 @@ export const metadata: Metadata = {
     images: [OG_IMAGE],
   },
   category: "Religion",
+  appleWebApp: { capable: true, title: "VOSEM", statusBarStyle: "default" },
 };
 
 export default function RootLayout({
@@ -59,6 +61,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           {children}
         </FirebaseClientProvider>
+        <ServiceWorkerRegistrar />
         <Toaster />
       </body>
     </html>
