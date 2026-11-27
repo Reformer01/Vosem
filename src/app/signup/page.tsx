@@ -65,8 +65,6 @@ export default function SignupPage() {
       const newUser = userCredential.user;
       sendSignup('AUTH_CREATED');
 
-      await updateProfile(newUser, { displayName: values.name });
-
       const userProfile: Record<string, unknown> = {
         uid: newUser.uid,
         name: values.name,
@@ -75,12 +73,17 @@ export default function SignupPage() {
       };
       if (values.whatsapp) userProfile.whatsappNumber = values.whatsapp;
 
-      await setDoc(doc(firestore, 'users', newUser.uid), userProfile);
+      // These writes are independent. Running them together avoids three serial
+      // round trips after the auth account has been created.
       try {
-        await startSession(firestore, newUser);
-      } catch (sessionError) {
+        await Promise.all([
+          setDoc(doc(firestore, 'users', newUser.uid), userProfile),
+          startSession(firestore, newUser),
+          updateProfile(newUser, { displayName: values.name }).catch(() => {}),
+        ]);
+      } catch (setupError) {
         await signOut(auth);
-        throw sessionError;
+        throw setupError;
       }
       sendSignup('PROFILE_SAVED');
       router.push('/dashboard');
