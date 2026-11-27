@@ -6,6 +6,8 @@ import {
 } from "./payment.machine";
 import { testimonyMachine, prayerMachine, rsvpMachine } from "./content.machine";
 import { prayerSubmissionMachine } from "./prayer-submission.machine";
+import { sessionGuardMachine } from "./session.machine";
+import { dataLoadMachine } from "./data-load.machine";
 import {
   adminMachine, dashboardDataMachine, formMachine, headerMenuMachine,
   dashboardMenuMachine, givingDialogMachine, deleteAccountDialogMachine,
@@ -19,12 +21,14 @@ export * from "./auth.machine";
 export * from "./payment.machine";
 export * from "./content.machine";
 export * from "./prayer-submission.machine";
+export * from "./session.machine";
+export * from "./data-load.machine";
 export * from "./app.machine";
 
 export const machineRegistry = [
   authSessionMachine, loginMachine, signupMachine,
   givingMachine, paymentVerificationMachine, donationMachine, paymentResultMachine,
-  testimonyMachine, prayerMachine, prayerSubmissionMachine, rsvpMachine,
+  testimonyMachine, prayerMachine, prayerSubmissionMachine, rsvpMachine, sessionGuardMachine, dataLoadMachine,
   adminMachine, dashboardDataMachine, formMachine,
   headerMenuMachine, dashboardMenuMachine, givingDialogMachine,
   deleteAccountDialogMachine, testimonyDialogMachine,

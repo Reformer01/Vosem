@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut, type Auth, type User } from 'firebase/auth';
 import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, Timestamp, type Firestore } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
+import { useMachine } from '@/machines/use-machine';
+import { sessionGuardMachine } from '@/machines/session.machine';
 
 export const SESSION_COOKIE = 'vosem_session';
 export const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -44,38 +46,38 @@ export async function signOutUser(auth: Auth, firestore: Firestore) {
   await signOut(auth);
 }
 
-type SessionStatus = 'checking' | 'valid' | 'invalid';
+export type SessionStatus = 'checking' | 'valid' | 'invalid';
 
 export function useSessionGuard(enabled: boolean): SessionStatus {
   const auth = useAuth();
   const firestore = useFirestore();
   const router = useRouter();
-  const [status, setStatus] = useState<SessionStatus>('checking');
+  const [status, send] = useMachine(sessionGuardMachine);
 
   useEffect(() => {
     if (!enabled) {
-      setStatus('checking');
+      send('RESET');
       return;
     }
     let active = true;
-    setStatus('checking');
+    send('RESET');
     (async () => {
       const id = readSessionId();
       if (!id || !firestore) {
-        if (active) setStatus('invalid');
+        if (active) send('INVALID');
         return;
       }
       try {
         const snapshot = await getDoc(doc(firestore, 'sessions', id));
         const expiresAt = snapshot.data()?.expiresAt;
         const valid = snapshot.exists() && expiresAt instanceof Timestamp && expiresAt.toMillis() > Date.now();
-        if (active) setStatus(valid ? 'valid' : 'invalid');
+        if (active) send(valid ? 'VALID' : 'INVALID');
       } catch {
-        if (active) setStatus('invalid');
+        if (active) send('INVALID');
       }
     })();
     return () => { active = false; };
-  }, [enabled, firestore]);
+  }, [enabled, firestore, send]);
 
   useEffect(() => {
     if (enabled && status === 'invalid') {

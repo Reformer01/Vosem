@@ -16,6 +16,8 @@ import { useEffect, useState } from 'react';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 import { hasSession, startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
+import { useMachine } from '@/machines/use-machine';
+import { signupMachine } from '@/machines/auth.machine';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -31,7 +33,8 @@ export default function SignupPage() {
   const { user, isUserLoading } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signupState, sendSignup] = useMachine(signupMachine);
+  const isSubmitting = signupState === 'submitting' || signupState === 'creating-profile';
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signupSchema>>({
@@ -43,6 +46,10 @@ export default function SignupPage() {
     if (!isUserLoading && user && hasSession()) router.push('/dashboard');
   }, [user, isUserLoading, router]);
 
+  useEffect(() => {
+    if (!isUserLoading) sendSignup('AUTH_RESOLVED');
+  }, [isUserLoading, sendSignup]);
+
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     if (!isFirebaseConfigured()) {
       const message = 'Registration is not configured on this deployment. Please contact the church office.';
@@ -51,10 +58,12 @@ export default function SignupPage() {
       return;
     }
     setAuthError(null);
-    setIsSubmitting(true);
+    if (signupState === 'checking-auth') sendSignup('AUTH_RESOLVED');
+    sendSignup('SUBMIT');
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const newUser = userCredential.user;
+      sendSignup('AUTH_CREATED');
 
       await updateProfile(newUser, { displayName: values.name });
 
@@ -73,15 +82,15 @@ export default function SignupPage() {
         await signOut(auth);
         throw sessionError;
       }
+      sendSignup('PROFILE_SAVED');
       router.push('/dashboard');
     } catch (error: any) {
       const message = error.code === 'auth/email-already-in-use'
         ? 'This email already has an account. Try signing in instead.'
         : 'We could not create your account just now. Please try again shortly.';
       setAuthError(message);
+      sendSignup('FAILURE');
       toast({ variant: 'destructive', title: 'Registration failed', description: message });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

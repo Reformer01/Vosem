@@ -10,6 +10,8 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useMachine } from '@/machines/use-machine';
+import { dataLoadMachine } from '@/machines/data-load.machine';
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
@@ -44,18 +46,18 @@ export function useDoc<T = any>(
   type StateDataType = WithId<T> | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadState, send] = useMachine(dataLoadMachine);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
     if (!memoizedDocRef) {
       setData(null);
-      setIsLoading(false);
+      send('RESET');
       setError(null);
       return;
     }
 
-    setIsLoading(true);
+    send('LOAD');
     setError(null);
     // Optional: setData(null); // Clear previous data instantly
 
@@ -69,7 +71,7 @@ export function useDoc<T = any>(
           setData(null);
         }
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
-        setIsLoading(false);
+        send(snapshot.exists() ? 'DATA' : 'EMPTY');
       },
       (error: FirestoreError) => {
         const contextualError = new FirestorePermissionError({
@@ -79,7 +81,7 @@ export function useDoc<T = any>(
 
         setError(contextualError)
         setData(null)
-        setIsLoading(false)
+        send('ERROR')
 
         // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);
@@ -87,7 +89,7 @@ export function useDoc<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
+  }, [memoizedDocRef, send]); // Re-run if the memoizedDocRef changes.
 
-  return { data, isLoading, error };
+  return { data, isLoading: loadState === 'loading', error };
 }

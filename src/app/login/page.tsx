@@ -16,6 +16,8 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { isFirebaseConfigured } from '@/lib/firebase-config-check';
 import { hasSession, startSession } from '@/lib/session';
 import { useToast } from '@/hooks/use-toast';
+import { useMachine } from '@/machines/use-machine';
+import { loginMachine } from '@/machines/auth.machine';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -28,7 +30,8 @@ export default function LoginPage() {
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authState, sendAuth] = useMachine(loginMachine);
+  const isSubmitting = authState === 'submitting';
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -41,6 +44,10 @@ export default function LoginPage() {
     if (!isUserLoading && user && hasSession()) router.push('/dashboard');
   }, [user, isUserLoading, router]);
 
+  useEffect(() => {
+    if (!isUserLoading) sendAuth('AUTH_RESOLVED');
+  }, [isUserLoading, sendAuth]);
+
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     if (!isFirebaseConfigured()) {
       const message = 'Sign-in is not configured on this deployment. Please contact the church office.';
@@ -49,7 +56,8 @@ export default function LoginPage() {
       return;
     }
     setAuthError(null);
-    setIsSubmitting(true);
+    if (authState === 'checking-auth') sendAuth('AUTH_RESOLVED');
+    sendAuth('SUBMIT');
     try {
       const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
       try {
@@ -58,15 +66,15 @@ export default function LoginPage() {
         await signOut(auth);
         throw sessionError;
       }
+      sendAuth('SUCCESS');
       router.push('/dashboard');
     } catch (error: any) {
       const message = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found'
         ? 'That email and password do not match. Please try again.'
         : 'We could not sign you in just now. Please try again shortly.';
       setAuthError(message);
+      sendAuth('FAILURE');
       toast({ variant: 'destructive', title: 'Sign-in failed', description: message });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
