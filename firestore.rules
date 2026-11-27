@@ -223,7 +223,7 @@ service cloud.firestore {
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved'])
         && request.resource.data.approved is bool;
-      allow delete: if isFullAdmin();
+      allow delete: if isFullAdmin() || (isSignedIn() && resource.data.authorId == request.auth.uid);
     }
 
     // Own RSVPs across all events (used by the dashboard "My events" list).

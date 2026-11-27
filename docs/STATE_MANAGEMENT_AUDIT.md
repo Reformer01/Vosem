@@ -46,7 +46,7 @@ Global `error.tsx`, `loading.tsx` and `not-found.tsx` now cover every route.
 
 ## 4. Remaining gaps
 
-- The new `isFullAdmin()` rule changes are in `firestore.rules` but **not yet deployed**: Firebase CLI reauthentication is required. Until then the UI restriction applies but the rules still allow moderator deletes.
+- The `isFullAdmin()` rules and owner-delete for prayer requests were deployed after Firebase CLI reauthentication. Members' old prayer records are removed on their next submission, and existing stale records were cleaned up once.
 - `addDocumentNonBlocking` is still used in a few places (audit logs, admin profile writes) without caller-visible errors.
 - No automated test suite; machine transitions were verified with a one-off Node assertion script.
 - HttpOnly session cookies need a server endpoint with Firebase Admin credentials, which this deployment does not have.

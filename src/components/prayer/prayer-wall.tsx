@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addDoc, collection, orderBy, query, serverTimestamp, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, orderBy, query, serverTimestamp, where } from "firebase/firestore";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { useMachine } from "@/machines";
 import { prayerSubmissionMachine } from "@/machines/prayer-submission.machine";
@@ -66,6 +66,10 @@ export default function PrayerWall() {
         isAnonymous,
         approved: false,
       });
+      // Remove the member's previous requests so new ones replace rather than stack.
+      await Promise.all((mine ?? []).map(request =>
+        deleteDoc(doc(firestore, "prayer_requests", request.id)).catch(() => {})
+      ));
       setContent("");
       setIsAnonymous(false);
       send("SUCCESS");
