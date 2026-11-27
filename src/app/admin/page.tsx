@@ -18,6 +18,7 @@ import { adminMachine, adminCrudMachine, dashboardMenuMachine } from "@/machines
 import CrudTable, { type AdminColumn } from "@/components/admin/crud-table";
 import RsvpCount from "@/components/admin/rsvp-count";
 import { downloadCsv, formatNaira } from "@/lib/csv";
+import { ADMIN_ROLES, roleLabel } from "@/lib/roles";
 import {
   Activity, BarChart3, BookOpen, CalendarDays, Heart, HeartHandshake, LayoutDashboard,
   MessageCircle, MoreHorizontal, ShieldCheck, Users,
@@ -81,7 +82,7 @@ export default function AdminPage() {
   };
 
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ title: "", speaker: "", videoUrl: "", summary: "", description: "", startTime: "", endTime: "", location: "", email: "", role: "admin", uid: "" });
+  const [form, setForm] = useState({ title: "", speaker: "", videoUrl: "", summary: "", description: "", startTime: "", endTime: "", location: "", email: "", role: "moderator", uid: "" });
 
   const roleRef = useMemoFirebase(() => (user ? doc(firestore, "admins", user.uid) : null), [user, firestore]);
   const { data: role } = useDoc<{ role: string }>(roleRef);
@@ -115,6 +116,13 @@ export default function AdminPage() {
     addDocumentNonBlocking(collection(firestore, "audit_logs"), { actorId: user.uid, actor: user.email, action, target, createdAt: serverTimestamp() });
   };
 
+  const memberSuggestions = (users.data ?? [])
+    .filter(member => !form.uid && form.email.trim().length >= 2 && (
+      String(member.email || "").toLowerCase().includes(form.email.trim().toLowerCase())
+      || String(member.name || "").toLowerCase().includes(form.email.trim().toLowerCase())
+    ))
+    .slice(0, 5);
+
   const openForm = (kind: "sermon" | "event" | "admin", row?: any) => {
     setEditing({ kind, id: row?.id });
     setForm(row ? {
@@ -122,8 +130,8 @@ export default function AdminPage() {
       summary: row.summary || "", description: row.description || "",
       startTime: row.startTime ? new Date(row.startTime).toISOString().slice(0, 16) : "",
       endTime: row.endTime ? new Date(row.endTime).toISOString().slice(0, 16) : "",
-      location: row.location || "", email: row.email || "", role: row.role || "admin", uid: row.id || "",
-    } : { title: "", speaker: "", videoUrl: "", summary: "", description: "", startTime: "", endTime: "", location: "", email: "", role: "admin", uid: "" });
+      location: row.location || "", email: row.email || "", role: row.role || "moderator", uid: row.id || "",
+    } : { title: "", speaker: "", videoUrl: "", summary: "", description: "", startTime: "", endTime: "", location: "", email: "", role: "moderator", uid: "" });
   };
 
   const save = async (e: React.FormEvent) => {
@@ -147,15 +155,26 @@ export default function AdminPage() {
         if (editing.id) await updateDoc(doc(firestore, "events", editing.id), data);
         else await addDoc(collection(firestore, "events"), data);
       } else {
-        await setDoc(doc(firestore, "admins", form.uid.trim()), { email: form.email.trim(), role: form.role, createdAt: serverTimestamp() }, { merge: true });
+        const targetUid = form.uid.trim() || memberSuggestions[0]?.id;
+        if (!targetUid) {
+          throw new Error("Choose a church member or enter a user ID.");
+        }
+        if (targetUid === user.uid && form.role !== "admin") {
+          throw new Error("You cannot remove your own administrator access.");
+        }
+        await setDoc(doc(firestore, "admins", targetUid), {
+          email: form.email.trim() || memberSuggestions[0]?.email || "",
+          role: form.role,
+          createdAt: serverTimestamp(),
+        }, { merge: true });
       }
       log(editing.id ? "updated" : "created", `${editing.kind}: ${form.title || form.email}`);
       toast({ title: "Saved", description: "Your changes have been saved." });
       sendCrud("SUCCESS");
       setEditing(null);
-    } catch {
+    } catch (error) {
       sendCrud("FAILURE");
-      toast({ variant: "destructive", title: "Could not save", description: "Please check the details and try again." });
+      toast({ variant: "destructive", title: "Could not save", description: error instanceof Error ? error.message : "Please check the details and try again." });
     }
   };
 
@@ -243,7 +262,7 @@ export default function AdminPage() {
   ];
   const adminCols: AdminColumn<any>[] = [
     { key: "email", label: "Email" },
-    { key: "role", label: "Role", render: r => <span className="app-status bg-primary/10 text-primary">{r.role}</span> },
+    { key: "role", label: "Role", render: r => <span className="app-status bg-primary/10 text-primary">{roleLabel(r.role)}</span> },
   ];
   const logCols: AdminColumn<any>[] = [
     { key: "action", label: "Action" },
@@ -378,7 +397,14 @@ export default function AdminPage() {
             {tab === "Admins" && (
               <>
                 {isFullAdmin && <Button className="site-btn site-btn-solid w-fit" onClick={() => openForm("admin")}>Add admin</Button>}
-                <CrudTable rows={data(admins.data)} columns={adminCols} loading={admins.isLoading} onEdit={isFullAdmin ? r => openForm("admin", r) : undefined} onDelete={isFullAdmin ? r => remove("admins", r.id) : undefined} emptyLabel="No admins yet." exportFilename="vosem-admins.csv" />
+                <p className="text-sm text-muted-foreground">Pick a church member and assign a predefined role. Members receiving access should sign in once before appearing in the list.</p>
+                <CrudTable rows={data(admins.data)} columns={adminCols} loading={admins.isLoading} onEdit={isFullAdmin ? r => openForm("admin", r) : undefined} onDelete={isFullAdmin ? r => {
+                  if (r.id === user.uid) {
+                    toast({ variant: "destructive", title: "Cannot remove your own access", description: "Ask another administrator to change your role." });
+                    return;
+                  }
+                  return remove("admins", r.id);
+                } : undefined} emptyLabel="No admins yet." exportFilename="vosem-admins.csv" />
               </>
             )}
 
@@ -458,11 +484,34 @@ export default function AdminPage() {
           </DialogHeader>
           <form onSubmit={save} className="space-y-4">
             {editing?.kind === "admin" ? (
-              <>
-                <Input placeholder="User ID (uid)" value={form.uid} disabled={!!editing.id} onChange={e => setForm({ ...form, uid: e.target.value })} required />
-                <Input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
-                <Input placeholder="Role (admin or moderator)" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} required />
-              </>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Type a church member&apos;s name or email, then choose a role. You can enter a user ID instead if they are not listed.</p>
+                <Input placeholder="Member name or email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value, uid: editing.id ? form.uid : "" })} />
+                {!editing.id && memberSuggestions.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {memberSuggestions.map(member => (
+                      <button key={member.id} type="button"
+                        onClick={() => setForm({ ...form, uid: member.id, email: member.email || form.email })}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${form.uid === member.id ? "border-primary bg-primary text-white" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                        {member.name || member.email}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {!editing.id && (
+                  <Input placeholder="User ID (only if not listed above)" value={form.uid} onChange={e => setForm({ ...form, uid: e.target.value })} />
+                )}
+                <div className="grid gap-2 pt-2">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Role</p>
+                  {ADMIN_ROLES.map(role => (
+                    <button key={role.value} type="button" onClick={() => setForm({ ...form, role: role.value })}
+                      className={`rounded-xl border p-3 text-left transition-colors ${form.role === role.value ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}>
+                      <p className="text-sm font-bold">{role.label}</p>
+                      <p className="text-xs text-muted-foreground">{role.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ) : editing?.kind === "event" ? (
               <>
                 <Input placeholder="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required />
